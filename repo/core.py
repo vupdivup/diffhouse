@@ -5,6 +5,19 @@ import pandas as pd
 from pathlib import Path
 from io import StringIO
 
+LOG_FORMAT_SPECIFIERS = {
+    'commit_hash': '%H',
+    'author_name': '%an',
+    'author_email': '%ae',
+    'author_date': '%ad',
+    'committer_name': '%cn',
+    'committer_email': '%ce',
+    'committer_date': '%cd',
+    'subject': '%s',
+    'body': '%b'
+}
+LOG_COLUMNS = list(LOG_FORMAT_SPECIFIERS.keys())
+
 LOG_COL_SEP = chr(0x1f)
 LOG_ROW_SEP = chr(0x1e)
 
@@ -38,20 +51,6 @@ class Clone:
     Resides in a temporary directory. For proper cleanup, the class is
     implemented as a context manager and meant to be used in a `with` statement.
     """
-    _LOG_FORMAT_SPECIFIERS = {
-        'commit_hash': '%H',
-        'author_name': '%an',
-        'author_email': '%ae',
-        'author_date': '%ad',
-        'committer_name': '%cn',
-        'committer_email': '%ce',
-        'committer_date': '%cd',
-        'subject': '%s',
-        'body': '%b'
-    }
-
-    _LOG_COLUMNS = list(_LOG_FORMAT_SPECIFIERS.keys())
-
     def __init__(self, repo: Repo):
         self.repo = repo
         """Remote metadata."""
@@ -78,7 +77,7 @@ class Clone:
     def _get_log(self, col_sep=LOG_COL_SEP, row_sep=LOG_ROW_SEP):
         # prepare git log command
         specifiers = col_sep.join(
-            self._LOG_FORMAT_SPECIFIERS.values()
+            LOG_FORMAT_SPECIFIERS.values()
         )
         pattern = f'{specifiers}{row_sep}'
 
@@ -105,7 +104,7 @@ class Clone:
             lineterminator=f'{LOG_ROW_SEP}',
             engine='c', # for lineterminator to work
             header=None,
-            names=self._LOG_COLUMNS
+            names=LOG_COLUMNS
         )
         
         # parse dates, UTC for mixed timezones
