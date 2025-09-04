@@ -5,6 +5,9 @@ import pandas as pd
 from pathlib import Path
 from io import StringIO
 
+LOG_COL_SEP = chr(0x1f)
+LOG_ROW_SEP = chr(0x1e)
+
 class Repo:
     """
     GitHub repository metadata.
@@ -49,9 +52,6 @@ class Clone:
 
     _LOG_COLUMNS = list(_LOG_FORMAT_SPECIFIERS.keys())
 
-    _LOG_COLUMN_DELIMITER = chr(0x1f)
-    _LOG_RECORD_DELIMITER = chr(0x1e)
-
     def __init__(self, repo: Repo):
         self.repo = repo
         """Remote metadata."""
@@ -75,33 +75,38 @@ class Clone:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._temp_dir.cleanup()
 
-    def get_commits(self):
-        """
-        Get commit history as a pandas DataFrame via `git log`.
-        """
+    def _get_log(self, col_sep=LOG_COL_SEP, row_sep=LOG_ROW_SEP):
         # prepare git log command
-        specifiers = self._LOG_COLUMN_DELIMITER.join(
+        specifiers = col_sep.join(
             self._LOG_FORMAT_SPECIFIERS.values()
         )
-        pattern = f'{specifiers}{self._LOG_RECORD_DELIMITER}'
+        pattern = f'{specifiers}{row_sep}'
 
         # run git log
-        log = subprocess.run(
-            ['git', 'log', f'--pretty=tformat:{pattern}', '--date=iso'],
+        return subprocess.run(
+            # format instead of tformat is important to skip the last newline
+            # for proper pandas parsing
+            ['git', 'log', f'--pretty=format:{pattern}', '--date=iso'],
             cwd=self._path,
             capture_output=True,
             encoding='utf-8'
-        )
+        ).stdout
 
+    def get_commits_df(self):
+        """
+        Get commit history as a pandas DataFrame via `git log`.
+        """
         # process output into DataFrame
-        buf = StringIO(log.stdout)
+        log = self._get_log()
+        buf = StringIO(log)
         df = pd.read_csv(
             buf, 
-            sep=self._LOG_COLUMN_DELIMITER,
-            lineterminator=self._LOG_RECORD_DELIMITER,
+            sep=LOG_COL_SEP,
+            lineterminator=f'{LOG_ROW_SEP}',
             engine='c', # for lineterminator to work
             header=None,
-            names=self._LOG_COLUMNS
+            names=self._LOG_COLUMNS,
+            skip_blank_lines=True
         )
         
         # parse dates, UTC for mixed timezones
