@@ -18,8 +18,8 @@ LOG_FORMAT_SPECIFIERS = {
 }
 LOG_COLUMNS = list(LOG_FORMAT_SPECIFIERS.keys())
 
-LOG_COL_SEP = chr(0x1f)
-LOG_ROW_SEP = chr(0x1e)
+LOG_COLUMN_SEPARATOR = chr(0x1f)
+LOG_RECORD_SEPARATOR = chr(0x1e)
 
 class Repo:
     """
@@ -74,12 +74,12 @@ class Clone:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._temp_dir.cleanup()
 
-    def _get_log(self, col_sep=LOG_COL_SEP, row_sep=LOG_ROW_SEP):
+    def _get_log(self):
         # prepare git log command
-        specifiers = col_sep.join(
+        specifiers = LOG_COLUMN_SEPARATOR.join(
             LOG_FORMAT_SPECIFIERS.values()
         )
-        pattern = f'{specifiers}{row_sep}'
+        pattern = f'{specifiers}{LOG_RECORD_SEPARATOR}'
 
         # run git log
         return subprocess.run(
@@ -100,8 +100,8 @@ class Clone:
         buf = StringIO(log)
         df = pd.read_csv(
             buf, 
-            sep=LOG_COL_SEP,
-            lineterminator=f'{LOG_ROW_SEP}',
+            sep=LOG_COLUMN_SEPARATOR,
+            lineterminator=LOG_RECORD_SEPARATOR,
             engine='c', # for lineterminator to work
             header=None,
             names=LOG_COLUMNS
