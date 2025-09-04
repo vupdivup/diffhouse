@@ -43,7 +43,6 @@ class Repo:
         self._temp_dir = tempfile.TemporaryDirectory(prefix='repo_')
         self._path = Path(self._temp_dir.name)
         self._clone_path = self._path / 'repo'
-        self._log_path = self._path / 'logs' / f'{self.id}.txt'
 
         self._clone(path=self._clone_path)
         self.get_commits()
@@ -60,9 +59,6 @@ class Repo:
             ])
 
     def get_commits(self):
-        # create log directory
-        self._log_path.parent.mkdir(parents=True, exist_ok=True)
-
         # prepare git log command
         specifiers = self._LOG_COLUMN_DELIMITER.join(
             self._LOG_FORMAT_SPECIFIERS.values()
