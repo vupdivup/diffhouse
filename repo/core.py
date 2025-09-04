@@ -9,15 +9,15 @@ class Repo:
     """
     GitHub repository metadata.
     """
-    def __init__(self, url: str):
-        self.url = url
-        """Git repository URL"""
+    def __init__(self, owner: str, name: str):
+        self.owner = owner
+        """Repository owner."""
 
-        self.owner = self.url.split('/')[-2]
-        """Repository owner"""
+        self.name = name
+        """Repository name."""
 
-        self.name = self.url.split('/')[-1].replace('.git', '')
-        """Repository name"""
+        self.url = f'https://github.com/{owner}/{name}.git'
+        """GitHub repository URL."""
 
         self.id = f'{self.owner}-{self.name}'
         """Unique identifier for the repository. Format: `{owner}-{name}`"""
