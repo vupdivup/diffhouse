@@ -3,6 +3,7 @@ import subprocess
 import pandas as pd
 
 from pathlib import Path
+from io import StringIO
 
 class Repo:
     """
@@ -45,7 +46,7 @@ class Repo:
         self._log_path = self._path / 'logs' / f'{self.id}.txt'
 
         self._clone(path=self._clone_path)
-        self._log_commits()
+        self.get_commits()
 
         return self
 
@@ -58,42 +59,42 @@ class Repo:
             'git', 'clone', '--bare', '--filter=blob:none', self.url, path
             ])
 
-    def _log_commits(self):
+    def get_commits(self):
         # create log directory
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
 
         # prepare git log command
         specifiers = self._LOG_COLUMN_DELIMITER.join(
             self._LOG_FORMAT_SPECIFIERS.values()
-            )
+        )
         pattern = f'{specifiers}{self._LOG_RECORD_DELIMITER}'
 
-        with open(self._log_path, 'w') as f:
-            subprocess.run(
-                ['git', 'log', f'--pretty=tformat:{pattern}', '--date=iso'],
-                cwd=self._clone_path, stdout=f
-                )
-        
-    def get_commits(self) -> pd.DataFrame:
-        """
-        Returns a DataFrame of main branch commits.
-        """
-        commits = pd.read_csv(
-            self._log_path, 
+        # run git log command
+        log = subprocess.run(
+            ['git', 'log', f'--pretty=tformat:{pattern}', '--date=iso'],
+            cwd=self._clone_path,
+            capture_output=True,
+            encoding='utf-8'
+        )
+
+        # process output into DataFrame
+        buf = StringIO(log.stdout)
+        df = pd.read_csv(
+            buf, 
             sep=self._LOG_COLUMN_DELIMITER,
             lineterminator=self._LOG_RECORD_DELIMITER,
             engine='c', # for lineterminator to work
             header=None,
             names=self._LOG_COLUMNS
-            )
+        )
         
         # parse dates, UTC for mixed timezones
         for col in ['author_date', 'committer_date']:
-            commits[col] = pd.to_datetime(commits[col], utc=True)
+            df[col] = pd.to_datetime(df[col], utc=True)
 
         # trim all whitespace of string columns
-        for col in commits:
-            if commits[col].dtype == 'object':
-                commits[col] = commits[col].str.strip()
+        for col in df:
+            if df[col].dtype == 'object':
+                df[col] = df[col].str.strip()
 
-        return commits
+        return df
