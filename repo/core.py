@@ -105,8 +105,7 @@ class Clone:
             lineterminator=f'{LOG_ROW_SEP}',
             engine='c', # for lineterminator to work
             header=None,
-            names=self._LOG_COLUMNS,
-            skip_blank_lines=True
+            names=self._LOG_COLUMNS
         )
         
         # parse dates, UTC for mixed timezones
