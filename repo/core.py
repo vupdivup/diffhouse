@@ -30,7 +30,7 @@ class Repo:
 
 class Clone:
     """
-    Local clone of a git repository.
+    Local bare clone of a git repository.
     
     Resides in a temporary directory. For proper cleanup, the class is
     implemented as a context manager and meant to be used in a `with` statement.
