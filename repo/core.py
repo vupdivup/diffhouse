@@ -7,7 +7,33 @@ from io import StringIO
 
 class Repo:
     """
-    Represents a git repository cloned from GitHub.
+    GitHub repository metadata.
+    """
+    def __init__(self, url: str):
+        self.url = url
+        """Git repository URL"""
+
+        self.owner = self.url.split('/')[-2]
+        """Repository owner"""
+
+        self.name = self.url.split('/')[-1].replace('.git', '')
+        """Repository name"""
+
+        self.id = f'{self.owner}-{self.name}'
+        """Unique identifier for the repository. Format: `{owner}-{name}`"""
+
+    def clone(self):
+        """
+        Create a local clone of the repository.
+        """
+        return Clone(self)
+
+class Clone:
+    """
+    Local clone of a git repository.
+    
+    Resides in a temporary directory. For proper cleanup, the class is
+    implemented as a context manager and meant to be used in a `with` statement.
     """
     _LOG_FORMAT_SPECIFIERS = {
         'commit_hash': '%H',
@@ -26,49 +52,43 @@ class Repo:
     _LOG_COLUMN_DELIMITER = chr(0x1f)
     _LOG_RECORD_DELIMITER = chr(0x1e)
 
-    def __init__(self, url: str):
-        self.url = url
-        """Git repository URL"""
-
-        self.owner = self.url.split('/')[-2]
-        """Repository owner"""
-
-        self.name = self.url.split('/')[-1].replace('.git', '')
-        """Repository name"""
-
-        self.id = f'{self.owner}-{self.name}'
-        """Unique identifier for the repository. Format: `{owner}-{name}`"""
+    def __init__(self, repo: Repo):
+        self.repo = repo
+        """Remote metadata."""
 
     def __enter__(self):
-        self._temp_dir = tempfile.TemporaryDirectory(prefix='repo_')
+        self._temp_dir = tempfile.TemporaryDirectory()
         self._path = Path(self._temp_dir.name)
-        self._clone_path = self._path / 'repo'
 
-        self._clone(path=self._clone_path)
-        self.get_commits()
+        # run git clone
+        subprocess.run([
+            'git',
+            'clone',
+            '--bare',
+            '--filter=blob:none',
+            self.repo.url,
+            self._path
+        ])
 
         return self
-
+    
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._temp_dir.cleanup()
-    
-    def _clone(self, path: str):
-        # TODO: error handling
-        subprocess.run([
-            'git', 'clone', '--bare', '--filter=blob:none', self.url, path
-            ])
 
     def get_commits(self):
+        """
+        Get commit history as a pandas DataFrame via `git log`.
+        """
         # prepare git log command
         specifiers = self._LOG_COLUMN_DELIMITER.join(
             self._LOG_FORMAT_SPECIFIERS.values()
         )
         pattern = f'{specifiers}{self._LOG_RECORD_DELIMITER}'
 
-        # run git log command
+        # run git log
         log = subprocess.run(
             ['git', 'log', f'--pretty=tformat:{pattern}', '--date=iso'],
-            cwd=self._clone_path,
+            cwd=self._path,
             capture_output=True,
             encoding='utf-8'
         )
