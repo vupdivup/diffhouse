@@ -13,6 +13,9 @@ class Repo:
         'author_name': '%an',
         'author_email': '%ae',
         'author_date': '%ad',
+        'committer_name': '%cn',
+        'committer_email': '%ce',
+        'committer_date': '%cd',
         'subject': '%s',
         'body': '%b'
     }
@@ -67,7 +70,7 @@ class Repo:
 
         with open(self._log_path, 'w') as f:
             subprocess.run(
-                ['git', 'log', f'--pretty=tformat:{pattern}'],
+                ['git', 'log', f'--pretty=tformat:{pattern}', '--date=iso'],
                 cwd=self._clone_path, stdout=f
                 )
         
@@ -79,13 +82,18 @@ class Repo:
             self._log_path, 
             sep=self._LOG_COLUMN_DELIMITER,
             lineterminator=self._LOG_RECORD_DELIMITER,
+            engine='c', # for lineterminator to work
             header=None,
-            names=self._LOG_COLUMNS,
-            engine='c' # for lineterminator to work
+            names=self._LOG_COLUMNS
             )
-                
-        # trim all whitespace
+        
+        # parse dates, UTC for mixed timezones
+        for col in ['author_date', 'committer_date']:
+            commits[col] = pd.to_datetime(commits[col], utc=True)
+
+        # trim all whitespace of string columns
         for col in commits:
-            commits[col] = commits[col].str.strip()
+            if commits[col].dtype == 'object':
+                commits[col] = commits[col].str.strip()
 
         return commits
