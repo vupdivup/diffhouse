@@ -74,7 +74,12 @@ class Clone:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._temp_dir.cleanup()
 
-    def _get_log(self):
+class Log():
+    def __init__(self, path: Path):
+        self._path = path
+        """Path to a local repository."""
+
+    def _get(self):
         # prepare git log command
         specifiers = LOG_COLUMN_SEPARATOR.join(
             LOG_FORMAT_SPECIFIERS.values()
@@ -96,7 +101,7 @@ class Clone:
         Get commit history as a pandas DataFrame via `git log`.
         """
         # process output into DataFrame
-        log = self._get_log()
+        log = self._get()
         buf = StringIO(log)
         df = pd.read_csv(
             buf, 

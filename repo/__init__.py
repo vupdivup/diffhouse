@@ -1,1 +1,1 @@
-from .core import Repo
+from .core import Remote, Clone, Log
