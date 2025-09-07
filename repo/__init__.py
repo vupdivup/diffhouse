@@ -1,1 +1,2 @@
-from .core import Remote, Clone, Log
+from .remote import Remote
+from .log import Log
