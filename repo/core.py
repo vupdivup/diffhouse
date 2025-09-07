@@ -26,17 +26,36 @@ class Remote:
     GitHub repository metadata.
     """
     def __init__(self, owner: str, name: str):
-        self.owner = owner
+        """
+        Initialize remote via GitHub owner and repository name.
+        Args:
+            owner (str): Repository owner.
+            name (str): Repository name.
+        """
+        self._owner = owner
+        self._name = name
+        self._url = f'https://github.com/{owner}/{name}.git'
+        self._id = f'{owner}-{name}'
+
+    @property
+    def owner(self):
         """Repository owner."""
+        return self._owner
 
-        self.name = name
+    @property
+    def name(self):
         """Repository name."""
-
-        self.url = f'https://github.com/{owner}/{name}.git'
+        return self._name
+    
+    @property
+    def url(self):
         """GitHub repository URL."""
-
-        self.id = f'{self.owner}-{self.name}'
+        return self._url
+    
+    @property
+    def id(self):
         """Unique identifier for the repository. Format: `{owner}-{name}`"""
+        return self._id
 
     def clone(self):
         """
@@ -52,8 +71,23 @@ class Clone:
     implemented as a context manager and meant to be used in a `with` statement.
     """
     def __init__(self, remote: Remote):
-        self.remote = remote
-        """Remote metadata."""
+        """
+        Create a local clone of the GitHub repository.
+
+        Args:
+            remote (Remote): Remote to clone.
+        """
+        self._remote = remote
+
+    @property
+    def remote(self):
+        """GitHub remote."""
+        return self._remote
+
+    @property
+    def log(self):
+        """Commit log of the repository."""
+        return self._log
 
     def __enter__(self):
         self._temp_dir = tempfile.TemporaryDirectory()
@@ -69,17 +103,30 @@ class Clone:
             self._path
         ])
 
+        # init log
+        self._log = Log(self._path)
+
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._temp_dir.cleanup()
-
+    
 class Log():
+    """
+    Output of a `git log` command, executed in a local repository.
+    """
     def __init__(self, path: Path):
-        self._path = path
-        """Path to a local repository."""
+        """
+        Populate the log cache by running `git log` in `path`.
 
-    def _get(self):
+        Args:
+            path (Path): Path to a local repository.
+        """
+        self._path = path
+
+        self._output = self._get_output()
+
+    def _get_output(self):
         # prepare git log command
         specifiers = LOG_COLUMN_SEPARATOR.join(
             LOG_FORMAT_SPECIFIERS.values()
@@ -96,13 +143,12 @@ class Log():
             encoding='utf-8'
         ).stdout
 
-    def get_commits_df(self):
+    def to_df(self):
         """
-        Get commit history as a pandas DataFrame via `git log`.
+        Get commit log as a pandas DataFrame.
         """
         # process output into DataFrame
-        log = self._get()
-        buf = StringIO(log)
+        buf = StringIO(self._output)
         df = pd.read_csv(
             buf, 
             sep=LOG_COLUMN_SEPARATOR,
