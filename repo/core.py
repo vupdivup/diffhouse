@@ -21,7 +21,7 @@ LOG_COLUMNS = list(LOG_FORMAT_SPECIFIERS.keys())
 LOG_COLUMN_SEPARATOR = chr(0x1f)
 LOG_RECORD_SEPARATOR = chr(0x1e)
 
-class Repo:
+class Remote:
     """
     GitHub repository metadata.
     """
@@ -51,8 +51,8 @@ class Clone:
     Resides in a temporary directory. For proper cleanup, the class is
     implemented as a context manager and meant to be used in a `with` statement.
     """
-    def __init__(self, repo: Repo):
-        self.repo = repo
+    def __init__(self, remote: Remote):
+        self.remote = remote
         """Remote metadata."""
 
     def __enter__(self):
@@ -65,7 +65,7 @@ class Clone:
             'clone',
             '--bare',
             '--filter=blob:none',
-            self.repo.url,
+            self.remote.url,
             self._path
         ])
 
