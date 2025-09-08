@@ -25,14 +25,20 @@ class Log:
     """
     Output of a `git log` command, executed in a local repository.
     """
-    def __init__(self, path: Path):
+    def __init__(self, path: str):
         """
         Populate the log cache by running `git log` in `path`.
 
         Args:
-            path (Path): Path to a local repository.
+            path (str): Path to a local repository.
         """
-        self._path = path
+        self._path = Path(path)
+
+        if not self._path.exists():
+            raise FileNotFoundError(f'Path {self._path} does not exist.')
+
+        if not self._path.is_dir():
+            raise NotADirectoryError(f'Path {self._path} is not a directory.')
 
         self._output = self._get_output()
 
