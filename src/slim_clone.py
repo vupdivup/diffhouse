@@ -1,11 +1,10 @@
 import tempfile
-import subprocess
 
 from pathlib import Path
 
-from .log import Log
+from .git_cli import GitCLI
 
-class Clone:
+class SlimClone:
     """
     Local bare clone of a git repository.
     
@@ -22,26 +21,19 @@ class Clone:
         self._url = url
 
     @property
-    def log(self):
-        """Commit log of the repository."""
-        return self._log
+    def path(self):
+        """Path to the local clone. Points to a temporary directory."""
+        return self._path
 
     def __enter__(self):
         self._temp_dir = tempfile.TemporaryDirectory()
         self._path = Path(self._temp_dir.name)
 
-        # run git clone
-        subprocess.run([
-            'git',
-            'clone',
-            '--bare',
-            '--filter=blob:none',
-            self._url,
-            self._path
-        ])
-
-        # init log
-        self._log = Log(self._path)
+        # clone repository
+        git = GitCLI(self._path)
+        git.run(
+            'clone', '--bare', '--filter=blob:none', self._url, '.'
+        )
 
         return self
     

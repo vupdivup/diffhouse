@@ -2,7 +2,7 @@ import subprocess
 
 from pathlib import Path
 
-class Git:
+class GitCLI:
     """
     An abstraction that runs git commands in a local directory.
     """
