@@ -3,16 +3,16 @@ import subprocess
 from pathlib import Path
 
 class GitCLI:
-    """
+    '''
     An abstraction that runs git commands in a local directory.
-    """
+    '''
     def __init__(self, cwd: str):
-        """
+        '''
         Initialize the git CLI.
 
         Args:
             cwd (str): Working directory for the git commands.
-        """
+        '''
         self._cwd = Path(cwd).absolute()
 
         if not self._cwd.exists():
@@ -22,7 +22,7 @@ class GitCLI:
             raise NotADirectoryError(f"Path {self._cwd} is not a directory.")
         
     def run(self, *args: str) -> str:
-        """
+        '''
         Run a git command.
 
         Args:
@@ -31,7 +31,7 @@ class GitCLI:
 
         Returns:
             stdout (str): Standard text output of the git command.
-        """
+        '''
         try:
             return subprocess.run(
                 ['git', *args],
@@ -46,7 +46,7 @@ class GitCLI:
             raise GitError(e.stderr)
         
 class GitError(Exception):
-    """Custom exception for git-related errors."""
+    '''Custom exception for git-related errors.'''
     def __init__(self, stderr: str):
         '''
         Initialize the exception.

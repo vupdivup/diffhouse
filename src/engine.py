@@ -22,12 +22,12 @@ COLUMN_SEPARATOR = chr(0x1f)
 RECORD_SEPARATOR = chr(0x1e)
 
 def ingest_log(path: str) -> str:
-    """
+    '''
     Get a normalized `git log` output from a git repository at `path`.
 
     Returns:
         output (str): Git log output, with custom record and field separators.
-    """
+    '''
     # prepare git log command
     specifiers = COLUMN_SEPARATOR.join(
         FORMAT_SPECIFIERS.values()
@@ -39,12 +39,12 @@ def ingest_log(path: str) -> str:
     return git.run('log', f'--pretty=format:{pattern}', '--date=iso')
 
 def process_log(path: str) -> pd.DataFrame:
-    """
+    '''
     Get commit history of a git repository at `path`.
 
     Returns:
         commits (DataFrame): Tabular commit history.
-    """
+    '''
     output = ingest_log(path)
 
     try:
