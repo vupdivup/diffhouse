@@ -4,7 +4,13 @@ from .slim_clone import SlimClone
 from .engine import process_log
 
 class Repo:
+    """
+    Represents a git repository.
+    """
     def __init__(self, url: str):
+        """
+        Initialize the repository and load commit history.
+        """
         self._url = url
 
         with SlimClone(url) as c:
@@ -17,5 +23,5 @@ class Repo:
     
     @property
     def commits(self) -> pd.DataFrame:
-        """Commit log as a pandas DataFrame."""
+        """Commit history as a pandas DataFrame."""
         return self._commits.copy()
