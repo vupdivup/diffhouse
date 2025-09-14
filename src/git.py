@@ -43,4 +43,16 @@ class GitCLI:
         except FileNotFoundError:
             raise EnvironmentError("Git is not installed or not in PATH.")
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"Git command failed.\n{e.stderr}")
+            raise GitError(e.stderr)
+        
+class GitError(Exception):
+    """Custom exception for git-related errors."""
+    def __init__(self, stderr: str):
+        '''
+        Initialize the exception.
+
+        Args:
+            stderr (str): Standard error output from the git command.
+        '''
+        self.message = f'Git command failed with the following error:\n{stderr}'
+        super().__init__(self.message)

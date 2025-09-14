@@ -2,7 +2,7 @@ import pandas as pd
 
 from io import StringIO
 
-from .git_cli import GitCLI
+from .git import GitCLI
 
 FORMAT_SPECIFIERS = {
     'commit_hash': '%H',

@@ -2,7 +2,7 @@ import tempfile
 
 from pathlib import Path
 
-from .git_cli import GitCLI
+from .git import GitCLI
 
 class SlimClone:
     """
