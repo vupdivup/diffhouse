@@ -13,7 +13,7 @@ class TestRepo(unittest.TestCase):
         # type
         self.assertTrue(isinstance(repo.commits, pd.DataFrame))
         # non-empty dataframe
-        self.assertTrue(len(repo.commits) > 0)
+        self.assertFalse(repo.commits.empty)
         # null rows
         self.assertTrue(
             len(repo.commits.replace("", pd.NA)
