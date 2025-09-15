@@ -28,3 +28,19 @@ from diffhouse import Repo
 r = Repo('https://github.com/user/name.git')
 r.commits.head()
 ```
+
+## Schema
+
+*diffhouse* commit history tables have the following structure:
+
+| Column | Description |
+| --- | --- |
+| `commit_hash` | Full hash of the commit. |
+| `author_name` | Author username. |
+| `author_email`   | Author email. |
+| `author_date`    | Commit creation date. |
+| `committer_name` | Committer username. |
+| `committer_email`| Committer email. |
+| `committer_date` | Commit apply date. |
+| `subject`        | Subject line of the commit message. |
+| `body`           | Body of the commit message. |
