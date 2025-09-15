@@ -1,20 +1,30 @@
 # diffhouse
 
-*diffhouse* is a commit history analysis tool for Python. It extracts tabular commit data from a git repository via its `git log` output.
+*diffhouse* is a commit history analysis tool for Python. It extracts tabular commit data from a git repository via `git log`.
 
-> Only main-branch commits are shown.
+> *diffhouse* currently provides data for main-branch commits only.
 
 ## Requirements
 
-Git v2.19 or greater.
+Git version 2.19 or greater.
 
-## User guide
+## Quick start
 
-Simply create a `Repo` object with the git repository URL as an argument. Commit data will automatically be loaded into its `commits` property as a *pandas* [`DataFrame`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html).
+1. Install *diffhouse* with pip:
+
+```bash
+pip install diffhouse
+```
+
+2. Import the `Repo` class in Python:
 
 ```python
 from diffhouse import Repo
+```
 
+3. Create a `Repo` instance with the git repository URL as an argument. Commit data will automatically be loaded into its `commits` property as a *pandas* [`DataFrame`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html):
+
+```python
 r = Repo('https://github.com/user/name.git')
 r.commits.head()
 ```
