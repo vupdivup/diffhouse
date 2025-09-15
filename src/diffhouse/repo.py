@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .slim_clone import SlimClone
+from .cloning import SlimClone
 from .engine import process_log
 
 class Repo:

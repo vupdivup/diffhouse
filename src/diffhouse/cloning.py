@@ -22,7 +22,9 @@ class SlimClone:
 
     @property
     def path(self):
-        '''Path to the local clone. Points to a temporary directory.'''
+        '''
+        Path to the local clone. Points to a temporary directory.
+        '''
         return self._path
 
     def __enter__(self):

@@ -25,6 +25,9 @@ def ingest_log(path: str) -> str:
     '''
     Get a normalized `git log` output from a git repository at `path`.
 
+    Args:
+        path (str): Path to the local git repository.
+
     Returns:
         output (str): Git log output, with custom record and field separators.
     '''
@@ -41,6 +44,9 @@ def ingest_log(path: str) -> str:
 def process_log(path: str) -> pd.DataFrame:
     '''
     Get commit history of a git repository at `path`.
+
+    Args:
+        path (str): Path to the local git repository.
 
     Returns:
         commits (DataFrame): Tabular commit history.
