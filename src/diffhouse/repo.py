@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .cloning import SlimClone
-from .engine import process_log
+from .engine import get_commits, get_branches, get_tags
 
 class Repo:
     '''
@@ -17,7 +17,9 @@ class Repo:
         self._url = url
 
         with SlimClone(url) as c:
-            self._commits = process_log(c.path)
+            self._commits = get_commits(c.path)
+            self._branches = get_branches(c.path)
+            self._tags = get_tags(c.path)
 
     @property
     def url(self):
@@ -32,3 +34,17 @@ class Repo:
         Commit history as a pandas DataFrame.
         '''
         return self._commits.copy()
+    
+    @property
+    def branches(self) -> pd.DataFrame:
+        '''
+        Branches of the repository.
+        '''
+        return self._branches.copy()
+    
+    @property
+    def tags(self) -> pd.DataFrame:
+        '''
+        Tags of the repository.
+        '''
+        return self._tags.copy()
