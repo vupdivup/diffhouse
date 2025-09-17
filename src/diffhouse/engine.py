@@ -5,33 +5,33 @@ from io import StringIO
 
 from .git import GitCLI
 
-FORMAT_SPECIFIERS = {
-    'commit_hash': '%H',
-    'author_name': '%an',
-    'author_email': '%ae',
-    'author_date': '%ad',
-    'committer_name': '%cn',
-    'committer_email': '%ce',
-    'committer_date': '%cd',
-    'subject': '%s',
-    'body': '%b'
-}
-
-COLUMNS = list(FORMAT_SPECIFIERS.keys())
-
-COLUMN_SEPARATOR = chr(0x1f)
-RECORD_SEPARATOR = chr(0x1e)
-
-def ingest_log(path: str) -> str:
+def get_commits(path: str) -> pd.DataFrame:
     '''
-    Get a normalized `git log` output from a git repository at `path`.
+    Get tabular `git log` output from a git repository at `path`.
 
     Args:
         path (str): Path to the local git repository.
 
     Returns:
-        output (str): Git log output, with custom record and field separators.
+        output (DataFrame): Tabular git log output.
     '''
+    FORMAT_SPECIFIERS = {
+        'commit_hash': '%H',
+        'author_name': '%an',
+        'author_email': '%ae',
+        'author_date': '%ad',
+        'committer_name': '%cn',
+        'committer_email': '%ce',
+        'committer_date': '%cd',
+        'subject': '%s',
+        'body': '%b'
+    }
+
+    COLUMNS = list(FORMAT_SPECIFIERS.keys())
+
+    COLUMN_SEPARATOR = chr(0x1f)
+    RECORD_SEPARATOR = chr(0x1e)
+
     # prepare git log command
     specifiers = COLUMN_SEPARATOR.join(
         FORMAT_SPECIFIERS.values()
@@ -40,19 +40,7 @@ def ingest_log(path: str) -> str:
 
     # run git log
     git = GitCLI(path)
-    return git.run('log', f'--pretty=format:{pattern}', '--date=iso')
-
-def process_log(path: str) -> pd.DataFrame:
-    '''
-    Get commit history of a git repository at `path`.
-
-    Args:
-        path (str): Path to the local git repository.
-
-    Returns:
-        commits (DataFrame): Tabular commit history.
-    '''
-    output = ingest_log(path)
+    output = git.run('log', f'--pretty=format:{pattern}', '--date=iso')
 
     try:
         df = pd.read_csv(
