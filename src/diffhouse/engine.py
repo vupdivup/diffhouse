@@ -5,6 +5,20 @@ from io import StringIO
 
 from .git import GitCLI
 
+def get_remote_url(path: str, remote: str='origin') -> str:
+    '''
+    Get the URL of a remote of a git repository.
+
+    Args:
+        path (str): Path to the local git repository.
+        remote (str): Name of the remote.
+
+    Returns:
+        url (str): URL of the remote.
+    '''
+    git = GitCLI(path)
+    return git.run('remote', 'get-url', remote).strip()
+
 def get_commits(path: str) -> pd.DataFrame:
     '''
     Get tabular `git log` output from a git repository at `path`.
