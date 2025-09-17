@@ -3,7 +3,7 @@ import pandas as pd
 
 from src.diffhouse import Repo
 
-VALID_URL = 'https://github.com/pola-rs/polars.git'
+VALID_URL = 'https://github.com/microsoft/WSL.git'
 INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
 
 class TestRepo(unittest.TestCase):
