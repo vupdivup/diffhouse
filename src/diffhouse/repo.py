@@ -9,11 +9,8 @@ class Repo:
     '''
     def __init__(self, url: str):
         '''
-        Initialize the repository and load metadata. This may take some time
-        depending on the repository size.
-
-        Args:
-            url (str): URL of the repository.
+        Initialize the repository from remote at `url` and load metadata. This
+        may take some time depending on the repository size.
         '''
 
         with SlimClone(url) as c:
@@ -35,6 +32,20 @@ class Repo:
     def commits(self) -> pd.DataFrame:
         '''
         Commit history as a pandas DataFrame.
+
+        Schema:
+        | Column | Description |
+        | --- | --- |
+        | `commit_hash` | Full hash of the commit. |
+        | `author_name` | Author username. |
+        | `author_email` | Author email. |
+        | `author_date` | Commit creation date. |
+        | `committer_name` | Committer username. |
+        | `committer_email` | Committer email. |
+        | `committer_date` | Commit apply date. |
+        | `subject` | Subject line of the commit message. |
+        | `body` | Body of the commit message. |
+        | `repository` | Remote repository URL. |
         '''
         return self._commits.copy()
     
@@ -42,6 +53,12 @@ class Repo:
     def branches(self) -> pd.DataFrame:
         '''
         Branches of the repository.
+
+        Schema:
+        | Column | Description |
+        | --- | --- |
+        | `branch` | Branch name. |
+        | `repository` | Remote repository URL. |
         '''
         return self._branches.copy()
     
@@ -49,5 +66,11 @@ class Repo:
     def tags(self) -> pd.DataFrame:
         '''
         Tags of the repository.
+
+        Schema:
+        | Column | Description |
+        | --- | --- |
+        | `tag` | Tag name. |
+        | `repository` | Remote repository URL. |
         '''
         return self._tags.copy()
