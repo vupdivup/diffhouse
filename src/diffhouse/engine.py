@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 from io import StringIO
 
@@ -75,3 +76,37 @@ def process_log(path: str) -> pd.DataFrame:
             df[col] = df[col].str.strip()
 
     return df
+
+def get_branches(path: str) -> pd.DataFrame:
+    '''
+    Get branches of a remote git repository via `git branch`.
+
+    Args:
+        path (str): Path to the local git repository.
+    
+    Returns:
+        branches (DataFrame): List of branches.
+    '''
+    git = GitCLI(path)
+    output = git.run('branch')
+
+    branches = re.findall(r' +(.+)\n', output)
+
+    return pd.DataFrame(branches, columns=['branch'])
+
+def get_tags(path: str) -> pd.DataFrame:
+    '''
+    Get tags of a remote git repository via `git tag`.
+
+    Args:
+        path (str): Path to the local git repository.
+
+    Returns:
+        tags (DataFrame): List of tags.
+    '''
+    git = GitCLI(path)
+    output = git.run('tag')
+
+    tags = output.split('\n')[:-1]
+
+    return pd.DataFrame(tags, columns=['tag'])
