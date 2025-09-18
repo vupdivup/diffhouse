@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import csv
 
 from io import StringIO
 
@@ -63,7 +64,10 @@ def get_commits(path: str) -> pd.DataFrame:
             lineterminator=RECORD_SEPARATOR,
             engine='c',
             header=None,
-            names=COLUMNS
+            names=COLUMNS,
+            on_bad_lines='warn',
+            encoding_errors='replace',
+            quoting=csv.QUOTE_NONE
         )
     except pd.errors.EmptyDataError:
         return pd.DataFrame(columns=COLUMNS)
