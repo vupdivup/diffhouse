@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .cloning import SlimClone
+from .cloning import TempClone
 from .engine import get_remote_url, get_commits, get_branches, get_tags
 
 class Repo:
@@ -13,7 +13,7 @@ class Repo:
         may take some time depending on the repository size.
         '''
 
-        with SlimClone(url) as c:
+        with TempClone(url, shallow=True) as c:
             # get normalized URL via git
             self._url = get_remote_url(c.path)
 
