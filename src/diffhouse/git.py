@@ -38,7 +38,8 @@ class GitCLI:
                 check=True,
                 cwd=self._cwd,
                 capture_output=True,
-                encoding='utf-8'
+                encoding='utf-8',
+                errors='replace'
             ).stdout
         except FileNotFoundError:
             raise EnvironmentError("Git is not installed or not in PATH.")
