@@ -116,3 +116,43 @@ def get_tags(path: str) -> pd.DataFrame:
     tags = output.split('\n')[:-1]
 
     return pd.DataFrame(tags, columns=['tag'])
+
+def get_status_changes(path: str) -> pd.DataFrame:
+    '''
+    Get file status changes (e.g. `A` for added) for repository at `path`.
+    '''
+    git = GitCLI(path)
+    output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--name-status')
+    commits = output.split(chr(0x1f))[1:]
+
+    data = []
+    for c in commits:
+        lines = [l.strip() for l in c.strip().split('\n')]
+        hash = lines[0]
+
+        for l in lines[1:]:
+            items = [i.strip() for i in l.split('\t')]
+            status = items[0][0]
+
+            if status in ['R', 'C']:
+                similarity = float(items[0][1:])
+                file = items[2]
+                renamed_from = items[1] if status == 'R' else None
+                copied_from = items[1] if status == 'C' else None
+
+            else:
+                similarity = None
+                file = items[1]
+                renamed_from = None
+                copied_from = None
+            
+            data.append({
+                'commit_hash': hash,
+                'file': file,
+                'status': status,
+                'renamed_from': renamed_from,
+                'copied_from': copied_from,
+                'similarity': similarity
+            })
+
+    return pd.DataFrame(data)
