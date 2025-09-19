@@ -156,3 +156,41 @@ def get_status_changes(path: str) -> pd.DataFrame:
             })
 
     return pd.DataFrame(data)
+
+def get_numstats(path: str) -> pd.DataFrame:
+    '''
+    Get file-level number of lines added and deleted per commit for repository
+    at `path`.
+    '''
+    git = GitCLI(path)
+    output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--numstat')
+    commits = output.strip().split(chr(0x1f))[1:]
+
+    data = []
+    for c in commits:
+        lines = [l.strip() for l in c.strip().split('\n')]
+        hash = lines[0]
+
+        for l in lines[1:]:
+            items = [i.strip() for i in l.split('\t')]
+            lines_added = None if items[0] == '-' else int(items[0])
+            lines_deleted = None if items[1] == '-' else int(items[1])
+
+            file_expr = items[2]
+            from_file = re.sub(
+                r'\{(.*) => .*\}', r'\1'.replace('//', '/'), file_expr)
+            file = re.sub(
+                r'\{.* => (.*)\}', r'\1'.replace('//', '/'), file_expr)
+
+            data.append({
+                'commit_hash': hash,
+                'file': file,
+                'from_file': from_file,
+                'lines_added': lines_added,
+                'lines_deleted': lines_deleted
+            })
+
+    df = pd.DataFrame(data)
+    df['from_file'] = df.from_file.where(df['from_file'] != df['file'], None)
+
+    return df
