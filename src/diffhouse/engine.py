@@ -83,39 +83,27 @@ def get_commits(path: str) -> pd.DataFrame:
 
     return df
 
-def get_branches(path: str) -> pd.DataFrame:
+def get_branches(path: str) -> pd.Series:
     '''
-    Get branches of a remote git repository via `git branch`.
-
-    Args:
-        path (str): Path to the local git repository.
-    
-    Returns:
-        branches (DataFrame): List of branches.
+    Get branches of a git repository at `path` via `git ls-remote`.
     '''
     git = GitCLI(path)
     output = git.run('ls-remote', '--branches', '--refs')
 
     branches = [b.strip() for b in re.findall(r'refs/heads/(.+)\n', output)]
 
-    return pd.DataFrame(branches, columns=['branch'])
+    return pd.Series(branches)
 
-def get_tags(path: str) -> pd.DataFrame:
+def get_tags(path: str) -> pd.Series:
     '''
-    Get tags of a remote git repository via `git tag`.
-
-    Args:
-        path (str): Path to the local git repository.
-
-    Returns:
-        tags (DataFrame): List of tags.
+    Get tags of a git repository at `path` via `git ls-remote`.
     '''
     git = GitCLI(path)
     output = git.run('ls-remote', '--tags', '--refs')
 
     tags = [t.strip() for t in re.findall(r'refs/tags/(.+)\n', output)]
 
-    return pd.DataFrame(tags, columns=['tag'])
+    return pd.Series(tags)
 
 def get_status_changes(path: str) -> pd.DataFrame:
     '''

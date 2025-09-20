@@ -18,8 +18,13 @@ class Repo:
             self._url = get_remote_url(c.path)
 
             self._commits = get_commits(c.path).assign(repository=self.url)
-            self._branches = get_branches(c.path).assign(repository=self.url)
-            self._tags = get_tags(c.path).assign(repository=self.url)
+
+            self._branches = pd.DataFrame({
+                'branch': get_branches(c.path),
+                'repository': self.url})
+            self._tags = pd.DataFrame({
+                'tag': get_tags(c.path),
+                'repository': self.url})
 
     @property
     def url(self):
