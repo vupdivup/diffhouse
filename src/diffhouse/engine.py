@@ -94,9 +94,9 @@ def get_branches(path: str) -> pd.DataFrame:
         branches (DataFrame): List of branches.
     '''
     git = GitCLI(path)
-    output = git.run('branch')
+    output = git.run('ls-remote', '--branches', '--refs')
 
-    branches = re.findall(r' +(.+)\n', output)
+    branches = [b.strip() for b in re.findall(r'refs/heads/(.+)\n', output)]
 
     return pd.DataFrame(branches, columns=['branch'])
 
@@ -111,9 +111,9 @@ def get_tags(path: str) -> pd.DataFrame:
         tags (DataFrame): List of tags.
     '''
     git = GitCLI(path)
-    output = git.run('tag')
+    output = git.run('ls-remote', '--tags', '--refs')
 
-    tags = output.split('\n')[:-1]
+    tags = [t.strip() for t in re.findall(r'refs/tags/(.+)\n', output)]
 
     return pd.DataFrame(tags, columns=['tag'])
 
