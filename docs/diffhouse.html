@@ -41,6 +41,9 @@
                         <li>
                                 <a class="variable" href="#Repo.tags">tags</a>
                         </li>
+                        <li>
+                                <a class="variable" href="#Repo.diffs">diffs</a>
+                        </li>
                 </ul>
 
             </li>
@@ -83,77 +86,121 @@ diffhouse    </h1>
 
     </div>
     <a class="headerlink" href="#Repo"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo-7"><a href="#Repo-7"><span class="linenos"> 7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Repo</span><span class="p">:</span>
-</span><span id="Repo-8"><a href="#Repo-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-9"><a href="#Repo-9"><span class="linenos"> 9</span></a><span class="sd">    Represents a git repository.</span>
-</span><span id="Repo-10"><a href="#Repo-10"><span class="linenos">10</span></a><span class="sd">    &#39;&#39;&#39;</span>
-</span><span id="Repo-11"><a href="#Repo-11"><span class="linenos">11</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="Repo-12"><a href="#Repo-12"><span class="linenos">12</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-13"><a href="#Repo-13"><span class="linenos">13</span></a><span class="sd">        Initialize the repository from remote at `url` and load metadata. This</span>
-</span><span id="Repo-14"><a href="#Repo-14"><span class="linenos">14</span></a><span class="sd">        may take some time depending on the repository size.</span>
-</span><span id="Repo-15"><a href="#Repo-15"><span class="linenos">15</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo-16"><a href="#Repo-16"><span class="linenos">16</span></a>
-</span><span id="Repo-17"><a href="#Repo-17"><span class="linenos">17</span></a>        <span class="k">with</span> <span class="n">SlimClone</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
-</span><span id="Repo-18"><a href="#Repo-18"><span class="linenos">18</span></a>            <span class="c1"># get normalized URL via git</span>
-</span><span id="Repo-19"><a href="#Repo-19"><span class="linenos">19</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_url</span> <span class="o">=</span> <span class="n">get_remote_url</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-</span><span id="Repo-20"><a href="#Repo-20"><span class="linenos">20</span></a>
-</span><span id="Repo-21"><a href="#Repo-21"><span class="linenos">21</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span> <span class="o">=</span> <span class="n">get_commits</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="Repo-22"><a href="#Repo-22"><span class="linenos">22</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span> <span class="o">=</span> <span class="n">get_branches</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="Repo-23"><a href="#Repo-23"><span class="linenos">23</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">get_tags</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="Repo-24"><a href="#Repo-24"><span class="linenos">24</span></a>
-</span><span id="Repo-25"><a href="#Repo-25"><span class="linenos">25</span></a>    <span class="nd">@property</span>
-</span><span id="Repo-26"><a href="#Repo-26"><span class="linenos">26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Repo-27"><a href="#Repo-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-28"><a href="#Repo-28"><span class="linenos">28</span></a><span class="sd">        URL of the remote repository.</span>
-</span><span id="Repo-29"><a href="#Repo-29"><span class="linenos">29</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo-30"><a href="#Repo-30"><span class="linenos">30</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span>
-</span><span id="Repo-31"><a href="#Repo-31"><span class="linenos">31</span></a>    
-</span><span id="Repo-32"><a href="#Repo-32"><span class="linenos">32</span></a>    <span class="nd">@property</span>
-</span><span id="Repo-33"><a href="#Repo-33"><span class="linenos">33</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">commits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo-34"><a href="#Repo-34"><span class="linenos">34</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-35"><a href="#Repo-35"><span class="linenos">35</span></a><span class="sd">        Commit history as a pandas DataFrame.</span>
-</span><span id="Repo-36"><a href="#Repo-36"><span class="linenos">36</span></a>
-</span><span id="Repo-37"><a href="#Repo-37"><span class="linenos">37</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo-38"><a href="#Repo-38"><span class="linenos">38</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo-39"><a href="#Repo-39"><span class="linenos">39</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo-40"><a href="#Repo-40"><span class="linenos">40</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
-</span><span id="Repo-41"><a href="#Repo-41"><span class="linenos">41</span></a><span class="sd">        | `author_name` | Author username. |</span>
-</span><span id="Repo-42"><a href="#Repo-42"><span class="linenos">42</span></a><span class="sd">        | `author_email` | Author email. |</span>
-</span><span id="Repo-43"><a href="#Repo-43"><span class="linenos">43</span></a><span class="sd">        | `author_date` | Commit creation date. |</span>
-</span><span id="Repo-44"><a href="#Repo-44"><span class="linenos">44</span></a><span class="sd">        | `committer_name` | Committer username. |</span>
-</span><span id="Repo-45"><a href="#Repo-45"><span class="linenos">45</span></a><span class="sd">        | `committer_email` | Committer email. |</span>
-</span><span id="Repo-46"><a href="#Repo-46"><span class="linenos">46</span></a><span class="sd">        | `committer_date` | Commit apply date. |</span>
-</span><span id="Repo-47"><a href="#Repo-47"><span class="linenos">47</span></a><span class="sd">        | `subject` | Subject line of the commit message. |</span>
-</span><span id="Repo-48"><a href="#Repo-48"><span class="linenos">48</span></a><span class="sd">        | `body` | Body of the commit message. |</span>
-</span><span id="Repo-49"><a href="#Repo-49"><span class="linenos">49</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo-50"><a href="#Repo-50"><span class="linenos">50</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo-51"><a href="#Repo-51"><span class="linenos">51</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-</span><span id="Repo-52"><a href="#Repo-52"><span class="linenos">52</span></a>    
-</span><span id="Repo-53"><a href="#Repo-53"><span class="linenos">53</span></a>    <span class="nd">@property</span>
-</span><span id="Repo-54"><a href="#Repo-54"><span class="linenos">54</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo-55"><a href="#Repo-55"><span class="linenos">55</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-56"><a href="#Repo-56"><span class="linenos">56</span></a><span class="sd">        Branches of the repository.</span>
-</span><span id="Repo-57"><a href="#Repo-57"><span class="linenos">57</span></a>
-</span><span id="Repo-58"><a href="#Repo-58"><span class="linenos">58</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo-59"><a href="#Repo-59"><span class="linenos">59</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo-60"><a href="#Repo-60"><span class="linenos">60</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo-61"><a href="#Repo-61"><span class="linenos">61</span></a><span class="sd">        | `branch` | Branch name. |</span>
-</span><span id="Repo-62"><a href="#Repo-62"><span class="linenos">62</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo-63"><a href="#Repo-63"><span class="linenos">63</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo-64"><a href="#Repo-64"><span class="linenos">64</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-</span><span id="Repo-65"><a href="#Repo-65"><span class="linenos">65</span></a>    
-</span><span id="Repo-66"><a href="#Repo-66"><span class="linenos">66</span></a>    <span class="nd">@property</span>
-</span><span id="Repo-67"><a href="#Repo-67"><span class="linenos">67</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo-68"><a href="#Repo-68"><span class="linenos">68</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo-69"><a href="#Repo-69"><span class="linenos">69</span></a><span class="sd">        Tags of the repository.</span>
-</span><span id="Repo-70"><a href="#Repo-70"><span class="linenos">70</span></a>
-</span><span id="Repo-71"><a href="#Repo-71"><span class="linenos">71</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo-72"><a href="#Repo-72"><span class="linenos">72</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo-73"><a href="#Repo-73"><span class="linenos">73</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo-74"><a href="#Repo-74"><span class="linenos">74</span></a><span class="sd">        | `tag` | Tag name. |</span>
-</span><span id="Repo-75"><a href="#Repo-75"><span class="linenos">75</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo-76"><a href="#Repo-76"><span class="linenos">76</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo-77"><a href="#Repo-77"><span class="linenos">77</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo-7"><a href="#Repo-7"><span class="linenos">  7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Repo</span><span class="p">:</span>
+</span><span id="Repo-8"><a href="#Repo-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-9"><a href="#Repo-9"><span class="linenos">  9</span></a><span class="sd">    Represents a git repository.</span>
+</span><span id="Repo-10"><a href="#Repo-10"><span class="linenos"> 10</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="Repo-11"><a href="#Repo-11"><span class="linenos"> 11</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">blobs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+</span><span id="Repo-12"><a href="#Repo-12"><span class="linenos"> 12</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-13"><a href="#Repo-13"><span class="linenos"> 13</span></a><span class="sd">        Initialize the repository from remote at `url` and load metadata. This</span>
+</span><span id="Repo-14"><a href="#Repo-14"><span class="linenos"> 14</span></a><span class="sd">        may take some time depending on the repository size.</span>
+</span><span id="Repo-15"><a href="#Repo-15"><span class="linenos"> 15</span></a>
+</span><span id="Repo-16"><a href="#Repo-16"><span class="linenos"> 16</span></a><span class="sd">        If `blobs` is `True`, fetch file-level metadata will as well. Note that</span>
+</span><span id="Repo-17"><a href="#Repo-17"><span class="linenos"> 17</span></a><span class="sd">        this greatly increases processing time.</span>
+</span><span id="Repo-18"><a href="#Repo-18"><span class="linenos"> 18</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-19"><a href="#Repo-19"><span class="linenos"> 19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_blobs</span> <span class="o">=</span> <span class="n">blobs</span>
+</span><span id="Repo-20"><a href="#Repo-20"><span class="linenos"> 20</span></a>
+</span><span id="Repo-21"><a href="#Repo-21"><span class="linenos"> 21</span></a>        <span class="k">with</span> <span class="n">TempClone</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">shallow</span><span class="o">=</span><span class="ow">not</span> <span class="n">blobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
+</span><span id="Repo-22"><a href="#Repo-22"><span class="linenos"> 22</span></a>            <span class="c1"># get normalized URL via git</span>
+</span><span id="Repo-23"><a href="#Repo-23"><span class="linenos"> 23</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_url</span> <span class="o">=</span> <span class="n">get_remote_url</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo-24"><a href="#Repo-24"><span class="linenos"> 24</span></a>
+</span><span id="Repo-25"><a href="#Repo-25"><span class="linenos"> 25</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span> <span class="o">=</span> <span class="n">get_commits</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</span><span id="Repo-26"><a href="#Repo-26"><span class="linenos"> 26</span></a>
+</span><span id="Repo-27"><a href="#Repo-27"><span class="linenos"> 27</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span id="Repo-28"><a href="#Repo-28"><span class="linenos"> 28</span></a>                <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="n">get_branches</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+</span><span id="Repo-29"><a href="#Repo-29"><span class="linenos"> 29</span></a>                <span class="s1">&#39;repository&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">})</span>
+</span><span id="Repo-30"><a href="#Repo-30"><span class="linenos"> 30</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span id="Repo-31"><a href="#Repo-31"><span class="linenos"> 31</span></a>                <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="n">get_tags</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+</span><span id="Repo-32"><a href="#Repo-32"><span class="linenos"> 32</span></a>                <span class="s1">&#39;repository&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">})</span>
+</span><span id="Repo-33"><a href="#Repo-33"><span class="linenos"> 33</span></a>            
+</span><span id="Repo-34"><a href="#Repo-34"><span class="linenos"> 34</span></a>            <span class="k">if</span> <span class="n">blobs</span><span class="p">:</span>
+</span><span id="Repo-35"><a href="#Repo-35"><span class="linenos"> 35</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_status_changes</span> <span class="o">=</span> <span class="n">get_status_changes</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo-36"><a href="#Repo-36"><span class="linenos"> 36</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_line_changes</span> <span class="o">=</span> <span class="n">get_line_changes</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo-37"><a href="#Repo-37"><span class="linenos"> 37</span></a>
+</span><span id="Repo-38"><a href="#Repo-38"><span class="linenos"> 38</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+</span><span id="Repo-39"><a href="#Repo-39"><span class="linenos"> 39</span></a>                    <span class="n">left</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_status_changes</span><span class="p">,</span>
+</span><span id="Repo-40"><a href="#Repo-40"><span class="linenos"> 40</span></a>                    <span class="n">right</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_line_changes</span><span class="p">,</span>
+</span><span id="Repo-41"><a href="#Repo-41"><span class="linenos"> 41</span></a>                    <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_hash&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="s1">&#39;from_file&#39;</span><span class="p">],</span>
+</span><span id="Repo-42"><a href="#Repo-42"><span class="linenos"> 42</span></a>                    <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+</span><span id="Repo-43"><a href="#Repo-43"><span class="linenos"> 43</span></a>                    <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_numstat&#39;</span><span class="p">))</span>
+</span><span id="Repo-44"><a href="#Repo-44"><span class="linenos"> 44</span></a>                
+</span><span id="Repo-45"><a href="#Repo-45"><span class="linenos"> 45</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span><span class="p">[</span><span class="s1">&#39;repository&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>
+</span><span id="Repo-46"><a href="#Repo-46"><span class="linenos"> 46</span></a>
+</span><span id="Repo-47"><a href="#Repo-47"><span class="linenos"> 47</span></a>    <span class="nd">@property</span>
+</span><span id="Repo-48"><a href="#Repo-48"><span class="linenos"> 48</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Repo-49"><a href="#Repo-49"><span class="linenos"> 49</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-50"><a href="#Repo-50"><span class="linenos"> 50</span></a><span class="sd">        URL of the remote repository.</span>
+</span><span id="Repo-51"><a href="#Repo-51"><span class="linenos"> 51</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-52"><a href="#Repo-52"><span class="linenos"> 52</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span>
+</span><span id="Repo-53"><a href="#Repo-53"><span class="linenos"> 53</span></a>    
+</span><span id="Repo-54"><a href="#Repo-54"><span class="linenos"> 54</span></a>    <span class="nd">@property</span>
+</span><span id="Repo-55"><a href="#Repo-55"><span class="linenos"> 55</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">commits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo-56"><a href="#Repo-56"><span class="linenos"> 56</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-57"><a href="#Repo-57"><span class="linenos"> 57</span></a><span class="sd">        Commit history as a pandas DataFrame.</span>
+</span><span id="Repo-58"><a href="#Repo-58"><span class="linenos"> 58</span></a>
+</span><span id="Repo-59"><a href="#Repo-59"><span class="linenos"> 59</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo-60"><a href="#Repo-60"><span class="linenos"> 60</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo-61"><a href="#Repo-61"><span class="linenos"> 61</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo-62"><a href="#Repo-62"><span class="linenos"> 62</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
+</span><span id="Repo-63"><a href="#Repo-63"><span class="linenos"> 63</span></a><span class="sd">        | `author_name` | Author username. |</span>
+</span><span id="Repo-64"><a href="#Repo-64"><span class="linenos"> 64</span></a><span class="sd">        | `author_email` | Author email. |</span>
+</span><span id="Repo-65"><a href="#Repo-65"><span class="linenos"> 65</span></a><span class="sd">        | `author_date` | Commit creation date. |</span>
+</span><span id="Repo-66"><a href="#Repo-66"><span class="linenos"> 66</span></a><span class="sd">        | `committer_name` | Committer username. |</span>
+</span><span id="Repo-67"><a href="#Repo-67"><span class="linenos"> 67</span></a><span class="sd">        | `committer_email` | Committer email. |</span>
+</span><span id="Repo-68"><a href="#Repo-68"><span class="linenos"> 68</span></a><span class="sd">        | `committer_date` | Commit apply date. |</span>
+</span><span id="Repo-69"><a href="#Repo-69"><span class="linenos"> 69</span></a><span class="sd">        | `subject` | Subject line of the commit message. |</span>
+</span><span id="Repo-70"><a href="#Repo-70"><span class="linenos"> 70</span></a><span class="sd">        | `body` | Body of the commit message. |</span>
+</span><span id="Repo-71"><a href="#Repo-71"><span class="linenos"> 71</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo-72"><a href="#Repo-72"><span class="linenos"> 72</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-73"><a href="#Repo-73"><span class="linenos"> 73</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="Repo-74"><a href="#Repo-74"><span class="linenos"> 74</span></a>    
+</span><span id="Repo-75"><a href="#Repo-75"><span class="linenos"> 75</span></a>    <span class="nd">@property</span>
+</span><span id="Repo-76"><a href="#Repo-76"><span class="linenos"> 76</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo-77"><a href="#Repo-77"><span class="linenos"> 77</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-78"><a href="#Repo-78"><span class="linenos"> 78</span></a><span class="sd">        Branches of the repository.</span>
+</span><span id="Repo-79"><a href="#Repo-79"><span class="linenos"> 79</span></a>
+</span><span id="Repo-80"><a href="#Repo-80"><span class="linenos"> 80</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo-81"><a href="#Repo-81"><span class="linenos"> 81</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo-82"><a href="#Repo-82"><span class="linenos"> 82</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo-83"><a href="#Repo-83"><span class="linenos"> 83</span></a><span class="sd">        | `branch` | Branch name. |</span>
+</span><span id="Repo-84"><a href="#Repo-84"><span class="linenos"> 84</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo-85"><a href="#Repo-85"><span class="linenos"> 85</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-86"><a href="#Repo-86"><span class="linenos"> 86</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="Repo-87"><a href="#Repo-87"><span class="linenos"> 87</span></a>    
+</span><span id="Repo-88"><a href="#Repo-88"><span class="linenos"> 88</span></a>    <span class="nd">@property</span>
+</span><span id="Repo-89"><a href="#Repo-89"><span class="linenos"> 89</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo-90"><a href="#Repo-90"><span class="linenos"> 90</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-91"><a href="#Repo-91"><span class="linenos"> 91</span></a><span class="sd">        Tags of the repository.</span>
+</span><span id="Repo-92"><a href="#Repo-92"><span class="linenos"> 92</span></a>
+</span><span id="Repo-93"><a href="#Repo-93"><span class="linenos"> 93</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo-94"><a href="#Repo-94"><span class="linenos"> 94</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo-95"><a href="#Repo-95"><span class="linenos"> 95</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo-96"><a href="#Repo-96"><span class="linenos"> 96</span></a><span class="sd">        | `tag` | Tag name. |</span>
+</span><span id="Repo-97"><a href="#Repo-97"><span class="linenos"> 97</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo-98"><a href="#Repo-98"><span class="linenos"> 98</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-99"><a href="#Repo-99"><span class="linenos"> 99</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="Repo-100"><a href="#Repo-100"><span class="linenos">100</span></a>    
+</span><span id="Repo-101"><a href="#Repo-101"><span class="linenos">101</span></a>    <span class="nd">@property</span>
+</span><span id="Repo-102"><a href="#Repo-102"><span class="linenos">102</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">diffs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo-103"><a href="#Repo-103"><span class="linenos">103</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo-104"><a href="#Repo-104"><span class="linenos">104</span></a><span class="sd">        File-level changes in the repository.</span>
+</span><span id="Repo-105"><a href="#Repo-105"><span class="linenos">105</span></a>
+</span><span id="Repo-106"><a href="#Repo-106"><span class="linenos">106</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo-107"><a href="#Repo-107"><span class="linenos">107</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo-108"><a href="#Repo-108"><span class="linenos">108</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo-109"><a href="#Repo-109"><span class="linenos">109</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
+</span><span id="Repo-110"><a href="#Repo-110"><span class="linenos">110</span></a><span class="sd">        | `file` | Path to file. |</span>
+</span><span id="Repo-111"><a href="#Repo-111"><span class="linenos">111</span></a><span class="sd">        | `status` | Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values. |</span>
+</span><span id="Repo-112"><a href="#Repo-112"><span class="linenos">112</span></a><span class="sd">        | `from_file` | Path to file before the change, for renames and copies. |</span>
+</span><span id="Repo-113"><a href="#Repo-113"><span class="linenos">113</span></a><span class="sd">        | `lines_added` | Number of lines added. |</span>
+</span><span id="Repo-114"><a href="#Repo-114"><span class="linenos">114</span></a><span class="sd">        | `lines_deleted` | Number of lines deleted. |</span>
+</span><span id="Repo-115"><a href="#Repo-115"><span class="linenos">115</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo-116"><a href="#Repo-116"><span class="linenos">116</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo-117"><a href="#Repo-117"><span class="linenos">117</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blobs</span><span class="p">:</span>
+</span><span id="Repo-118"><a href="#Repo-118"><span class="linenos">118</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="Repo-119"><a href="#Repo-119"><span class="linenos">119</span></a>                <span class="s1">&#39;Initialize Repo with `blobs`=`True` to load diffs.&#39;</span><span class="p">)</span>
+</span><span id="Repo-120"><a href="#Repo-120"><span class="linenos">120</span></a>
+</span><span id="Repo-121"><a href="#Repo-121"><span class="linenos">121</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -165,30 +212,55 @@ diffhouse    </h1>
                                         <input id="Repo.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">Repo</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">url</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+        <span class="name">Repo</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">url</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">blobs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span>)</span>
 
                 <label class="view-source-button" for="Repo.__init__-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Repo.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.__init__-11"><a href="#Repo.__init__-11"><span class="linenos">11</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.__init__-11"><a href="#Repo.__init__-11"><span class="linenos">11</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">blobs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 </span><span id="Repo.__init__-12"><a href="#Repo.__init__-12"><span class="linenos">12</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 </span><span id="Repo.__init__-13"><a href="#Repo.__init__-13"><span class="linenos">13</span></a><span class="sd">        Initialize the repository from remote at `url` and load metadata. This</span>
 </span><span id="Repo.__init__-14"><a href="#Repo.__init__-14"><span class="linenos">14</span></a><span class="sd">        may take some time depending on the repository size.</span>
-</span><span id="Repo.__init__-15"><a href="#Repo.__init__-15"><span class="linenos">15</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo.__init__-16"><a href="#Repo.__init__-16"><span class="linenos">16</span></a>
-</span><span id="Repo.__init__-17"><a href="#Repo.__init__-17"><span class="linenos">17</span></a>        <span class="k">with</span> <span class="n">SlimClone</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
-</span><span id="Repo.__init__-18"><a href="#Repo.__init__-18"><span class="linenos">18</span></a>            <span class="c1"># get normalized URL via git</span>
-</span><span id="Repo.__init__-19"><a href="#Repo.__init__-19"><span class="linenos">19</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_url</span> <span class="o">=</span> <span class="n">get_remote_url</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo.__init__-15"><a href="#Repo.__init__-15"><span class="linenos">15</span></a>
+</span><span id="Repo.__init__-16"><a href="#Repo.__init__-16"><span class="linenos">16</span></a><span class="sd">        If `blobs` is `True`, fetch file-level metadata will as well. Note that</span>
+</span><span id="Repo.__init__-17"><a href="#Repo.__init__-17"><span class="linenos">17</span></a><span class="sd">        this greatly increases processing time.</span>
+</span><span id="Repo.__init__-18"><a href="#Repo.__init__-18"><span class="linenos">18</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.__init__-19"><a href="#Repo.__init__-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_blobs</span> <span class="o">=</span> <span class="n">blobs</span>
 </span><span id="Repo.__init__-20"><a href="#Repo.__init__-20"><span class="linenos">20</span></a>
-</span><span id="Repo.__init__-21"><a href="#Repo.__init__-21"><span class="linenos">21</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span> <span class="o">=</span> <span class="n">get_commits</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="Repo.__init__-22"><a href="#Repo.__init__-22"><span class="linenos">22</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span> <span class="o">=</span> <span class="n">get_branches</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="Repo.__init__-23"><a href="#Repo.__init__-23"><span class="linenos">23</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">get_tags</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</span><span id="Repo.__init__-21"><a href="#Repo.__init__-21"><span class="linenos">21</span></a>        <span class="k">with</span> <span class="n">TempClone</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">shallow</span><span class="o">=</span><span class="ow">not</span> <span class="n">blobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
+</span><span id="Repo.__init__-22"><a href="#Repo.__init__-22"><span class="linenos">22</span></a>            <span class="c1"># get normalized URL via git</span>
+</span><span id="Repo.__init__-23"><a href="#Repo.__init__-23"><span class="linenos">23</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_url</span> <span class="o">=</span> <span class="n">get_remote_url</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo.__init__-24"><a href="#Repo.__init__-24"><span class="linenos">24</span></a>
+</span><span id="Repo.__init__-25"><a href="#Repo.__init__-25"><span class="linenos">25</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span> <span class="o">=</span> <span class="n">get_commits</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">repository</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</span><span id="Repo.__init__-26"><a href="#Repo.__init__-26"><span class="linenos">26</span></a>
+</span><span id="Repo.__init__-27"><a href="#Repo.__init__-27"><span class="linenos">27</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span id="Repo.__init__-28"><a href="#Repo.__init__-28"><span class="linenos">28</span></a>                <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="n">get_branches</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+</span><span id="Repo.__init__-29"><a href="#Repo.__init__-29"><span class="linenos">29</span></a>                <span class="s1">&#39;repository&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">})</span>
+</span><span id="Repo.__init__-30"><a href="#Repo.__init__-30"><span class="linenos">30</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span id="Repo.__init__-31"><a href="#Repo.__init__-31"><span class="linenos">31</span></a>                <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="n">get_tags</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+</span><span id="Repo.__init__-32"><a href="#Repo.__init__-32"><span class="linenos">32</span></a>                <span class="s1">&#39;repository&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">})</span>
+</span><span id="Repo.__init__-33"><a href="#Repo.__init__-33"><span class="linenos">33</span></a>            
+</span><span id="Repo.__init__-34"><a href="#Repo.__init__-34"><span class="linenos">34</span></a>            <span class="k">if</span> <span class="n">blobs</span><span class="p">:</span>
+</span><span id="Repo.__init__-35"><a href="#Repo.__init__-35"><span class="linenos">35</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_status_changes</span> <span class="o">=</span> <span class="n">get_status_changes</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo.__init__-36"><a href="#Repo.__init__-36"><span class="linenos">36</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_line_changes</span> <span class="o">=</span> <span class="n">get_line_changes</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span><span id="Repo.__init__-37"><a href="#Repo.__init__-37"><span class="linenos">37</span></a>
+</span><span id="Repo.__init__-38"><a href="#Repo.__init__-38"><span class="linenos">38</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+</span><span id="Repo.__init__-39"><a href="#Repo.__init__-39"><span class="linenos">39</span></a>                    <span class="n">left</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_status_changes</span><span class="p">,</span>
+</span><span id="Repo.__init__-40"><a href="#Repo.__init__-40"><span class="linenos">40</span></a>                    <span class="n">right</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_line_changes</span><span class="p">,</span>
+</span><span id="Repo.__init__-41"><a href="#Repo.__init__-41"><span class="linenos">41</span></a>                    <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_hash&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="s1">&#39;from_file&#39;</span><span class="p">],</span>
+</span><span id="Repo.__init__-42"><a href="#Repo.__init__-42"><span class="linenos">42</span></a>                    <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+</span><span id="Repo.__init__-43"><a href="#Repo.__init__-43"><span class="linenos">43</span></a>                    <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_numstat&#39;</span><span class="p">))</span>
+</span><span id="Repo.__init__-44"><a href="#Repo.__init__-44"><span class="linenos">44</span></a>                
+</span><span id="Repo.__init__-45"><a href="#Repo.__init__-45"><span class="linenos">45</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span><span class="p">[</span><span class="s1">&#39;repository&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Initialize the repository from remote at <code><a href="#Repo.url">url</a></code> and load metadata. This
 may take some time depending on the repository size.</p>
+
+<p>If <code>blobs</code> is <code>True</code>, fetch file-level metadata will as well. Note that
+this greatly increases processing time.</p>
 </div>
 
 
@@ -202,12 +274,12 @@ may take some time depending on the repository size.</p>
 
     </div>
     <a class="headerlink" href="#Repo.url"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.url-25"><a href="#Repo.url-25"><span class="linenos">25</span></a>    <span class="nd">@property</span>
-</span><span id="Repo.url-26"><a href="#Repo.url-26"><span class="linenos">26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Repo.url-27"><a href="#Repo.url-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo.url-28"><a href="#Repo.url-28"><span class="linenos">28</span></a><span class="sd">        URL of the remote repository.</span>
-</span><span id="Repo.url-29"><a href="#Repo.url-29"><span class="linenos">29</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo.url-30"><a href="#Repo.url-30"><span class="linenos">30</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.url-47"><a href="#Repo.url-47"><span class="linenos">47</span></a>    <span class="nd">@property</span>
+</span><span id="Repo.url-48"><a href="#Repo.url-48"><span class="linenos">48</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Repo.url-49"><a href="#Repo.url-49"><span class="linenos">49</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo.url-50"><a href="#Repo.url-50"><span class="linenos">50</span></a><span class="sd">        URL of the remote repository.</span>
+</span><span id="Repo.url-51"><a href="#Repo.url-51"><span class="linenos">51</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.url-52"><a href="#Repo.url-52"><span class="linenos">52</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span>
 </span></pre></div>
 
 
@@ -225,26 +297,26 @@ may take some time depending on the repository size.</p>
 
     </div>
     <a class="headerlink" href="#Repo.commits"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.commits-32"><a href="#Repo.commits-32"><span class="linenos">32</span></a>    <span class="nd">@property</span>
-</span><span id="Repo.commits-33"><a href="#Repo.commits-33"><span class="linenos">33</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">commits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo.commits-34"><a href="#Repo.commits-34"><span class="linenos">34</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo.commits-35"><a href="#Repo.commits-35"><span class="linenos">35</span></a><span class="sd">        Commit history as a pandas DataFrame.</span>
-</span><span id="Repo.commits-36"><a href="#Repo.commits-36"><span class="linenos">36</span></a>
-</span><span id="Repo.commits-37"><a href="#Repo.commits-37"><span class="linenos">37</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo.commits-38"><a href="#Repo.commits-38"><span class="linenos">38</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo.commits-39"><a href="#Repo.commits-39"><span class="linenos">39</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo.commits-40"><a href="#Repo.commits-40"><span class="linenos">40</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
-</span><span id="Repo.commits-41"><a href="#Repo.commits-41"><span class="linenos">41</span></a><span class="sd">        | `author_name` | Author username. |</span>
-</span><span id="Repo.commits-42"><a href="#Repo.commits-42"><span class="linenos">42</span></a><span class="sd">        | `author_email` | Author email. |</span>
-</span><span id="Repo.commits-43"><a href="#Repo.commits-43"><span class="linenos">43</span></a><span class="sd">        | `author_date` | Commit creation date. |</span>
-</span><span id="Repo.commits-44"><a href="#Repo.commits-44"><span class="linenos">44</span></a><span class="sd">        | `committer_name` | Committer username. |</span>
-</span><span id="Repo.commits-45"><a href="#Repo.commits-45"><span class="linenos">45</span></a><span class="sd">        | `committer_email` | Committer email. |</span>
-</span><span id="Repo.commits-46"><a href="#Repo.commits-46"><span class="linenos">46</span></a><span class="sd">        | `committer_date` | Commit apply date. |</span>
-</span><span id="Repo.commits-47"><a href="#Repo.commits-47"><span class="linenos">47</span></a><span class="sd">        | `subject` | Subject line of the commit message. |</span>
-</span><span id="Repo.commits-48"><a href="#Repo.commits-48"><span class="linenos">48</span></a><span class="sd">        | `body` | Body of the commit message. |</span>
-</span><span id="Repo.commits-49"><a href="#Repo.commits-49"><span class="linenos">49</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo.commits-50"><a href="#Repo.commits-50"><span class="linenos">50</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo.commits-51"><a href="#Repo.commits-51"><span class="linenos">51</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.commits-54"><a href="#Repo.commits-54"><span class="linenos">54</span></a>    <span class="nd">@property</span>
+</span><span id="Repo.commits-55"><a href="#Repo.commits-55"><span class="linenos">55</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">commits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo.commits-56"><a href="#Repo.commits-56"><span class="linenos">56</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo.commits-57"><a href="#Repo.commits-57"><span class="linenos">57</span></a><span class="sd">        Commit history as a pandas DataFrame.</span>
+</span><span id="Repo.commits-58"><a href="#Repo.commits-58"><span class="linenos">58</span></a>
+</span><span id="Repo.commits-59"><a href="#Repo.commits-59"><span class="linenos">59</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo.commits-60"><a href="#Repo.commits-60"><span class="linenos">60</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo.commits-61"><a href="#Repo.commits-61"><span class="linenos">61</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo.commits-62"><a href="#Repo.commits-62"><span class="linenos">62</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
+</span><span id="Repo.commits-63"><a href="#Repo.commits-63"><span class="linenos">63</span></a><span class="sd">        | `author_name` | Author username. |</span>
+</span><span id="Repo.commits-64"><a href="#Repo.commits-64"><span class="linenos">64</span></a><span class="sd">        | `author_email` | Author email. |</span>
+</span><span id="Repo.commits-65"><a href="#Repo.commits-65"><span class="linenos">65</span></a><span class="sd">        | `author_date` | Commit creation date. |</span>
+</span><span id="Repo.commits-66"><a href="#Repo.commits-66"><span class="linenos">66</span></a><span class="sd">        | `committer_name` | Committer username. |</span>
+</span><span id="Repo.commits-67"><a href="#Repo.commits-67"><span class="linenos">67</span></a><span class="sd">        | `committer_email` | Committer email. |</span>
+</span><span id="Repo.commits-68"><a href="#Repo.commits-68"><span class="linenos">68</span></a><span class="sd">        | `committer_date` | Commit apply date. |</span>
+</span><span id="Repo.commits-69"><a href="#Repo.commits-69"><span class="linenos">69</span></a><span class="sd">        | `subject` | Subject line of the commit message. |</span>
+</span><span id="Repo.commits-70"><a href="#Repo.commits-70"><span class="linenos">70</span></a><span class="sd">        | `body` | Body of the commit message. |</span>
+</span><span id="Repo.commits-71"><a href="#Repo.commits-71"><span class="linenos">71</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo.commits-72"><a href="#Repo.commits-72"><span class="linenos">72</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.commits-73"><a href="#Repo.commits-73"><span class="linenos">73</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -315,18 +387,18 @@ may take some time depending on the repository size.</p>
 
     </div>
     <a class="headerlink" href="#Repo.branches"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.branches-53"><a href="#Repo.branches-53"><span class="linenos">53</span></a>    <span class="nd">@property</span>
-</span><span id="Repo.branches-54"><a href="#Repo.branches-54"><span class="linenos">54</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo.branches-55"><a href="#Repo.branches-55"><span class="linenos">55</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo.branches-56"><a href="#Repo.branches-56"><span class="linenos">56</span></a><span class="sd">        Branches of the repository.</span>
-</span><span id="Repo.branches-57"><a href="#Repo.branches-57"><span class="linenos">57</span></a>
-</span><span id="Repo.branches-58"><a href="#Repo.branches-58"><span class="linenos">58</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo.branches-59"><a href="#Repo.branches-59"><span class="linenos">59</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo.branches-60"><a href="#Repo.branches-60"><span class="linenos">60</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo.branches-61"><a href="#Repo.branches-61"><span class="linenos">61</span></a><span class="sd">        | `branch` | Branch name. |</span>
-</span><span id="Repo.branches-62"><a href="#Repo.branches-62"><span class="linenos">62</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo.branches-63"><a href="#Repo.branches-63"><span class="linenos">63</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo.branches-64"><a href="#Repo.branches-64"><span class="linenos">64</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.branches-75"><a href="#Repo.branches-75"><span class="linenos">75</span></a>    <span class="nd">@property</span>
+</span><span id="Repo.branches-76"><a href="#Repo.branches-76"><span class="linenos">76</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo.branches-77"><a href="#Repo.branches-77"><span class="linenos">77</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo.branches-78"><a href="#Repo.branches-78"><span class="linenos">78</span></a><span class="sd">        Branches of the repository.</span>
+</span><span id="Repo.branches-79"><a href="#Repo.branches-79"><span class="linenos">79</span></a>
+</span><span id="Repo.branches-80"><a href="#Repo.branches-80"><span class="linenos">80</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo.branches-81"><a href="#Repo.branches-81"><span class="linenos">81</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo.branches-82"><a href="#Repo.branches-82"><span class="linenos">82</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo.branches-83"><a href="#Repo.branches-83"><span class="linenos">83</span></a><span class="sd">        | `branch` | Branch name. |</span>
+</span><span id="Repo.branches-84"><a href="#Repo.branches-84"><span class="linenos">84</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo.branches-85"><a href="#Repo.branches-85"><span class="linenos">85</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.branches-86"><a href="#Repo.branches-86"><span class="linenos">86</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_branches</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -365,18 +437,18 @@ may take some time depending on the repository size.</p>
 
     </div>
     <a class="headerlink" href="#Repo.tags"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.tags-66"><a href="#Repo.tags-66"><span class="linenos">66</span></a>    <span class="nd">@property</span>
-</span><span id="Repo.tags-67"><a href="#Repo.tags-67"><span class="linenos">67</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="Repo.tags-68"><a href="#Repo.tags-68"><span class="linenos">68</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="Repo.tags-69"><a href="#Repo.tags-69"><span class="linenos">69</span></a><span class="sd">        Tags of the repository.</span>
-</span><span id="Repo.tags-70"><a href="#Repo.tags-70"><span class="linenos">70</span></a>
-</span><span id="Repo.tags-71"><a href="#Repo.tags-71"><span class="linenos">71</span></a><span class="sd">        Schema:</span>
-</span><span id="Repo.tags-72"><a href="#Repo.tags-72"><span class="linenos">72</span></a><span class="sd">        | Column | Description |</span>
-</span><span id="Repo.tags-73"><a href="#Repo.tags-73"><span class="linenos">73</span></a><span class="sd">        | --- | --- |</span>
-</span><span id="Repo.tags-74"><a href="#Repo.tags-74"><span class="linenos">74</span></a><span class="sd">        | `tag` | Tag name. |</span>
-</span><span id="Repo.tags-75"><a href="#Repo.tags-75"><span class="linenos">75</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
-</span><span id="Repo.tags-76"><a href="#Repo.tags-76"><span class="linenos">76</span></a><span class="sd">        &#39;&#39;&#39;</span>
-</span><span id="Repo.tags-77"><a href="#Repo.tags-77"><span class="linenos">77</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.tags-88"><a href="#Repo.tags-88"><span class="linenos">88</span></a>    <span class="nd">@property</span>
+</span><span id="Repo.tags-89"><a href="#Repo.tags-89"><span class="linenos">89</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo.tags-90"><a href="#Repo.tags-90"><span class="linenos">90</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo.tags-91"><a href="#Repo.tags-91"><span class="linenos">91</span></a><span class="sd">        Tags of the repository.</span>
+</span><span id="Repo.tags-92"><a href="#Repo.tags-92"><span class="linenos">92</span></a>
+</span><span id="Repo.tags-93"><a href="#Repo.tags-93"><span class="linenos">93</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo.tags-94"><a href="#Repo.tags-94"><span class="linenos">94</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo.tags-95"><a href="#Repo.tags-95"><span class="linenos">95</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo.tags-96"><a href="#Repo.tags-96"><span class="linenos">96</span></a><span class="sd">        | `tag` | Tag name. |</span>
+</span><span id="Repo.tags-97"><a href="#Repo.tags-97"><span class="linenos">97</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo.tags-98"><a href="#Repo.tags-98"><span class="linenos">98</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.tags-99"><a href="#Repo.tags-99"><span class="linenos">99</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -395,6 +467,85 @@ may take some time depending on the repository size.</p>
 <tr>
   <td><code>tag</code></td>
   <td>Tag name.</td>
+</tr>
+<tr>
+  <td><code>repository</code></td>
+  <td>Remote repository URL.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+                            </div>
+                            <div id="Repo.diffs" class="classattr">
+                                        <input id="Repo.diffs-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr variable">
+            <span class="name">diffs</span><span class="annotation">: pandas.core.frame.DataFrame</span>
+
+                <label class="view-source-button" for="Repo.diffs-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#Repo.diffs"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Repo.diffs-101"><a href="#Repo.diffs-101"><span class="linenos">101</span></a>    <span class="nd">@property</span>
+</span><span id="Repo.diffs-102"><a href="#Repo.diffs-102"><span class="linenos">102</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">diffs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="Repo.diffs-103"><a href="#Repo.diffs-103"><span class="linenos">103</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="Repo.diffs-104"><a href="#Repo.diffs-104"><span class="linenos">104</span></a><span class="sd">        File-level changes in the repository.</span>
+</span><span id="Repo.diffs-105"><a href="#Repo.diffs-105"><span class="linenos">105</span></a>
+</span><span id="Repo.diffs-106"><a href="#Repo.diffs-106"><span class="linenos">106</span></a><span class="sd">        Schema:</span>
+</span><span id="Repo.diffs-107"><a href="#Repo.diffs-107"><span class="linenos">107</span></a><span class="sd">        | Column | Description |</span>
+</span><span id="Repo.diffs-108"><a href="#Repo.diffs-108"><span class="linenos">108</span></a><span class="sd">        | --- | --- |</span>
+</span><span id="Repo.diffs-109"><a href="#Repo.diffs-109"><span class="linenos">109</span></a><span class="sd">        | `commit_hash` | Full hash of the commit. |</span>
+</span><span id="Repo.diffs-110"><a href="#Repo.diffs-110"><span class="linenos">110</span></a><span class="sd">        | `file` | Path to file. |</span>
+</span><span id="Repo.diffs-111"><a href="#Repo.diffs-111"><span class="linenos">111</span></a><span class="sd">        | `status` | Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values. |</span>
+</span><span id="Repo.diffs-112"><a href="#Repo.diffs-112"><span class="linenos">112</span></a><span class="sd">        | `from_file` | Path to file before the change, for renames and copies. |</span>
+</span><span id="Repo.diffs-113"><a href="#Repo.diffs-113"><span class="linenos">113</span></a><span class="sd">        | `lines_added` | Number of lines added. |</span>
+</span><span id="Repo.diffs-114"><a href="#Repo.diffs-114"><span class="linenos">114</span></a><span class="sd">        | `lines_deleted` | Number of lines deleted. |</span>
+</span><span id="Repo.diffs-115"><a href="#Repo.diffs-115"><span class="linenos">115</span></a><span class="sd">        | `repository` | Remote repository URL. |</span>
+</span><span id="Repo.diffs-116"><a href="#Repo.diffs-116"><span class="linenos">116</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="Repo.diffs-117"><a href="#Repo.diffs-117"><span class="linenos">117</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blobs</span><span class="p">:</span>
+</span><span id="Repo.diffs-118"><a href="#Repo.diffs-118"><span class="linenos">118</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="Repo.diffs-119"><a href="#Repo.diffs-119"><span class="linenos">119</span></a>                <span class="s1">&#39;Initialize Repo with `blobs`=`True` to load diffs.&#39;</span><span class="p">)</span>
+</span><span id="Repo.diffs-120"><a href="#Repo.diffs-120"><span class="linenos">120</span></a>
+</span><span id="Repo.diffs-121"><a href="#Repo.diffs-121"><span class="linenos">121</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>File-level changes in the repository.</p>
+
+<p>Schema:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>commit_hash</code></td>
+  <td>Full hash of the commit.</td>
+</tr>
+<tr>
+  <td><code>file</code></td>
+  <td>Path to file.</td>
+</tr>
+<tr>
+  <td><code>status</code></td>
+  <td>Single-letter code representing the change type. See <a href="https://git-scm.com/docs/git-status#_short_format">git-status</a> for possible values.</td>
+</tr>
+<tr>
+  <td><code>from_file</code></td>
+  <td>Path to file before the change, for renames and copies.</td>
+</tr>
+<tr>
+  <td><code>lines_added</code></td>
+  <td>Number of lines added.</td>
+</tr>
+<tr>
+  <td><code>lines_deleted</code></td>
+  <td>Number of lines deleted.</td>
 </tr>
 <tr>
   <td><code>repository</code></td>

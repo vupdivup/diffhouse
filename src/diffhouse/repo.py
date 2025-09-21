@@ -101,6 +101,17 @@ class Repo:
     def diffs(self) -> pd.DataFrame:
         '''
         File-level changes in the repository.
+
+        Schema:
+        | Column | Description |
+        | --- | --- |
+        | `commit_hash` | Full hash of the commit. |
+        | `file` | Path to file. |
+        | `status` | Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values. |
+        | `from_file` | Path to file before the change, for renames and copies. |
+        | `lines_added` | Number of lines added. |
+        | `lines_deleted` | Number of lines deleted. |
+        | `repository` | Remote repository URL. |
         '''
         if not self._blobs:
             raise ValueError(
