@@ -1,6 +1,6 @@
 # diffhouse
 
-*diffhouse* is a **git metadata extraction tool** for Python that retrieves high-quality repository information such as commit history, branches, tags and more.
+*diffhouse* is a **git metadata extraction tool** for Python that retrieves high-quality repository information such as commit history, branches, diffs and more.
 
 ## Requirements
 
@@ -20,10 +20,12 @@ pip install diffhouse
 from diffhouse import Repo
 ```
 
-3. Create a `Repo` instance with the git repository URL as an argument. Expect a few seconds of wait time as the repository metadata is extracted.
+3. Create a `Repo` instance with the git repository URL as an argument. Set `blobs` to `True` to load file-level diffs as well.
+
+> Note that `blobs=True` greatly increases processing time, as it requires a complete clone of the repository.
 
 ```python
-r = Repo(url='https://github.com/user/name.git')
+r = Repo(url='https://github.com/user/name.git', blobs=True)
 ```
 
 4. Access data through the following *pandas* [`DataFrames`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html):
@@ -33,5 +35,6 @@ r = Repo(url='https://github.com/user/name.git')
 | `Repo.commits` | Commit history. |
 | `Repo.branches` | Branch names. |
 | `Repo.tags` | Tag names. |
+| `Repo.diffs` | File-level changes. Available if `blobs` is `True`. |
 
 For a full list of metadata tables and columns, see the [documentation](https://vupdivup.github.io/diffhouse/).
