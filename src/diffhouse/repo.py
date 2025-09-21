@@ -1,7 +1,10 @@
 import pandas as pd
+import logging
 
 from .cloning import TempClone
 from .engine import *
+
+logger = logging.getLogger()
 
 class Repo:
     '''
@@ -17,20 +20,27 @@ class Repo:
         '''
         self._blobs = blobs
 
+        logger.info(f'Cloning {url}')
         with TempClone(url, shallow=not blobs) as c:
             # get normalized URL via git
             self._url = get_remote_url(c.path)
 
+            logger.info('Extracting commits')
             self._commits = get_commits(c.path).assign(repository=self.url)
 
+            logger.info('Extracting branches')
             self._branches = pd.DataFrame({
-                'branch': get_branches(c.path),
-                'repository': self.url})
+            'branch': get_branches(c.path),
+            'repository': self.url})
+
+            logger.info('Extracting tags')
             self._tags = pd.DataFrame({
-                'tag': get_tags(c.path),
-                'repository': self.url})
+            'tag': get_tags(c.path),
+            'repository': self.url})
+
             
             if blobs:
+                logger.info('Extracting diffs')
                 self._status_changes = get_status_changes(c.path)
                 self._line_changes = get_line_changes(c.path)
 
@@ -42,6 +52,8 @@ class Repo:
                     suffixes=('_status', '_numstat'))
                 
                 self._diffs['repository'] = self.url
+
+        logger.info('\033[92mDone\033[0m')
 
     @property
     def url(self):
