@@ -10,14 +10,18 @@ class Repo:
     '''
     Represents a git repository.
     '''
-    def __init__(self, url: str, blobs: bool = False):
+    def __init__(self, url: str, blobs: bool = False, quiet=False):
         '''
         Initialize the repository from remote at `url` and load metadata. This
         may take some time depending on the repository size.
 
-        If `blobs` is `True`, fetch file-level metadata will as well. Note that
+        - If `blobs` is `True`, fetch file-level metadata will as well. Note that
         this greatly increases processing time.
+        - If `quiet` is `True`, suppress logging output.
         '''
+        if quiet:
+            logger.disabled = True
+
         self._blobs = blobs
 
         logger.info(f'Cloning {url}')
@@ -54,6 +58,8 @@ class Repo:
                 self._diffs['repository'] = self.url
 
         logger.info('\033[92mDone\033[0m')
+
+        logger.disabled = False
 
     @property
     def url(self):
