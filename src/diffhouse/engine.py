@@ -125,21 +125,17 @@ def get_status_changes(path: str) -> pd.DataFrame:
             if status in ['R', 'C']:
                 similarity = float(items[0][1:])
                 file = items[2]
-                renamed_from = items[1] if status == 'R' else None
-                copied_from = items[1] if status == 'C' else None
-
+                from_file = items[1]
             else:
                 similarity = None
                 file = items[1]
-                renamed_from = None
-                copied_from = None
+                from_file = None
             
             data.append({
                 'commit_hash': hash,
                 'file': file,
                 'status': status,
-                'renamed_from': renamed_from,
-                'copied_from': copied_from,
+                'from_file': from_file,
                 'similarity': similarity
             })
 
@@ -152,7 +148,7 @@ def get_numstats(path: str) -> pd.DataFrame:
     '''
     git = GitCLI(path)
     output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--numstat')
-    commits = output.strip().split(chr(0x1f))[1:]
+    commits = output.split(chr(0x1f))[1:]
 
     data = []
     for c in commits:
@@ -161,14 +157,24 @@ def get_numstats(path: str) -> pd.DataFrame:
 
         for l in lines[1:]:
             items = [i.strip() for i in l.split('\t')]
-            lines_added = None if items[0] == '-' else int(items[0])
-            lines_deleted = None if items[1] == '-' else int(items[1])
+            lines_added = 0 if items[0] == '-' else int(items[0])
+            lines_deleted = 0 if items[1] == '-' else int(items[1])
 
             file_expr = items[2]
-            from_file = re.sub(
-                r'\{(.*) => .*\}', r'\1'.replace('//', '/'), file_expr)
-            file = re.sub(
-                r'\{.* => (.*)\}', r'\1'.replace('//', '/'), file_expr)
+
+            if '{' in file_expr:
+                # ../../{a => b}
+                # ../{ => a}/..
+                from_file = re.sub(r'\{(.*) => .*\}', r'\1', file_expr) \
+                    .replace('//', '/')
+                file = re.sub(r'\{.* => (.*)\}', r'\1', file_expr) \
+                    .replace('//', '/')
+            else:
+                # ../../a => ../../b
+                # when the file is moved to a different branch in the tree
+                match = re.match(r'(.+) => (.+)', file_expr)
+                from_file = match.group(1) if match else file_expr
+                file = match.group(2) if match else file_expr
 
             data.append({
                 'commit_hash': hash,
