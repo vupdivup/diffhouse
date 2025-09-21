@@ -141,7 +141,7 @@ def get_status_changes(path: str) -> pd.DataFrame:
 
     return pd.DataFrame(data)
 
-def get_numstats(path: str) -> pd.DataFrame:
+def get_line_changes(path: str) -> pd.DataFrame:
     '''
     Get file-level number of lines added and deleted per commit for repository
     at `path`.

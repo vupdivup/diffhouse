@@ -1,19 +1,23 @@
 import pandas as pd
 
 from .cloning import TempClone
-from .engine import get_remote_url, get_commits, get_branches, get_tags
+from .engine import *
 
 class Repo:
     '''
     Represents a git repository.
     '''
-    def __init__(self, url: str):
+    def __init__(self, url: str, blobs: bool = False):
         '''
         Initialize the repository from remote at `url` and load metadata. This
         may take some time depending on the repository size.
-        '''
 
-        with TempClone(url, shallow=True) as c:
+        If `blobs` is `True`, fetch file-level metadata will as well. Note that
+        this greatly increases processing time.
+        '''
+        self._blobs = blobs
+
+        with TempClone(url, shallow=not blobs) as c:
             # get normalized URL via git
             self._url = get_remote_url(c.path)
 
@@ -25,6 +29,17 @@ class Repo:
             self._tags = pd.DataFrame({
                 'tag': get_tags(c.path),
                 'repository': self.url})
+            
+            if blobs:
+                self._status_changes = get_status_changes(c.path)
+                self._line_changes = get_line_changes(c.path)
+
+                self._diffs = pd.merge(
+                    left=self._status_changes,
+                    right=self._line_changes,
+                    on=['commit_hash', 'file', 'from_file'],
+                    how='inner',
+                    suffixes=('_status', '_numstat'))
 
     @property
     def url(self):
@@ -79,3 +94,14 @@ class Repo:
         | `repository` | Remote repository URL. |
         '''
         return self._tags.copy()
+    
+    @property
+    def diffs(self) -> pd.DataFrame:
+        '''
+        File-level changes in the repository.
+        '''
+        if not self._blobs:
+            raise ValueError(
+                'Initialize Repo with `blobs`=`True` to load diffs.')
+
+        return self._diffs.copy()
