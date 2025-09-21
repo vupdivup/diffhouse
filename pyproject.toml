@@ -1,8 +1,8 @@
 [project]
 name = "diffhouse"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
-  "pandas == 2.3.2"
+  "pandas >= 2.3.2"
 ]
 description = "Metadata extraction tool for git repositories."
 readme = "README.md"
