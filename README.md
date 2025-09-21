@@ -37,4 +37,4 @@ r = Repo(url='https://github.com/user/name.git', blobs=True)
 | `Repo.tags` | Tag names. |
 | `Repo.diffs` | File-level changes. Available if `blobs` is `True`. |
 
-For a full list of metadata tables and columns, see the [documentation](https://vupdivup.github.io/diffhouse/).
+For a full list of objects and table columns, see the [documentation](https://vupdivup.github.io/diffhouse/).

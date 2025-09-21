@@ -1,36 +1,50 @@
 import pandas as pd
+import logging
 
 from .cloning import TempClone
 from .engine import *
+
+logger = logging.getLogger()
 
 class Repo:
     '''
     Represents a git repository.
     '''
-    def __init__(self, url: str, blobs: bool = False):
+    def __init__(self, url: str, blobs: bool = False, quiet=False):
         '''
         Initialize the repository from remote at `url` and load metadata. This
         may take some time depending on the repository size.
 
-        If `blobs` is `True`, fetch file-level metadata will as well. Note that
+        - If `blobs` is `True`, fetch file-level metadata will as well. Note that
         this greatly increases processing time.
+        - If `quiet` is `True`, suppress logging output.
         '''
+        if quiet:
+            logger.disabled = True
+
         self._blobs = blobs
 
+        logger.info(f'Cloning {url}')
         with TempClone(url, shallow=not blobs) as c:
             # get normalized URL via git
             self._url = get_remote_url(c.path)
 
+            logger.info('Extracting commits')
             self._commits = get_commits(c.path).assign(repository=self.url)
 
+            logger.info('Extracting branches')
             self._branches = pd.DataFrame({
-                'branch': get_branches(c.path),
-                'repository': self.url})
+            'branch': get_branches(c.path),
+            'repository': self.url})
+
+            logger.info('Extracting tags')
             self._tags = pd.DataFrame({
-                'tag': get_tags(c.path),
-                'repository': self.url})
+            'tag': get_tags(c.path),
+            'repository': self.url})
+
             
             if blobs:
+                logger.info('Extracting diffs')
                 self._status_changes = get_status_changes(c.path)
                 self._line_changes = get_line_changes(c.path)
 
@@ -42,6 +56,10 @@ class Repo:
                     suffixes=('_status', '_numstat'))
                 
                 self._diffs['repository'] = self.url
+
+        logger.info('\033[92mDone\033[0m')
+
+        logger.disabled = False
 
     @property
     def url(self):
