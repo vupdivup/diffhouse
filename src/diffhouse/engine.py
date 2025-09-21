@@ -100,8 +100,8 @@ def get_tags(path: str) -> pd.Series:
     '''
     git = GitCLI(path)
     output = git.run('ls-remote', '--tags', '--refs')
-
-    tags = [t.strip() for t in re.findall(r'refs/tags/(.+)\n', output)]
+    
+    tags = [t for t in re.findall(r'refs/tags/(.+)\n', output)]
 
     return pd.Series(tags)
 
