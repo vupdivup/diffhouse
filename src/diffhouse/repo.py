@@ -40,6 +40,8 @@ class Repo:
                     on=['commit_hash', 'file', 'from_file'],
                     how='inner',
                     suffixes=('_status', '_numstat'))
+                
+                self._diffs['repository'] = self.url
 
     @property
     def url(self):
