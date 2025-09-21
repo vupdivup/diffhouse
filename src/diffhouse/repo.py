@@ -1,25 +1,47 @@
 import pandas as pd
 
-from .cloning import SlimClone
-from .engine import get_remote_url, get_commits, get_branches, get_tags
+from .cloning import TempClone
+from .engine import *
 
 class Repo:
     '''
     Represents a git repository.
     '''
-    def __init__(self, url: str):
+    def __init__(self, url: str, blobs: bool = False):
         '''
         Initialize the repository from remote at `url` and load metadata. This
         may take some time depending on the repository size.
-        '''
 
-        with SlimClone(url) as c:
+        If `blobs` is `True`, fetch file-level metadata will as well. Note that
+        this greatly increases processing time.
+        '''
+        self._blobs = blobs
+
+        with TempClone(url, shallow=not blobs) as c:
             # get normalized URL via git
             self._url = get_remote_url(c.path)
 
             self._commits = get_commits(c.path).assign(repository=self.url)
-            self._branches = get_branches(c.path).assign(repository=self.url)
-            self._tags = get_tags(c.path).assign(repository=self.url)
+
+            self._branches = pd.DataFrame({
+                'branch': get_branches(c.path),
+                'repository': self.url})
+            self._tags = pd.DataFrame({
+                'tag': get_tags(c.path),
+                'repository': self.url})
+            
+            if blobs:
+                self._status_changes = get_status_changes(c.path)
+                self._line_changes = get_line_changes(c.path)
+
+                self._diffs = pd.merge(
+                    left=self._status_changes,
+                    right=self._line_changes,
+                    on=['commit_hash', 'file', 'from_file'],
+                    how='inner',
+                    suffixes=('_status', '_numstat'))
+                
+                self._diffs['repository'] = self.url
 
     @property
     def url(self):
@@ -74,3 +96,25 @@ class Repo:
         | `repository` | Remote repository URL. |
         '''
         return self._tags.copy()
+    
+    @property
+    def diffs(self) -> pd.DataFrame:
+        '''
+        File-level changes in the repository.
+
+        Schema:
+        | Column | Description |
+        | --- | --- |
+        | `commit_hash` | Full hash of the commit. |
+        | `file` | Path to file. |
+        | `status` | Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values. |
+        | `from_file` | Path to file before the change, for renames and copies. |
+        | `lines_added` | Number of lines added. |
+        | `lines_deleted` | Number of lines deleted. |
+        | `repository` | Remote repository URL. |
+        '''
+        if not self._blobs:
+            raise ValueError(
+                'Initialize Repo with `blobs`=`True` to load diffs.')
+
+        return self._diffs.copy()

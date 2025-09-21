@@ -4,21 +4,21 @@ from pathlib import Path
 
 from .git import GitCLI
 
-class SlimClone:
+class TempClone:
     '''
-    Local bare clone of a git repository.
-    
-    Resides in a temporary directory. For proper cleanup, the class is
-    implemented as a context manager and meant to be used in a `with` statement.
-    '''
-    def __init__(self, url: str):
-        '''
-        Create a local clone of a remote repository.
+    Local clone of a git repository that resides in a temporary directory.
 
-        Args:
-            url (str): URL of the remote repository.
+    For proper cleanup, the class is implemented as a context manager and meant
+    to be used in a `with` statement.
+    '''
+    def __init__(self, url: str, shallow: bool):
+        '''
+        Create a local clone of a remote repository at `url`. If `shallow` is
+        `True`, append arguments `--bare` and `--filter=blob:none` to the `git
+        clone` command.
         '''
         self._url = url
+        self._shallow = shallow
 
     @property
     def path(self):
@@ -33,9 +33,16 @@ class SlimClone:
 
         # clone repository
         git = GitCLI(self._path)
-        git.run(
-            'clone', '--bare', '--filter=blob:none', self._url, '.'
-        )
+
+        # prepare git clone command
+        args = ['clone']
+        
+        if self._shallow:
+            args.extend(['--bare', '--filter=blob:none'])
+
+        args.extend([self._url, '.'])
+
+        git.run(*args)
 
         return self
     

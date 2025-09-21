@@ -83,36 +83,108 @@ def get_commits(path: str) -> pd.DataFrame:
 
     return df
 
-def get_branches(path: str) -> pd.DataFrame:
+def get_branches(path: str) -> pd.Series:
     '''
-    Get branches of a remote git repository via `git branch`.
+    Get branches of a git repository at `path` via `git ls-remote`.
+    '''
+    git = GitCLI(path)
+    output = git.run('ls-remote', '--branches', '--refs')
 
-    Args:
-        path (str): Path to the local git repository.
+    branches = [b.strip() for b in re.findall(r'refs/heads/(.+)\n', output)]
+
+    return pd.Series(branches)
+
+def get_tags(path: str) -> pd.Series:
+    '''
+    Get tags of a git repository at `path` via `git ls-remote`.
+    '''
+    git = GitCLI(path)
+    output = git.run('ls-remote', '--tags', '--refs')
     
-    Returns:
-        branches (DataFrame): List of branches.
+    tags = [t for t in re.findall(r'refs/tags/(.+)\n', output)]
+
+    return pd.Series(tags)
+
+def get_status_changes(path: str) -> pd.DataFrame:
+    '''
+    Get file status changes (e.g. `A` for added) for repository at `path`.
     '''
     git = GitCLI(path)
-    output = git.run('branch')
+    output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--name-status')
+    commits = output.split(chr(0x1f))[1:]
 
-    branches = re.findall(r' +(.+)\n', output)
+    data = []
+    for c in commits:
+        lines = [l.strip() for l in c.strip().split('\n')]
+        hash = lines[0]
 
-    return pd.DataFrame(branches, columns=['branch'])
+        for l in lines[1:]:
+            items = [i.strip() for i in l.split('\t')]
+            status = items[0][0]
 
-def get_tags(path: str) -> pd.DataFrame:
+            if status in ['R', 'C']:
+                similarity = float(items[0][1:])
+                file = items[2]
+                from_file = items[1]
+            else:
+                similarity = None
+                file = items[1]
+                from_file = None
+            
+            data.append({
+                'commit_hash': hash,
+                'file': file,
+                'status': status,
+                'from_file': from_file,
+                'similarity': similarity
+            })
+
+    return pd.DataFrame(data)
+
+def get_line_changes(path: str) -> pd.DataFrame:
     '''
-    Get tags of a remote git repository via `git tag`.
-
-    Args:
-        path (str): Path to the local git repository.
-
-    Returns:
-        tags (DataFrame): List of tags.
+    Get file-level number of lines added and deleted per commit for repository
+    at `path`.
     '''
     git = GitCLI(path)
-    output = git.run('tag')
+    output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--numstat')
+    commits = output.split(chr(0x1f))[1:]
 
-    tags = output.split('\n')[:-1]
+    data = []
+    for c in commits:
+        lines = [l.strip() for l in c.strip().split('\n')]
+        hash = lines[0]
 
-    return pd.DataFrame(tags, columns=['tag'])
+        for l in lines[1:]:
+            items = [i.strip() for i in l.split('\t')]
+            lines_added = 0 if items[0] == '-' else int(items[0])
+            lines_deleted = 0 if items[1] == '-' else int(items[1])
+
+            file_expr = items[2]
+
+            if '{' in file_expr:
+                # ../../{a => b}
+                # ../{ => a}/..
+                from_file = re.sub(r'\{(.*) => .*\}', r'\1', file_expr) \
+                    .replace('//', '/')
+                file = re.sub(r'\{.* => (.*)\}', r'\1', file_expr) \
+                    .replace('//', '/')
+            else:
+                # ../../a => ../../b
+                # when the file is moved to a different branch in the tree
+                match = re.match(r'(.+) => (.+)', file_expr)
+                from_file = match.group(1) if match else file_expr
+                file = match.group(2) if match else file_expr
+
+            data.append({
+                'commit_hash': hash,
+                'file': file,
+                'from_file': from_file,
+                'lines_added': lines_added,
+                'lines_deleted': lines_deleted
+            })
+
+    df = pd.DataFrame(data)
+    df['from_file'] = df.from_file.where(df['from_file'] != df['file'], None)
+
+    return df
