@@ -13,6 +13,7 @@ REPOS = [
     'https://github.com/excalidraw/excalidraw',
     'https://github.com/microsoft/terminal'
 ]
+VALID_URL = 'https://github.com/vupdivup/diffhouse'
 INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
 
 @pytest.fixture(scope='module', params=REPOS)
@@ -61,3 +62,11 @@ def test_invalid_url():
     '''
     with pytest.raises(Exception):
         Repo(INVALID_URL)
+
+def test_no_blobs():
+    '''
+    Test that initializing `Repo` with `blobs`=`False` does not load diffs.
+    '''
+    r = Repo(VALID_URL, blobs=False)
+    with pytest.raises(ValueError):
+        r.diffs
