@@ -1,6 +1,10 @@
 import subprocess
+import re
 
+from packaging import version
 from pathlib import Path
+
+from .constants import MINIMUM_GIT_VERSION
 
 class GitCLI:
     '''
@@ -20,6 +24,12 @@ class GitCLI:
         
         if not self._cwd.is_dir():
             raise NotADirectoryError(f"Path {self._cwd} is not a directory.")
+        
+        if version.parse(self.version) < version.parse(MINIMUM_GIT_VERSION):
+            raise GitError(
+                f'Git version {MINIMUM_GIT_VERSION} or higher required. ' +
+                f'Current version: {self.version}.'
+            )
         
     def run(self, *args: str) -> str:
         '''
@@ -45,6 +55,14 @@ class GitCLI:
             raise EnvironmentError("Git is not installed or not in PATH.")
         except subprocess.CalledProcessError as e:
             raise GitError(e.stderr)
+        
+    @property
+    def version(self) -> str:
+        '''
+        Installed git version.
+        '''
+        output = self.run('--version')
+        return re.match(r'git version (\d+\.\d+\.\d+)', output).group(1)
         
 class GitError(Exception):
     '''Custom exception for git-related errors.'''
