@@ -1,13 +1,14 @@
 import yaml
 import logging
 import logging.config
-import importlib.resources
+from importlib import resources
 
 from .repo import Repo
 
-with importlib.resources.path('diffhouse', 'static/logging.yml') as config_path:
-    with open(config_path) as f:
-        config_path = yaml.safe_load(f)
-        logging.config.dictConfig(config_path)
+PACKAGE_NAME = 'diffhouse'
+
+with (resources.files('diffhouse') / 'static/logging.yml').open('r') as f:
+    config = yaml.safe_load(f)
+    logging.config.dictConfig(config)
 
 __all__ = ['Repo']
