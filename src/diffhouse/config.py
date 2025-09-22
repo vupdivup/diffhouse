@@ -1,0 +1,21 @@
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'standard': {
+            'format': 'diffhouse %(asctime)s.%(msecs)03d %(message)s',
+            'datefmt': '%H:%M:%S'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'standard',
+            'stream': 'ext://sys.stdout'
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['console']
+    }
+}
