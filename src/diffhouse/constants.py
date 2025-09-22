@@ -1,0 +1,2 @@
+PACKAGE_NAME = 'diffhouse'
+MINIMUM_GIT_VERSION = '2.46.0'
