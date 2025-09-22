@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Git 2.19 or greater.
+Git 2.46 or greater required.
 
 ## Quick start
 
