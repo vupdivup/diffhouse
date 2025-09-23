@@ -87,8 +87,7 @@ def get_branches(path: str) -> pd.Series:
     '''
     Get branches of a git repository at `path` via `git ls-remote`.
     '''
-    git = GitCLI(path)
-    output = git.run('ls-remote', '--branches', '--refs')
+    output = GitCLI(path).ls_remote('branches')
 
     branches = [b.strip() for b in re.findall(r'refs/heads/(.+)\n', output)]
 
@@ -98,8 +97,7 @@ def get_tags(path: str) -> pd.Series:
     '''
     Get tags of a git repository at `path` via `git ls-remote`.
     '''
-    git = GitCLI(path)
-    output = git.run('ls-remote', '--tags', '--refs')
+    output = GitCLI(path).ls_remote('tags')
     
     tags = [t for t in re.findall(r'refs/tags/(.+)\n', output)]
 
