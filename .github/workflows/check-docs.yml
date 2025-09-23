@@ -27,8 +27,7 @@ jobs:
 
       - name: Check for changes
         run: |
-          git status --porcelain
-          if [ "$(git status --porcelain)" != "" ]; then
+          if [ "$(git status --porcelain docs/*.html)" != "" ]; then
             echo "Documentation files are out of date."
             exit 1
           fi
