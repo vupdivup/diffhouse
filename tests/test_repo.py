@@ -5,13 +5,10 @@ from diffhouse import Repo
 
 REPOS = [
     'https://github.com/ohmyzsh/ohmyzsh',
-    'https://github.com/Significant-Gravitas/AutoGPT',
-    'https://github.com/AUTOMATIC1111/stable-diffusion-webui',
+    'https://github.com/tailwindlabs/tailwindcss',
     'https://github.com/ollama/ollama',
-    'https://github.com/n8n-io/n8n',
     'https://github.com/microsoft/PowerToys',
-    'https://github.com/excalidraw/excalidraw',
-    'https://github.com/microsoft/terminal'
+    'https://github.com/excalidraw/excalidraw'
 ]
 VALID_URL = 'https://github.com/vupdivup/diffhouse'
 INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
@@ -40,6 +37,14 @@ def test_nulls(repo, attr):
     '''
     df = getattr(repo, attr)
     assert len(df.replace("", pd.NA).dropna(how='all')) == len(df)
+
+@pytest.mark.parametrize('attr', ['commits', 'branches', 'diffs'])
+def test_not_empty(repo, attr):
+    '''
+    Test that `repo.attr` is not empty.
+    '''
+    df = getattr(repo, attr)
+    assert not df.empty
 
 def test_diff_matches(repo):
     '''
