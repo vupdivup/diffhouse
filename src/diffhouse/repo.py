@@ -1,10 +1,8 @@
 import pandas as pd
-import logging
 
+from .logger import logger
 from .cloning import TempClone
 from .engine import *
-
-logger = logging.getLogger()
 
 class Repo:
     '''
