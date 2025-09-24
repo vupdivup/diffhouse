@@ -1,5 +1,5 @@
 pandas>=2.3.2
 pytest>=8.4.2
 pdoc>=15.0.4
-twine>=6.2.0
 packaging>=25.0
+twine

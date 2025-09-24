@@ -1,8 +1,9 @@
 import subprocess
 import re
 
-from packaging import version
+import packaging.version
 from pathlib import Path
+from typing import Literal
 
 from .constants import MINIMUM_GIT_VERSION
 
@@ -25,7 +26,9 @@ class GitCLI:
         if not self._cwd.is_dir():
             raise NotADirectoryError(f"Path {self._cwd} is not a directory.")
         
-        if version.parse(self.version) < version.parse(MINIMUM_GIT_VERSION):
+        self._version = self._get_version()
+        
+        if self.version < packaging.version.parse(MINIMUM_GIT_VERSION):
             raise GitError(
                 f'Git version {MINIMUM_GIT_VERSION} or higher required. ' +
                 f'Current version: {self.version}.'
@@ -55,14 +58,33 @@ class GitCLI:
             raise EnvironmentError("Git is not installed or not in PATH.")
         except subprocess.CalledProcessError as e:
             raise GitError(e.stderr)
-        
+
+    def _get_version(self) -> packaging.version.Version:
+        '''
+        Get installed git version via `git --version`.
+        '''
+        output = self.run('--version')
+        v = re.match(r'git version (\d+\.\d+\.\d+)', output).group(1)
+        return packaging.version.parse(v)
+
     @property
-    def version(self) -> str:
+    def version(self) -> packaging.version.Version:
         '''
         Installed git version.
         '''
-        output = self.run('--version')
-        return re.match(r'git version (\d+\.\d+\.\d+)', output).group(1)
+        return self._version
+
+    def ls_remote(self, what: Literal['branches', 'tags']) -> str:
+        '''
+        Run `git ls-remote` in the working directory.
+
+        Set `what` to either `branches` or `tags` to list the respective refs.
+        '''
+        if self.version < packaging.version.parse('2.46.0'):
+            # use the deprecated --heads option for < 2.46.0
+            what = 'heads' 
+        return self.run('ls-remote', f'--{what}', '--refs')
+
         
 class GitError(Exception):
     '''Custom exception for git-related errors.'''

@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Git 2.46 or greater required.
+Git 2.20 and Python 3.10 or greater required.
 
 ## Quick start
 
