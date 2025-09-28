@@ -3,3 +3,4 @@ pytest>=8.4.2
 pdoc>=15.0.4
 packaging>=25.0
 twine
+yapf>=0.43.0,<1.0.0
