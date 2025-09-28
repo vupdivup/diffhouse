@@ -5,6 +5,7 @@ import csv
 from io import StringIO
 
 from .git import GitCLI
+from .constants import UNIT_SEPARATOR, RECORD_SEPARATOR
 
 def get_remote_url(path: str, remote: str='origin') -> str:
     '''
@@ -43,12 +44,9 @@ def get_commits(path: str) -> pd.DataFrame:
     }
 
     COLUMNS = list(FORMAT_SPECIFIERS.keys())
-
-    COLUMN_SEPARATOR = chr(0x1f)
-    RECORD_SEPARATOR = chr(0x1e)
-
+    
     # prepare git log command
-    specifiers = COLUMN_SEPARATOR.join(
+    specifiers = UNIT_SEPARATOR.join(
         FORMAT_SPECIFIERS.values()
     )
     pattern = f'{specifiers}{RECORD_SEPARATOR}'
@@ -60,7 +58,7 @@ def get_commits(path: str) -> pd.DataFrame:
     try:
         df = pd.read_csv(
             StringIO(output), 
-            sep=COLUMN_SEPARATOR,
+            sep=UNIT_SEPARATOR,
             lineterminator=RECORD_SEPARATOR,
             engine='c',
             header=None,
@@ -120,6 +118,8 @@ def get_status_changes(path: str) -> pd.DataFrame:
             items = [i.strip() for i in l.split('\t')]
             status = items[0][0]
 
+            # TODO: "" in filename?
+
             if status in ['R', 'C']:
                 similarity = float(items[0][1:])
                 file = items[2]
@@ -146,6 +146,7 @@ def get_line_changes(path: str) -> pd.DataFrame:
     '''
     git = GitCLI(path)
     output = git.run('log', f'--pretty=format:{chr(0x1f)}%H', '--numstat')
+    print('Fetched git log --numstat output')
     commits = output.split(chr(0x1f))[1:]
 
     data = []
