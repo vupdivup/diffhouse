@@ -1,5 +1,5 @@
 repos:
-  - repo: https://github.com/google/yapf
-    rev: v0.43.0
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
     hooks:
-    - id: yapf
+    - id: black
