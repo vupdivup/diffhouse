@@ -1,13 +1,30 @@
 import re
 
+from collections import namedtuple
 from collections.abc import Iterator
 
 from ..git import GitCLI
 from .utils import hash
 from .constants import RECORD_SEPARATOR
 
+Diff = namedtuple(
+    "Diff",
+    [
+        "commit_hash",
+        "path_a",
+        "path_b",
+        "revision_id",
+        "start_a",
+        "length_a",
+        "start_b",
+        "length_b",
+        "additions",
+        "deletions",
+    ],
+)
 
-def collect_diffs(path: str) -> list[dict]:
+
+def collect_diffs(path: str) -> list[Diff]:
     """
     Get diffs per commit and file for local repository at `path`.
     """
@@ -25,7 +42,7 @@ def _log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> str:
     return log
 
 
-def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
+def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
     """
     Parse the output of `log_diffs` (`log` parameter with separator `sep`) into
     a structured format.
@@ -45,16 +62,16 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
             # format: a/path b/path
             header = file.split("\n", 1)[0]
 
-            path_before, path_after = re.search(filepaths_pat, header).groups()
+            path_a, path_b = re.search(filepaths_pat, header).groups()
             hunks_raw = re.split(hunk_header_pat, file)[1:]
 
             # zip hunk header data with content
             hunks_grouped = tuple(
                 {
-                    "start_line_before": int(hunks_raw[i]),
-                    "line_count_before": int(hunks_raw[i + 1] or 1),
-                    "start_line_after": int(hunks_raw[i + 2]),
-                    "line_count_after": int(hunks_raw[i + 3] or 1),
+                    "start_a": int(hunks_raw[i]),
+                    "length_a": int(hunks_raw[i + 1] or 1),
+                    "start_b": int(hunks_raw[i + 2]),
+                    "length_b": int(hunks_raw[i + 3] or 1),
                     "content": hunks_raw[i + 4].split("\n", 1)[1],
                 }
                 for i in range(0, len(hunks_raw), 5)
@@ -65,12 +82,16 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
                 additions = [line[1:] for line in lines if line.startswith("+")]
                 deletions = [line[1:] for line in lines if line.startswith("-")]
 
-                yield {
-                    "revision_id": hash(commit_hash, path_before, path_after),
-                    "start_line_before": hunk["start_line_before"],
-                    "line_count_before": hunk["line_count_before"],
-                    "start_line_after": hunk["start_line_after"],
-                    "line_count_after": hunk["line_count_after"],
-                    "additions": additions,
-                    "deletions": deletions,
-                }
+                yield Diff(
+                    commit_hash=commit_hash,
+                    path_a=path_a,
+                    path_b=path_b,
+                    revision_id=hash(commit_hash, path_a, path_b),
+                    start_a=hunk["start_a"],
+                    length_a=hunk["length_a"],
+                    start_b=hunk["start_b"],
+                    length_b=hunk["length_b"],
+                    # TODO: lines added and deleted metrics
+                    additions=additions,
+                    deletions=deletions,
+                )
