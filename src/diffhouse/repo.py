@@ -2,73 +2,69 @@ import pandas as pd
 
 from .logger import logger
 from .cloning import TempClone
-from .engine import *
+from .engine import (
+    collect_commits,
+    collect_revisions,
+    collect_diffs,
+    collect_branches,
+    collect_tags,
+)
+
 
 class Repo:
-    '''
+    """
     Represents a git repository.
-    '''
+    """
+
     def __init__(self, url: str, blobs: bool = False, quiet=False):
-        '''
+        """
         Initialize the repository from remote at `url` and load metadata. This
         may take some time depending on the repository size.
 
         - If `blobs` is `True`, fetch file-level metadata will as well. Note that
         this greatly increases processing time.
         - If `quiet` is `True`, suppress logging output.
-        '''
+        """
         if quiet:
             logger.disabled = True
 
         self._blobs = blobs
 
-        logger.info(f'Cloning {url}')
+        logger.info(f"Cloning {url}")
         with TempClone(url, shallow=not blobs) as c:
             # get normalized URL via git
-            self._url = get_remote_url(c.path)
+            self._url = url.strip()
 
-            logger.info('Extracting commits')
-            self._commits = get_commits(c.path).assign(repository=self.url)
+            logger.info("Extracting commits")
+            self._commits = collect_commits(c.path)
 
-            logger.info('Extracting branches')
-            self._branches = pd.DataFrame({
-            'branch': get_branches(c.path),
-            'repository': self.url})
+            logger.info("Extracting branches")
+            self._branches = collect_branches(c.path)
 
-            logger.info('Extracting tags')
-            self._tags = pd.DataFrame({
-            'tag': get_tags(c.path),
-            'repository': self.url})
+            logger.info("Extracting tags")
+            self._tags = collect_tags(c.path)
 
-            
             if blobs:
-                logger.info('Extracting diffs')
-                self._status_changes = get_status_changes(c.path)
-                self._line_changes = get_line_changes(c.path)
+                logger.info("Extracting diffs")
+                self._revisions = collect_revisions(c.path)
+                self._diffs = collect_diffs(c.path)
 
-                self._diffs = pd.merge(
-                    left=self._status_changes,
-                    right=self._line_changes,
-                    on=['commit_hash', 'file', 'from_file'],
-                    how='inner',
-                    suffixes=('_status', '_numstat'))
-                
-                self._diffs['repository'] = self.url
-
-        logger.info('\033[92mDone\033[0m')
+        logger.info("\033[92mDone\033[0m")
 
         logger.disabled = False
 
+    # TODO: DOCS
+
     @property
     def url(self):
-        '''
+        """
         URL of the remote repository.
-        '''
+        """
         return self._url
-    
+
     @property
     def commits(self) -> pd.DataFrame:
-        '''
+        """
         Commit history as a pandas DataFrame.
 
         Schema:
@@ -84,12 +80,12 @@ class Repo:
         | `subject` | Subject line of the commit message. |
         | `body` | Body of the commit message. |
         | `repository` | Remote repository URL. |
-        '''
-        return self._commits.copy()
-    
+        """
+        return self._commits
+
     @property
     def branches(self) -> pd.DataFrame:
-        '''
+        """
         Branches of the repository.
 
         Schema:
@@ -97,12 +93,12 @@ class Repo:
         | --- | --- |
         | `branch` | Branch name. |
         | `repository` | Remote repository URL. |
-        '''
-        return self._branches.copy()
-    
+        """
+        return self._branches
+
     @property
     def tags(self) -> pd.DataFrame:
-        '''
+        """
         Tags of the repository.
 
         Schema:
@@ -110,12 +106,18 @@ class Repo:
         | --- | --- |
         | `tag` | Tag name. |
         | `repository` | Remote repository URL. |
-        '''
-        return self._tags.copy()
-    
+        """
+        return self.tags
+
+    @property
+    def revisions(self):
+        if not self._blobs:
+            raise ValueError("Initialize Repo with `blobs`=`True` to load revisions.")
+        return self._revisions
+
     @property
     def diffs(self) -> pd.DataFrame:
-        '''
+        """
         File-level changes in the repository.
 
         Schema:
@@ -128,9 +130,7 @@ class Repo:
         | `lines_added` | Number of lines added. |
         | `lines_deleted` | Number of lines deleted. |
         | `repository` | Remote repository URL. |
-        '''
+        """
         if not self._blobs:
-            raise ValueError(
-                'Initialize Repo with `blobs`=`True` to load diffs.')
-
-        return self._diffs.copy()
+            raise ValueError("Initialize Repo with `blobs`=`True` to load diffs.")
+        return self._diffs
