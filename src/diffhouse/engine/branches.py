@@ -1,14 +1,16 @@
 import re
 
+from collections.abc import Iterator
+
 from ..git import GitCLI
 
 
-def collect_branches(path: str) -> list[str]:
+def get_branches(path: str) -> Iterator[str]:
     """
-    Get branches of a git repository at `path` via `git ls-remote`.
+    Get branches of a git repository at `path` via git `ls-remote`.
     """
     log = log_branches(path)
-    return parse_branches(log)
+    yield from parse_branches(log)
 
 
 def log_branches(path: str) -> str:
@@ -20,9 +22,8 @@ def log_branches(path: str) -> str:
     return git.ls_remote("branches")
 
 
-def parse_branches(log: str) -> list[str]:
+def parse_branches(log: str) -> Iterator[str]:
     """
     Parse the output of `log_branches` passed via the `log` argument.
     """
-    branches = re.findall(r"refs/heads/(.+)\n", log)
-    return branches
+    yield from re.findall(r"refs/heads/(.+)\n", log)
