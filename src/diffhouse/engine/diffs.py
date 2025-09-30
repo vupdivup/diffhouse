@@ -36,12 +36,12 @@ class Diff:
     """Lines deleted."""
 
 
-def collect_diffs(path: str) -> list[Diff]:
+def collect_diffs(path: str) -> Iterator[Diff]:
     """
     Get diffs per commit and file for local repository at `path`.
     """
     log = _log_diffs(path)
-    return list(_parse_diffs(log))
+    yield from _parse_diffs(log)
 
 
 def _log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> str:

@@ -25,12 +25,12 @@ class Revision:
     # TODO: no of lines added/deleted
 
 
-def collect_revisions(path: str) -> list[Revision]:
+def collect_revisions(path: str) -> Iterator[Revision]:
     """
     Get file revisions per commit for local repository at `path`.
     """
     log = _log_revisions(path)
-    return list(_parse_revisions(log))
+    yield from _parse_revisions(log)
 
 
 def _log_revisions(path: str, sep: str = RECORD_SEPARATOR) -> str:

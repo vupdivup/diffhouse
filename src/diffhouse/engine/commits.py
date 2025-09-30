@@ -43,10 +43,10 @@ class Commit:
     """Commit message body."""
 
 
-def collect_commits(path: str) -> list[Commit]:
+def collect_commits(path: str) -> Iterator[Commit]:
     """Return main branch commit data from a git repository at `path`."""
     log = log_commits(path)
-    return list(parse_commits(log))
+    yield from parse_commits(log)
 
 
 def log_commits(
