@@ -30,10 +30,14 @@ class Diff:
     """Starting line number after the commit."""
     length_b: int
     """Line count after the commit."""
+    lines_added: int
+    """Number of lines added."""
+    lines_deleted: int
+    """Number of lines deleted."""
     additions: list[str]
-    """Lines added."""
+    """Text content of added lines."""
     deletions: list[str]
-    """Lines deleted."""
+    """Text content of deleted lines."""
 
 
 def collect_diffs(path: str) -> Iterator[Diff]:
@@ -91,8 +95,19 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
 
             for hunk in hunks_grouped:
                 lines = hunk["content"].splitlines()
-                additions = [line[1:] for line in lines if line.startswith("+")]
-                deletions = [line[1:] for line in lines if line.startswith("-")]
+
+                lines_added = 0
+                lines_deleted = 0
+                additions = []
+                deletions = []
+
+                for line in lines:
+                    if line.startswith("+"):
+                        additions.append(line[1:])
+                        lines_added += 1
+                    elif line.startswith("-"):
+                        deletions.append(line[1:])
+                        lines_deleted += 1
 
                 yield Diff(
                     commit_hash=commit_hash,
@@ -103,7 +118,8 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
                     length_a=hunk["length_a"],
                     start_b=hunk["start_b"],
                     length_b=hunk["length_b"],
-                    # TODO: lines added and deleted metrics
+                    lines_added=lines_added,
+                    lines_deleted=lines_deleted,
                     additions=additions,
                     deletions=deletions,
                 )
