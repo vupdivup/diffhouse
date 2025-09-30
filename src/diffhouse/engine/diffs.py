@@ -1,27 +1,39 @@
 import re
 
-from collections import namedtuple
+from dataclasses import dataclass
 from collections.abc import Iterator
 
 from ..git import GitCLI
 from .utils import hash
 from .constants import RECORD_SEPARATOR
 
-Diff = namedtuple(
-    "Diff",
-    [
-        "commit_hash",
-        "path_a",
-        "path_b",
-        "revision_id",
-        "start_a",
-        "length_a",
-        "start_b",
-        "length_b",
-        "additions",
-        "deletions",
-    ],
-)
+# TODO: binary diffs
+
+
+@dataclass
+class Diff:
+    """Changes made to a hunk of code in a specific commit."""
+
+    commit_hash: str
+    """Full hash of the commit."""
+    path_a: str
+    """Path to file before the commit."""
+    path_b: str
+    """Path to file after the commit."""
+    revision_id: str
+    """File revision ID."""
+    start_a: int
+    """Starting line number before the commit."""
+    length_a: int
+    """Line count before the commit."""
+    start_b: int
+    """Starting line number after the commit."""
+    length_b: int
+    """Line count after the commit."""
+    additions: list[str]
+    """Lines added."""
+    deletions: list[str]
+    """Lines deleted."""
 
 
 def collect_diffs(path: str) -> list[Diff]:

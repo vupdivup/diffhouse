@@ -1,4 +1,4 @@
-from collections import namedtuple
+from dataclasses import dataclass
 from collections.abc import Iterator
 
 from ..git import GitCLI
@@ -18,7 +18,27 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
-Commit = namedtuple("Commit", FIELDS)
+
+@dataclass
+class Commit:
+    commit_hash: str
+    """Full hash of the commit."""
+    author_name: str
+    """Author name."""
+    author_email: str
+    """Author email."""
+    author_date: str
+    """Date when the author made the commit."""
+    committer_name: str
+    """Committer name."""
+    committer_email: str
+    """Committer email."""
+    committer_date: str
+    """Date when the committer committed the change."""
+    subject: str
+    """Commit message subject."""
+    body: str
+    """Commit message body."""
 
 
 def collect_commits(path: str) -> list[Commit]:
@@ -52,6 +72,7 @@ def parse_commits(
 
     for c in commits:
         fields = {k: v for k, v in zip(FIELDS, c.split(field_sep))}
+
         yield Commit(
             commit_hash=fields["commit_hash"],
             author_name=fields["author_name"],

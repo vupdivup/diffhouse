@@ -1,12 +1,28 @@
-from collections import namedtuple
+from dataclasses import dataclass
 from collections.abc import Iterator
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
 
-Revision = namedtuple(
-    "Revision", ["commit_hash", "file", "status", "from_file", "similarity"]
-)
+
+@dataclass
+class Revision:
+    """A file change in a specific commit."""
+
+    commit_hash: str
+    """Full hash of the commit."""
+    path_a: str
+    """Path to file before the commit."""
+    path_b: str
+    """Path to file after the commit."""
+    revision_id: str
+    """File revision ID."""
+    status: str
+    """Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values."""
+    similarity: int
+    """Similarity index for renames and copies (0-100)."""
+
+    # TODO: no of lines added/deleted
 
 
 def collect_revisions(path: str) -> list[Revision]:
@@ -41,18 +57,19 @@ def _parse_revisions(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Revision
             status = items[0][0]
 
             if status in ["R", "C"]:
-                similarity = float(items[0][1:])
-                file = items[2]
-                from_file = items[1]
+                similarity = int(items[0][1:])
+                path_b = items[2]
+                path_a = items[1]
             else:
-                similarity = None
-                file = items[1]
-                from_file = None
+                similarity = 100
+                path_b = items[1]
+                path_a = path_b
 
             yield Revision(
                 commit_hash=hash,
-                file=file,
+                path_a=path_a,
+                path_b=path_b,
+                revision_id=f"{hash}:{path_b}",
                 status=status,
-                from_file=from_file,
                 similarity=similarity,
             )
