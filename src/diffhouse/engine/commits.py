@@ -21,6 +21,8 @@ FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 @dataclass
 class Commit:
+    """Commit metadata."""
+
     commit_hash: str
     """Full hash of the commit."""
     author_name: str
