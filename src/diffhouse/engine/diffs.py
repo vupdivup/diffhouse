@@ -19,17 +19,17 @@ class Diff:
     path_a: str
     """Path to file before the commit."""
     path_b: str
-    """Path to file after the commit."""
-    revision_id: str
-    """File revision ID."""
+    """Path to file after the commit. Differs from `path_a` for renames and copies."""
+    changed_file_id: str
+    """Hash of `commit_hash`, `path_a`, and `path_b`. Use it to match with a `ChangedFile`."""
     start_a: int
-    """Starting line number before the commit."""
+    """Line number that started the hunk before the commit."""
     length_a: int
-    """Line count before the commit."""
+    """Line count of the hunk before the commit."""
     start_b: int
-    """Starting line number after the commit."""
+    """Line number that starts the hunk after the commit."""
     length_b: int
-    """Line count after the commit."""
+    """Line count of the hunk after the commit."""
     lines_added: int
     """Number of lines added."""
     lines_deleted: int
@@ -113,7 +113,7 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
                     commit_hash=commit_hash,
                     path_a=path_a,
                     path_b=path_b,
-                    revision_id=hash(commit_hash, path_a, path_b),
+                    changed_file_id=hash(commit_hash, path_a, path_b),
                     start_a=hunk["start_a"],
                     length_a=hunk["length_a"],
                     start_b=hunk["start_b"],
