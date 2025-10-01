@@ -19,6 +19,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
+# TODO: shortstat
 @dataclass
 class Commit:
     """Commit metadata."""
@@ -30,13 +31,13 @@ class Commit:
     author_email: str
     """Author email."""
     author_date: str
-    """Date when the author made the commit."""
+    """Original commit date in ISO 8601 format, with timezone offset."""
     committer_name: str
     """Committer name."""
     committer_email: str
     """Committer email."""
     committer_date: str
-    """Date when the committer committed the change."""
+    """Actual commit date in ISO 8601 format, with timezone offset."""
     subject: str
     """Commit message subject."""
     body: str
