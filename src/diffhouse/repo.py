@@ -110,7 +110,7 @@ class Repo:
     @_check_active
     def diffs(self) -> Iterator[Diff]:
         """
-        Code changes per revision.
+        Line-level changes within a commit.
         """
         if not self._blobs:
             raise ValueError("Initialize Repo with `blobs`=`True` to load diffs.")
