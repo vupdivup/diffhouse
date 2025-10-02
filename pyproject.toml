@@ -24,6 +24,10 @@ build-backend = "setuptools.build_meta"
 [tool.ruff]
 line-length = 80
 
+[tool.ruff.lint]
+select = ["E", "F", "D", "I"]
+ignore = ["D100", "D105", "D203", "D213", "E501"]
+
 [tool.ruff.format]
 quote-style = "single"
 
