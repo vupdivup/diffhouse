@@ -1,3 +1,4 @@
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 
@@ -19,7 +20,6 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-# TODO: shortstat
 @dataclass
 class Commit:
     """Commit metadata."""
@@ -42,6 +42,12 @@ class Commit:
     """Commit message subject."""
     body: str
     """Commit message body."""
+    files_changed: int
+    """Number of files changed in the commit."""
+    lines_added: int
+    """Number of lines inserted in the commit."""
+    lines_deleted: int
+    """Number of lines deleted in the commit."""
 
 
 def collect_commits(path: str) -> Iterator[Commit]:
@@ -63,10 +69,12 @@ def log_commits(
     # prepare git log command
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
-    pattern = f'{record_sep}{specifiers}'
+    pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
 
     git = GitCLI(path)
-    return git.run('log', f'--pretty=format:{pattern}', '--date=iso')
+    return git.run(
+        'log', f'--pretty=format:{pattern}', '--date=iso', '--shortstat'
+    )
 
 
 def parse_commits(
@@ -77,8 +85,28 @@ def parse_commits(
     """Parse the output of `log_commits`."""
     commits = log.split(record_sep)[1:]
 
+    files_changed_pat = re.compile(r'(\d+) file')
+    insertions_pat = re.compile(r'(\d+) insertion')
+    deletions_pat = re.compile(r'(\d+) deletion')
+
     for c in commits:
-        fields = {k: v for k, v in zip(FIELDS, c.split(field_sep))}
+        values = c.split(field_sep)
+
+        # match all fields with field names except the shortstat section
+        fields = {k: v for k, v in zip(FIELDS, values[:-1])}
+
+        shortstat = values[-1]
+
+        files_changed_match = files_changed_pat.search(shortstat)
+        insertions_match = insertions_pat.search(shortstat)
+        deletions_match = deletions_pat.search(shortstat)
+
+        files_changed = (
+            int(files_changed_match.group(1)) if files_changed_match else 0
+        )
+
+        insertions = int(insertions_match.group(1)) if insertions_match else 0
+        deletions = int(deletions_match.group(1)) if deletions_match else 0
 
         yield Commit(
             commit_hash=fields['commit_hash'],
@@ -90,4 +118,7 @@ def parse_commits(
             committer_date=fields['committer_date'],
             subject=fields['subject'].strip(),
             body=fields['body'].strip(),
+            files_changed=files_changed,
+            lines_added=insertions,
+            lines_deleted=deletions,
         )
