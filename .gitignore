@@ -2,10 +2,14 @@
 __pycache__/
 .venv*/
 .pytest_cache/
+.ruff_cache/
 
-# build files
+# Build files
 dist/
 *.egg-info/
+
+# Local development
 temp/
 
+# Editor
 .vscode/
