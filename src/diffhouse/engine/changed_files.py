@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from collections.abc import Iterator
+from dataclasses import dataclass
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
@@ -15,29 +15,45 @@ class ChangedFile:
     path_a: str
     """Path to file before the commit."""
     path_b: str
-    """Path to file after the commit. Differs from `path_a` for renames and copies."""
+    """
+    Path to file after the commit.
+    
+    Differs from `path_a` for renames and copies.
+    """
     changed_file_id: str
-    """Unique record identifier hashed from `commit_hash`, `path_a`, and `path_b`."""
+    """
+    Unique record identifier hashed from `commit_hash`, `path_a`, and `path_b`.
+    """
     change_type: str
-    """Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values."""
+    """
+    Single-letter code representing the change type. 
+    
+    See [git-status](https://git-scm.com/docs/git-status#_short_format) for
+    possible values.
+    """
     similarity: int
-    """Similarity index between the two file versions. `0`-`100` for renames and copies, `100` otherwise."""
+    """
+    Similarity index between the two file versions.
+    
+    `0`-`100` for renames and copies, `100` otherwise.
+    """
 
     # TODO: no of lines added/deleted
 
 
 def collect_changed_files(path: str) -> Iterator[ChangedFile]:
-    """
-    Get changed files per commit for local repository at `path`.
-    """
+    """Get changed files per commit for local repository at `path`."""
     log = _log_changed_files(path)
     yield from _parse_changed_files(log)
 
 
 def _log_changed_files(path: str, sep: str = RECORD_SEPARATOR) -> str:
-    """
-    Return the output of `git log --name-status` with commits delimited by
-    `sep` for local repository at `path`.
+    """Return the output of `git log --name-status` for a local repository.
+
+    Args:
+        path (str): Path to the local git repository.
+        sep (str): Record separator between commits.
+
     """
     git = GitCLI(path)
     return git.run('log', f'--pretty=format:{sep}%H', '--name-status')
@@ -46,17 +62,15 @@ def _log_changed_files(path: str, sep: str = RECORD_SEPARATOR) -> str:
 def _parse_changed_files(
     log: str, sep: str = RECORD_SEPARATOR
 ) -> Iterator[ChangedFile]:
-    """
-    Parse the output of `_log_changed_files`.
-    """
+    """Parse the output of `_log_changed_files`."""
     commits = log.split(sep)[1:]
 
     for c in commits:
         lines = c.strip().split('\n')
         commit_hash = lines[0]
 
-        for l in lines[1:]:
-            items = l.split('\t')
+        for line in lines[1:]:
+            items = line.split('\t')
             change_type = items[0][0]
 
             if change_type in ['R', 'C']:

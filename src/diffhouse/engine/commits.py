@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from collections.abc import Iterator
+from dataclasses import dataclass
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
@@ -57,8 +57,8 @@ def log_commits(
 ) -> str:
     """Return a normalized git log from repository at `path` with custom formatting.
 
-    Commits are separated by `record_sep` and fields within each commit are separated by
-    `field_sep`.
+    Commits are separated by `record_sep` and fields within each commit are
+    separated by `field_sep`.
     """
     # prepare git log command
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())

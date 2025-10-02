@@ -1,11 +1,10 @@
 import re
-
-from dataclasses import dataclass
 from collections.abc import Iterator
+from dataclasses import dataclass
 
 from ..git import GitCLI
-from .utils import hash
 from .constants import RECORD_SEPARATOR
+from .utils import hash
 
 # TODO: binary diffs
 
@@ -19,9 +18,14 @@ class Diff:
     path_a: str
     """Path to file before the commit."""
     path_b: str
-    """Path to file after the commit. Differs from `path_a` for renames and copies."""
+    """
+    Path to file after the commit. Differs from `path_a` for renames and copies.
+    """
     changed_file_id: str
-    """Hash of `commit_hash`, `path_a`, and `path_b`. Use it to match with a `ChangedFile`."""
+    """
+    Hash of `commit_hash`, `path_a`, and `path_b`. Use it to match with a
+    `ChangedFile`.
+    """
     start_a: int
     """Line number that started the hunk before the commit."""
     length_a: int
@@ -41,28 +45,20 @@ class Diff:
 
 
 def collect_diffs(path: str) -> Iterator[Diff]:
-    """
-    Get diffs per commit and file for local repository at `path`.
-    """
+    """Get diffs per commit and file for local repository at `path`."""
     log = _log_diffs(path)
     yield from _parse_diffs(log)
 
 
 def _log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> str:
-    """
-    Run a variation of `git log -p` with commits delimited by `sep` and return
-    the output.
-    """
+    """Run a variation of `git log -p` with commits delimited by `sep` and return the output."""
     git = GitCLI(path)
     log = git.run('log', '-p', '-U0', f"--pretty=format:'{sep}%H'")
     return log
 
 
 def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
-    """
-    Parse the output of `log_diffs` (`log` parameter with separator `sep`) into
-    a structured format.
-    """
+    """Parse the output of `log_diffs`."""
     commits = log.split(sep)[1:]
 
     file_sep_pat = re.compile(r'^diff --git', flags=re.MULTILINE)

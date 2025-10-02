@@ -3,11 +3,11 @@ from functools import wraps
 
 from .cloning import TempClone
 from .engine import (
-    Commit,
     ChangedFile,
+    Commit,
     Diff,
-    collect_commits,
     collect_changed_files,
+    collect_commits,
     collect_diffs,
     get_branches,
     get_tags,
@@ -15,19 +15,18 @@ from .engine import (
 
 
 class Repo:
-    """
-    Git repository wrapper providing on-demand access to metadata.
+    """Git repository wrapper providing on-demand access to metadata.
 
-    When used in a `with` statement, it creates a clone in the background for querying.
+    When used in a `with` statement, it creates a clone in the background for
+    querying.
     """
 
     # TODO: verbose
     def __init__(self, location: str, blobs: bool = False):
-        """
-        Initialize the repository. `location` can be a remote URL or a local path.
+        """Initialize the repository. `location` can be a remote URL or a local path.
 
-        If `blobs` is `True`, load file content for diffs as well. This requires a
-        complete clone and may take a long time.
+        If `blobs` is `True`, load file content for diffs as well. This requires
+        a complete clone and may take a long time.
         """
         # TODO: local path
         self._blobs = blobs
@@ -45,9 +44,7 @@ class Repo:
         self._active = False
 
     def _check_active(func):
-        """
-        Decorator that raises an error if the Repo context manager is inactive.
-        """
+        """Raise an error if the Repo context manager is inactive."""
 
         @wraps(func)
         def wrapper(self):
@@ -62,34 +59,26 @@ class Repo:
 
     @property
     def url(self) -> str:
-        """
-        URL of the remote repository.
-        """
+        """URL of the remote repository."""
         # TODO: get it from git for local paths
         return self._location
 
     @property
     @_check_active
     def branches(self) -> Iterator[str]:
-        """
-        Branch names of the repository.
-        """
+        """Branch names of the repository."""
         return get_branches(self._clone.path)
 
     @property
     @_check_active
     def tags(self) -> Iterator[str]:
-        """
-        Tag names of the repository.
-        """
+        """Tag names of the repository."""
         return get_tags(self._clone.path)
 
     @property
     @_check_active
     def commits(self) -> Iterator[Commit]:
-        """
-        Main branch commit history.
-        """
+        """Main branch commit history."""
         return collect_commits(self._clone.path)
 
     # TODO: find a better name
@@ -97,9 +86,7 @@ class Repo:
     @property
     @_check_active
     def changed_files(self) -> Iterator[ChangedFile]:
-        """
-        Files changed per commit.
-        """
+        """Files changed per commit."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load changed files.'
@@ -109,9 +96,7 @@ class Repo:
     @property
     @_check_active
     def diffs(self) -> Iterator[Diff]:
-        """
-        Line-level changes within a commit.
-        """
+        """Line-level changes within a commit."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load diffs.'
