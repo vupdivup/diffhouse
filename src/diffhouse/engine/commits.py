@@ -20,7 +20,6 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-# TODO: shortstat
 @dataclass
 class Commit:
     """Commit metadata."""
@@ -45,9 +44,9 @@ class Commit:
     """Commit message body."""
     files_changed: int
     """Number of files changed in the commit."""
-    insertions: int
+    lines_added: int
     """Number of lines inserted in the commit."""
-    deletions: int
+    lines_deleted: int
     """Number of lines deleted in the commit."""
 
 
@@ -120,6 +119,6 @@ def parse_commits(
             subject=fields['subject'].strip(),
             body=fields['body'].strip(),
             files_changed=files_changed,
-            insertions=insertions,
-            deletions=deletions,
+            lines_added=insertions,
+            lines_deleted=deletions,
         )
