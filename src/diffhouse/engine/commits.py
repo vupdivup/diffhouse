@@ -86,11 +86,9 @@ def parse_commits(
     """Parse the output of `log_commits`."""
     commits = log.split(record_sep)[1:]
 
-    shortstat_pat = re.compile(
-        r'(?P<files_changed>\d+) file.*'
-        r'(?:(?P<insertions>\d+) insertion).*'
-        r'(?:(?P<deletions>\d+) deletion)?'
-    )
+    files_changed_pat = re.compile(r'(\d+) file')
+    insertions_pat = re.compile(r'(\d+) insertion')
+    deletions_pat = re.compile(r'(\d+) deletion')
 
     for c in commits:
         values = c.split(field_sep)
@@ -99,17 +97,17 @@ def parse_commits(
         fields = {k: v for k, v in zip(FIELDS, values[:-1])}
 
         shortstat = values[-1]
-        shortstat_match = shortstat_pat.search(shortstat)
-        shortstat_dict = shortstat_match.groupdict() if shortstat_match else {}
 
-        if shortstat_match:
-            files_changed = int(shortstat_dict.get('files_changed'))
-            insertions = int(shortstat_dict.get('insertions', 0) or 0)
-            deletions = int(shortstat_dict.get('deletions', 0) or 0)
-        else:
-            files_changed = 0
-            insertions = 0
-            deletions = 0
+        files_changed_match = files_changed_pat.search(shortstat)
+        insertions_match = insertions_pat.search(shortstat)
+        deletions_match = deletions_pat.search(shortstat)
+
+        files_changed = (
+            int(files_changed_match.group(1)) if files_changed_match else 0
+        )
+
+        insertions = int(insertions_match.group(1)) if insertions_match else 0
+        deletions = int(deletions_match.group(1)) if deletions_match else 0
 
         yield Commit(
             commit_hash=fields['commit_hash'],
