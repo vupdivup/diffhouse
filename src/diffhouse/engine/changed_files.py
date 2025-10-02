@@ -81,7 +81,7 @@ def log_name_statuses(path: str, sep: str = RECORD_SEPARATOR) -> str:
 def parse_name_statuses(
     log: str, sep: str = RECORD_SEPARATOR
 ) -> Iterator[ChangedFile]:
-    """Parse the output of `_log_changed_files`."""
+    """Parse the output of `log_name_statuses`."""
     commits = log.split(sep)[1:]
 
     for c in commits:
@@ -118,7 +118,7 @@ def log_numstats(path: str, sep: str = RECORD_SEPARATOR) -> str:
 
 
 def parse_numstats(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
-    """Parse the output of `git log --numstat` for a local repository at `path`."""
+    """Parse the output of `log_numstats`."""
     commits = log.split(sep)[1:]
 
     for c in commits:
