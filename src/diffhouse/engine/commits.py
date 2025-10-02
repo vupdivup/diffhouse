@@ -1,3 +1,4 @@
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 
@@ -42,6 +43,12 @@ class Commit:
     """Commit message subject."""
     body: str
     """Commit message body."""
+    files_changed: int
+    """Number of files changed in the commit."""
+    insertions: int
+    """Number of lines inserted in the commit."""
+    deletions: int
+    """Number of lines deleted in the commit."""
 
 
 def collect_commits(path: str) -> Iterator[Commit]:
@@ -63,10 +70,12 @@ def log_commits(
     # prepare git log command
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
-    pattern = f'{record_sep}{specifiers}'
+    pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
 
     git = GitCLI(path)
-    return git.run('log', f'--pretty=format:{pattern}', '--date=iso')
+    return git.run(
+        'log', f'--pretty=format:{pattern}', '--date=iso', '--shortstat'
+    )
 
 
 def parse_commits(
@@ -77,8 +86,30 @@ def parse_commits(
     """Parse the output of `log_commits`."""
     commits = log.split(record_sep)[1:]
 
+    shortstat_pat = re.compile(
+        r'(?P<files_changed>\d+) file.*'
+        r'(?:(?P<insertions>\d+) insertion).*'
+        r'(?:(?P<deletions>\d+) deletion)?'
+    )
+
     for c in commits:
-        fields = {k: v for k, v in zip(FIELDS, c.split(field_sep))}
+        values = c.split(field_sep)
+
+        # match all fields with field names except the shortstat section
+        fields = {k: v for k, v in zip(FIELDS, values[:-1])}
+
+        shortstat = values[-1]
+        shortstat_match = shortstat_pat.search(shortstat)
+        shortstat_dict = shortstat_match.groupdict() if shortstat_match else {}
+
+        if shortstat_match:
+            files_changed = int(shortstat_dict.get('files_changed'))
+            insertions = int(shortstat_dict.get('insertions', 0) or 0)
+            deletions = int(shortstat_dict.get('deletions', 0) or 0)
+        else:
+            files_changed = 0
+            insertions = 0
+            deletions = 0
 
         yield Commit(
             commit_hash=fields['commit_hash'],
@@ -90,4 +121,7 @@ def parse_commits(
             committer_date=fields['committer_date'],
             subject=fields['subject'].strip(),
             body=fields['body'].strip(),
+            files_changed=files_changed,
+            insertions=insertions,
+            deletions=deletions,
         )
