@@ -21,10 +21,11 @@ Homepage = "https://github.com/vupdivup/diffhouse"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.yapf]
-based_on_style = "google"
-split_before_expression_after_opening_paren = "true"
-split_before_first_argument = "true"
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
 
 [dependency-groups]
 dev = [
@@ -33,4 +34,5 @@ dev = [
     "polars>=1.33.1",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
+    "ruff>=0.13.2",
 ]
