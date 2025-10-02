@@ -37,12 +37,12 @@ class TempClone:
         git = GitCLI(self._path)
 
         # prepare git clone command
-        args = ["clone"]
+        args = ['clone']
 
         if self._shallow:
-            args.extend(["--bare", "--filter=blob:none"])
+            args.extend(['--bare', '--filter=blob:none'])
 
-        args.extend([self._url, "."])
+        args.extend([self._url, '.'])
 
         git.run(*args)
 

@@ -5,15 +5,15 @@ from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
-    "commit_hash": "%H",
-    "author_name": "%an",
-    "author_email": "%ae",
-    "author_date": "%ad",
-    "committer_name": "%cn",
-    "committer_email": "%ce",
-    "committer_date": "%cd",
-    "subject": "%s",
-    "body": "%b",
+    'commit_hash': '%H',
+    'author_name': '%an',
+    'author_email': '%ae',
+    'author_date': '%ad',
+    'committer_name': '%cn',
+    'committer_email': '%ce',
+    'committer_date': '%cd',
+    'subject': '%s',
+    'body': '%b',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -51,7 +51,9 @@ def collect_commits(path: str) -> Iterator[Commit]:
 
 
 def log_commits(
-    path: str, field_sep: str = UNIT_SEPARATOR, record_sep: str = RECORD_SEPARATOR
+    path: str,
+    field_sep: str = UNIT_SEPARATOR,
+    record_sep: str = RECORD_SEPARATOR,
 ) -> str:
     """Return a normalized git log from repository at `path` with custom formatting.
 
@@ -61,14 +63,16 @@ def log_commits(
     # prepare git log command
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
-    pattern = f"{record_sep}{specifiers}"
+    pattern = f'{record_sep}{specifiers}'
 
     git = GitCLI(path)
-    return git.run("log", f"--pretty=format:{pattern}", "--date=iso")
+    return git.run('log', f'--pretty=format:{pattern}', '--date=iso')
 
 
 def parse_commits(
-    log: str, field_sep: str = UNIT_SEPARATOR, record_sep: str = RECORD_SEPARATOR
+    log: str,
+    field_sep: str = UNIT_SEPARATOR,
+    record_sep: str = RECORD_SEPARATOR,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
     commits = log.split(record_sep)[1:]
@@ -77,13 +81,13 @@ def parse_commits(
         fields = {k: v for k, v in zip(FIELDS, c.split(field_sep))}
 
         yield Commit(
-            commit_hash=fields["commit_hash"],
-            author_name=fields["author_name"],
-            author_email=fields["author_email"],
-            author_date=fields["author_date"],
-            committer_name=fields["committer_name"],
-            committer_email=fields["committer_email"],
-            committer_date=fields["committer_date"],
-            subject=fields["subject"].strip(),
-            body=fields["body"].strip(),
+            commit_hash=fields['commit_hash'],
+            author_name=fields['author_name'],
+            author_email=fields['author_email'],
+            author_date=fields['author_date'],
+            committer_name=fields['committer_name'],
+            committer_email=fields['committer_email'],
+            committer_date=fields['committer_date'],
+            subject=fields['subject'].strip(),
+            body=fields['body'].strip(),
         )

@@ -40,7 +40,7 @@ def _log_changed_files(path: str, sep: str = RECORD_SEPARATOR) -> str:
     `sep` for local repository at `path`.
     """
     git = GitCLI(path)
-    return git.run("log", f"--pretty=format:{sep}%H", "--name-status")
+    return git.run('log', f'--pretty=format:{sep}%H', '--name-status')
 
 
 def _parse_changed_files(
@@ -52,14 +52,14 @@ def _parse_changed_files(
     commits = log.split(sep)[1:]
 
     for c in commits:
-        lines = c.strip().split("\n")
+        lines = c.strip().split('\n')
         commit_hash = lines[0]
 
         for l in lines[1:]:
-            items = l.split("\t")
+            items = l.split('\t')
             change_type = items[0][0]
 
-            if change_type in ["R", "C"]:
+            if change_type in ['R', 'C']:
                 similarity = int(items[0][1:])
                 path_b = items[2]
                 path_a = items[1]

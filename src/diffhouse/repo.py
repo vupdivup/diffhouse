@@ -53,7 +53,7 @@ class Repo:
         def wrapper(self):
             if not self._active:
                 raise RuntimeError(
-                    f"{Repo.__name__} object is not active."
+                    f'{Repo.__name__} object is not active.'
                     " Wrap in a 'with' statement to query."
                 )
             return func(self)
@@ -102,7 +102,7 @@ class Repo:
         """
         if not self._blobs:
             raise ValueError(
-                "Initialize Repo with `blobs`=`True` to load changed files."
+                'Initialize Repo with `blobs`=`True` to load changed files.'
             )
         return collect_changed_files(self._clone.path)
 
@@ -113,5 +113,7 @@ class Repo:
         Line-level changes within a commit.
         """
         if not self._blobs:
-            raise ValueError("Initialize Repo with `blobs`=`True` to load diffs.")
+            raise ValueError(
+                'Initialize Repo with `blobs`=`True` to load diffs.'
+            )
         return collect_diffs(self._clone.path)

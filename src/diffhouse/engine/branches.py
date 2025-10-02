@@ -19,11 +19,11 @@ def log_branches(path: str) -> str:
     repository at `path`.
     """
     git = GitCLI(path)
-    return git.ls_remote("branches")
+    return git.ls_remote('branches')
 
 
 def parse_branches(log: str) -> Iterator[str]:
     """
     Parse the output of `log_branches` passed via the `log` argument.
     """
-    yield from re.findall(r"refs/heads/(.+)\n", log)
+    yield from re.findall(r'refs/heads/(.+)\n', log)

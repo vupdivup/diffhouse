@@ -20,11 +20,11 @@ def log_tags(path: str) -> str:
     Return the output of `git ls-remote --tags` for repository at `path`.
     """
     git = GitCLI(path)
-    return git.ls_remote("tags")
+    return git.ls_remote('tags')
 
 
 def parse_tags(log: str) -> Iterator[str]:
     """
     Parse the output of `log_tags` passed via the `log` argument.
     """
-    yield from re.findall(r"refs/tags/(.+)\n", log)
+    yield from re.findall(r'refs/tags/(.+)\n', log)
