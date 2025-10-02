@@ -1,4 +1,6 @@
-from .repo import Repo
-from .engine import Commit, Diff, ChangedFile
+"""Git metadata extraction tool."""
 
-__all__ = ["Repo", "Commit", "Diff", "ChangedFile"]
+from .engine import ChangedFile, Commit, Diff
+from .repo import Repo
+
+__all__ = ['Repo', 'Commit', 'Diff', 'ChangedFile']

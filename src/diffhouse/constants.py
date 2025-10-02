@@ -1,2 +1,2 @@
-PACKAGE_NAME = "diffhouse"
-MINIMUM_GIT_VERSION = "2.20.0"
+PACKAGE_NAME = 'diffhouse'
+MINIMUM_GIT_VERSION = '2.20.0'
