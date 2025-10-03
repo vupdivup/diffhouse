@@ -147,8 +147,8 @@ def parse_numstats(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
             else:
                 # ../../a => ../../b
                 match = re.match(r'(.+) => (.+)', file_expr)
-                path_b = match.group(1) if match else file_expr
-                path_a = match.group(2) if match else file_expr
+                path_a = match.group(1) if match else file_expr
+                path_b = match.group(2) if match else file_expr
 
             yield {
                 'changed_file_id': hash(commit_hash, path_a, path_b),
