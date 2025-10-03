@@ -53,7 +53,7 @@ def collect_diffs(path: str) -> Iterator[Diff]:
 def _log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> str:
     """Run a variation of `git log -p` with commits delimited by `sep` and return the output."""
     git = GitCLI(path)
-    log = git.run('log', '-p', '-U0', f"--pretty=format:'{sep}%H'")
+    log = git.run('log', '-p', '-U0', f'--pretty=format:{sep}%H')
     return log
 
 
