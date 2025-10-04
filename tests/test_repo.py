@@ -98,7 +98,7 @@ def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
         message_local = f'{commit_local["subject"]}\n\n{commit_local["body"]}'
 
         similarity = SequenceMatcher(
-            lambda x: x in '\n\r', message_local, commit_gh['commit']['message']
+            None, message_local.strip(), commit_gh['commit']['message'].strip()
         ).ratio()
 
         assert similarity > 0.9, f'Commit: {commit_gh}'
