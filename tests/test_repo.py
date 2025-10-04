@@ -44,7 +44,7 @@ def diffs_df(repo: Repo) -> pl.DataFrame:
 
 def test_branches(repo: Repo):
     """Test that an extract of GitHub branches matches `repo.branches`."""
-    branches_gh = [b['name'] for b in github.get_branches(repo.url)]
+    branches_gh = [b['name'] for b in github.get_branches(repo.location)]
 
     for branch in branches_gh:
         assert branch in repo.branches
@@ -52,7 +52,7 @@ def test_branches(repo: Repo):
 
 def test_tags(repo: Repo):
     """Test that an extract of GitHub tags matches `repo.tags`."""
-    tags_gh = [t['name'] for t in github.get_tags(repo.url)]
+    tags_gh = [t['name'] for t in github.get_tags(repo.location)]
 
     for tag in tags_gh:
         assert tag in repo.tags
@@ -61,7 +61,7 @@ def test_tags(repo: Repo):
 # TODO: add more meaningful messages
 def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
     """Test that an extract of commits from GitHub matches `repo.commits`."""
-    commits_gh = github.get_commits(repo.url)
+    commits_gh = github.get_commits(repo.location)
 
     for commit_gh in commits_gh:
         commit_hash_gh = commit_gh['sha']
