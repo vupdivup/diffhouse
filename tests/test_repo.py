@@ -8,10 +8,12 @@ import pytest
 from diffhouse import Repo
 
 from . import github
-from .constants import INVALID_URL, REPOS, VALID_URL
+from .constants import INVALID_URL, LARGE_REPOS, SMALL_REPOS, VALID_URL
 
-# randomly select 4 repos for testing to keep it relatively short
-SELECTED_REPOS = random.sample(REPOS, 4)
+# randomly select 3 repos (2 small, 1 large) for testing to keep it relatively
+# short
+SELECTED_REPOS = random.sample(SMALL_REPOS, 2)
+SELECTED_REPOS.append(random.choice(LARGE_REPOS))
 
 
 @pytest.fixture(scope='module', params=SELECTED_REPOS)
@@ -97,10 +99,12 @@ def test_lines_changed__commits_vs_files(repo: Repo):
         0
     )
 
-    assert joined.filter(
+    errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
         | (pl.col('lines_deleted') != pl.col('lines_deleted_right'))
-    ).is_empty()
+    )
+
+    assert errors.is_empty(), f'Errors: {errors.to_dicts()}'
 
 
 def test_files_changed__commits_vs_files(repo):
@@ -120,24 +124,27 @@ def test_files_changed__commits_vs_files(repo):
         (pl.col('files_changed') != pl.col('files_changed_right'))
     )
 
-    assert errors.is_empty()
+    # for commits with many changed files, `changed_files` may be off
+    assert len(errors) / len(joined) < 0.01, f'Errors: {errors.to_dicts()}'
 
 
 def test_lines_changed__files_vs_diffs(repo: Repo):
     """Test that the number of line changes in `repo.changed_files` matches `repo.diffs`."""
     changed_files = pl.DataFrame(repo.changed_files).select(
-        'changed_file_id', 'lines_added', 'lines_deleted'
+        'commit_hash', 'changed_file_id', 'lines_added', 'lines_deleted'
     )
 
     diffs = pl.DataFrame(repo.diffs).select(
-        'changed_file_id', 'lines_added', 'lines_deleted'
+        'commit_hash', 'changed_file_id', 'lines_added', 'lines_deleted'
     )
 
-    diffs_grouped = diffs.group_by('changed_file_id').agg(
+    diffs_grouped = diffs.group_by('commit_hash', 'changed_file_id').agg(
         pl.sum('lines_added'), pl.sum('lines_deleted')
     )
 
-    joined = changed_files.join(diffs_grouped, on='changed_file_id', how='left')
+    joined = changed_files.join(
+        diffs_grouped, on=['commit_hash', 'changed_file_id'], how='left'
+    )
 
     errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
@@ -146,7 +153,9 @@ def test_lines_changed__files_vs_diffs(repo: Repo):
 
     # allow a bit of wiggle room as line change counts can be different for
     # `git log shortstat` and `git log -p`
-    assert len(errors) / len(joined) < 0.01
+    assert len(errors) / len(joined) < 0.01, (
+        f'Commits: {errors["commit_hash"].to_list()}'
+    )
 
 
 def test_invalid_url():

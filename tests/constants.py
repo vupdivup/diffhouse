@@ -1,15 +1,11 @@
-# taken from the list of most starred repos on GitHub, with commits in the
-# 10-20k range
-REPOS = [
-    'https://github.com/facebook/react',
+# 1-10k commits
+SMALL_REPOS = [
     'https://github.com/vuejs/vue',
     'https://github.com/Significant-Gravitas/AutoGPT',
     'https://github.com/twbs/bootstrap',
     'https://github.com/n8n-io/n8n',
-    'https://github.com/yt-dlp/yt-dlp',
     'https://github.com/Genymobile/scrcpy',
     'https://github.com/langflow-ai/langflow',
-    'https://github.com/langchain-ai/langchain',
     'https://github.com/d3/d3',
     'https://github.com/axios/axios',
     'https://github.com/microsoft/terminal',
@@ -22,6 +18,18 @@ REPOS = [
     'https://github.com/rustdesk/rustdesk',
     'https://github.com/tauri-apps/tauri',
     'https://github.com/fastapi/fastapi',
+    'https://github.com/angular/angular.js',
+    'https://github.com/AUTOMATIC1111/stable-diffusion-webui',
+]
+
+# 10-20k commits
+LARGE_REPOS = [
+    'https://github.com/spring-projects/spring-framework',
+    'https://github.com/facebook/react',
+    'https://github.com/scikit-learn/scikit-learn',
+    'https://github.com/django/django',
+    'https://github.com/yt-dlp/yt-dlp',
+    'https://github.com/langchain-ai/langchain',
 ]
 
 VALID_URL = 'https://github.com/vupdivup/diffhouse'
