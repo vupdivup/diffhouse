@@ -1,6 +1,7 @@
 import random
 from datetime import datetime as dt
 from datetime import timezone as tz
+from difflib import SequenceMatcher
 
 import polars as pl
 import pytest
@@ -22,6 +23,24 @@ def repo(request) -> Repo:
     return Repo(request.param, blobs=True).load()
 
 
+@pytest.fixture(scope='module')
+def commits_df(repo: Repo) -> pl.DataFrame:
+    """Fixture that provides a DataFrame of `repo.commits`."""
+    return pl.DataFrame(repo.commits)
+
+
+@pytest.fixture(scope='module')
+def changed_files_df(repo: Repo) -> pl.DataFrame:
+    """Fixture that provides a DataFrame of `repo.changed_files`."""
+    return pl.DataFrame(repo.changed_files)
+
+
+@pytest.fixture(scope='module')
+def diffs_df(repo: Repo) -> pl.DataFrame:
+    """Fixture that provides a DataFrame of `repo.diffs`."""
+    return pl.DataFrame(repo.diffs)
+
+
 def test_branches(repo: Repo):
     """Test that an extract of GitHub branches matches `repo.branches`."""
     branches_gh = [b['name'] for b in github.get_branches(repo.url)]
@@ -38,11 +57,9 @@ def test_tags(repo: Repo):
         assert tag in repo.tags
 
 
-def test_commits_vs_github(repo: Repo):
+def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
     """Test that an extract of commits from GitHub matches `repo.commits`."""
     commits_gh = github.get_commits(repo.url)
-
-    commits_df = pl.DataFrame(repo.commits)
 
     for commit_gh in commits_gh:
         commit_hash_gh = commit_gh['sha']
@@ -54,27 +71,37 @@ def test_commits_vs_github(repo: Repo):
 
         commit_local = commit_local.row(0, named=True)
 
+        # author name
         assert (
             commit_local['author_name'] == commit_gh['commit']['author']['name']
-        )
+        ), f'Commit: {commit_gh}'
+
+        # author email
         assert (
             commit_local['author_email']
             == commit_gh['commit']['author']['email']
-        )
+        ), f'Commit: {commit_gh}'
+
+        # committer name
         assert (
             commit_local['committer_name']
             == commit_gh['commit']['committer']['name']
-        )
+        ), f'Commit: {commit_gh}'
+
+        # committer email
         assert (
             commit_local['committer_email']
             == commit_gh['commit']['committer']['email']
-        )
+        ), f'Commit: {commit_gh}'
 
-        # GitHub API line endings are not normalized it seems
-        gh_message_clean = commit_gh['commit']['message'].replace('\r\n', '\n')
+        # commit message similarity
+        message_local = f'{commit_local["subject"]}\n\n{commit_local["body"]}'
 
-        assert commit_local['subject'] in gh_message_clean
-        assert commit_local['body'] in gh_message_clean
+        similarity = SequenceMatcher(
+            lambda x: x in '\n\r', message_local, commit_gh['commit']['message']
+        ).ratio()
+
+        assert similarity > 0.9, f'Commit: {commit_gh}'
 
         # GitHub commit date is in UTC by default
         commit_date_gh = dt.strptime(
@@ -88,10 +115,14 @@ def test_commits_vs_github(repo: Repo):
         assert commit_date_local == commit_date_gh
 
 
-def test_lines_changed__commits_vs_files(repo: Repo):
+def test_lines_changed__commits_vs_files(
+    commits_df: pl.DataFrame, changed_files_df: pl.DataFrame
+):
     """Test that the number of line changes in `repo.commits` matches `repo.changed_files`."""
-    commits = pl.DataFrame(repo.commits)
-    changed_files = pl.DataFrame(repo.changed_files)
+    commits = commits_df.select('commit_hash', 'lines_added', 'lines_deleted')
+    changed_files = changed_files_df.select(
+        'commit_hash', 'lines_added', 'lines_deleted'
+    )
 
     files_grouped = changed_files.group_by('commit_hash').agg(
         pl.sum('lines_added'), pl.sum('lines_deleted')
@@ -109,10 +140,12 @@ def test_lines_changed__commits_vs_files(repo: Repo):
     assert errors.is_empty(), f'Errors: {errors.to_dicts()}'
 
 
-def test_files_changed__commits_vs_files(repo):
+def test_files_changed__commits_vs_files(
+    commits_df: pl.DataFrame, changed_files_df: pl.DataFrame
+):
     """Test that the number of files changed in `repo.commits` matches `repo.changed_files`."""
-    commits = pl.DataFrame(repo.commits).select('commit_hash', 'files_changed')
-    changed_files = pl.DataFrame(repo.changed_files).select('commit_hash')
+    commits = commits_df.select('commit_hash', 'files_changed')
+    changed_files = changed_files_df.select('commit_hash')
 
     files_grouped = changed_files.group_by('commit_hash').agg(
         pl.len().alias('files_changed')
@@ -130,13 +163,16 @@ def test_files_changed__commits_vs_files(repo):
     assert len(errors) / len(joined) < 0.01, f'Errors: {errors.to_dicts()}'
 
 
-def test_lines_changed__files_vs_diffs(repo: Repo):
+def test_lines_changed__files_vs_diffs(
+    changed_files_df: pl.DataFrame, diffs_df: pl.DataFrame
+):
     """Test that the number of line changes in `repo.changed_files` matches `repo.diffs`."""
-    changed_files = pl.DataFrame(repo.changed_files).select(
+    # using lazy loading as this is an expensive operation
+    changed_files = changed_files_df.lazy().select(
         'commit_hash', 'changed_file_id', 'lines_added', 'lines_deleted'
     )
 
-    diffs = pl.DataFrame(repo.diffs).select(
+    diffs = diffs_df.lazy().select(
         'commit_hash', 'changed_file_id', 'lines_added', 'lines_deleted'
     )
 
@@ -151,11 +187,13 @@ def test_lines_changed__files_vs_diffs(repo: Repo):
     errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
         | (pl.col('lines_deleted') != pl.col('lines_deleted_right'))
-    )
+    ).collect()
+
+    joined_count = joined.select(pl.len()).collect().item()
 
     # allow a bit of wiggle room as line change counts can be different for
     # `git log shortstat` and `git log -p`
-    assert len(errors) / len(joined) < 0.01, (
+    assert len(errors) / joined_count < 0.01, (
         f'Commits: {errors["commit_hash"].to_list()}'
     )
 
