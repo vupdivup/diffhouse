@@ -68,8 +68,15 @@ def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
     )
 
     for commit in commits:
-        commit_hash, body = commit.split('\n', 1)
-        files = re.split(file_sep_pat, body)[1:]
+        parts = commit.split('\n', 1)
+
+        commit_hash = parts[0]
+
+        # ignore empty commits
+        if len(parts) == 1:
+            continue
+
+        files = re.split(file_sep_pat, parts[1])[1:]
         for file in files:
             # format: a/path b/path
             header = file.split('\n', 1)[0]
