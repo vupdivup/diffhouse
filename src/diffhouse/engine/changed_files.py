@@ -50,20 +50,21 @@ def collect_changed_files(path: str) -> Iterator[ChangedFile]:
     numstats = list(parse_numstats(log_numstats(path)))
 
     # TODO: optimize
-    for name_status in name_statuses:
-        for numstat in numstats:
-            if name_status['changed_file_id'] == numstat['changed_file_id']:
-                yield ChangedFile(
-                    commit_hash=name_status['commit_hash'],
-                    path_a=name_status['path_a'],
-                    path_b=name_status['path_b'],
-                    changed_file_id=name_status['changed_file_id'],
-                    change_type=name_status['change_type'],
-                    similarity=name_status['similarity'],
-                    lines_added=numstat['lines_added'],
-                    lines_deleted=numstat['lines_deleted'],
-                )
-                break
+    index = {n['changed_file_id']: n for n in name_statuses}
+
+    for numstat in numstats:
+        if numstat['changed_file_id'] in index:
+            name_status = index[numstat['changed_file_id']]
+            yield ChangedFile(
+                commit_hash=name_status['commit_hash'],
+                path_a=name_status['path_a'],
+                path_b=name_status['path_b'],
+                changed_file_id=name_status['changed_file_id'],
+                change_type=name_status['change_type'],
+                similarity=name_status['similarity'],
+                lines_added=numstat['lines_added'],
+                lines_deleted=numstat['lines_deleted'],
+            )
 
 
 def log_name_statuses(path: str, sep: str = RECORD_SEPARATOR) -> str:
@@ -147,8 +148,8 @@ def parse_numstats(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
             else:
                 # ../../a => ../../b
                 match = re.match(r'(.+) => (.+)', file_expr)
-                path_b = match.group(1) if match else file_expr
-                path_a = match.group(2) if match else file_expr
+                path_a = match.group(1) if match else file_expr
+                path_b = match.group(2) if match else file_expr
 
             yield {
                 'changed_file_id': hash(commit_hash, path_a, path_b),

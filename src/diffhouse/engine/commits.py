@@ -42,45 +42,64 @@ class Commit:
     """Commit message subject."""
     body: str
     """Commit message body."""
-    files_changed: int
-    """Number of files changed in the commit."""
-    lines_added: int
-    """Number of lines inserted in the commit."""
-    lines_deleted: int
-    """Number of lines deleted in the commit."""
+    files_changed: int | None
+    """
+    Number of files changed in the commit.
+    
+    Available if `blobs` is `True`.
+    """
+    lines_added: int | None
+    """
+    Number of lines inserted in the commit.
+    
+    Available if `blobs` is `True`.
+    """
+    lines_deleted: int | None
+    """Number of lines deleted in the commit.
+
+    Available if `blobs` is `True`.
+    """
 
 
-def collect_commits(path: str) -> Iterator[Commit]:
+def collect_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
     """Return main branch commit data from a git repository at `path`."""
-    log = log_commits(path)
-    yield from parse_commits(log)
+    log = log_commits(path, shortstats=shortstats)
+    yield from parse_commits(log, parse_shortstats=shortstats)
 
 
 def log_commits(
     path: str,
     field_sep: str = UNIT_SEPARATOR,
     record_sep: str = RECORD_SEPARATOR,
+    shortstats: bool = False,
 ) -> str:
-    """Return a normalized git log from repository at `path` with custom formatting.
+    """Return a normalized git log from a local repository.
 
-    Commits are separated by `record_sep` and fields within each commit are
-    separated by `field_sep`.
+    Args:
+        path (str): The file system path to the local git repository.
+        field_sep: Separator between fields in each commit.
+        record_sep: Separator between commits.
+        shortstats: Whether to include a shortstat summary of changes per commit.
+
     """
     # prepare git log command
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
     pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
+    args = ['log', f'--pretty=format:{pattern}', '--date=iso']
+
+    if shortstats:
+        args.append('--shortstat')
 
     git = GitCLI(path)
-    return git.run(
-        'log', f'--pretty=format:{pattern}', '--date=iso', '--shortstat'
-    )
+    return git.run(*args)
 
 
 def parse_commits(
     log: str,
     field_sep: str = UNIT_SEPARATOR,
     record_sep: str = RECORD_SEPARATOR,
+    parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
     commits = log.split(record_sep)[1:]
@@ -95,18 +114,26 @@ def parse_commits(
         # match all fields with field names except the shortstat section
         fields = {k: v for k, v in zip(FIELDS, values[:-1])}
 
-        shortstat = values[-1]
+        if parse_shortstats:
+            shortstat = values[-1]
 
-        files_changed_match = files_changed_pat.search(shortstat)
-        insertions_match = insertions_pat.search(shortstat)
-        deletions_match = deletions_pat.search(shortstat)
+            files_changed_match = files_changed_pat.search(shortstat)
+            insertions_match = insertions_pat.search(shortstat)
+            deletions_match = deletions_pat.search(shortstat)
 
-        files_changed = (
-            int(files_changed_match.group(1)) if files_changed_match else 0
-        )
+            files_changed = (
+                int(files_changed_match.group(1)) if files_changed_match else 0
+            )
 
-        insertions = int(insertions_match.group(1)) if insertions_match else 0
-        deletions = int(deletions_match.group(1)) if deletions_match else 0
+            insertions = (
+                int(insertions_match.group(1)) if insertions_match else 0
+            )
+            deletions = int(deletions_match.group(1)) if deletions_match else 0
+
+        else:
+            files_changed = None
+            insertions = None
+            deletions = None
 
         yield Commit(
             commit_hash=fields['commit_hash'],

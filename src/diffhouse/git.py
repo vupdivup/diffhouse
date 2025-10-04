@@ -75,7 +75,10 @@ class GitCLI:
 
         Set `what` to either `branches` or `tags` to list the respective refs.
         """
-        if self.version < packaging.version.parse('2.46.0'):
+        if (
+            self.version < packaging.version.parse('2.46.0')
+            and what == 'branches'
+        ):
             # use the deprecated --heads option for < 2.46.0
             what = 'heads'
         return self.run('ls-remote', f'--{what}', '--refs')

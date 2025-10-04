@@ -11,5 +11,7 @@ dist/
 # Local development
 temp/
 
+uv.lock
+
 # Editor
 .vscode/
