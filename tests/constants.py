@@ -20,6 +20,11 @@ SMALL_REPOS = [
     'https://github.com/fastapi/fastapi',
     'https://github.com/angular/angular.js',
     'https://github.com/AUTOMATIC1111/stable-diffusion-webui',
+    'https://github.com/expressjs/express',
+    'https://github.com/Eugeny/tabby',
+    'https://github.com/redis/redis',
+    'https://github.com/pallets/flask',
+    'https://github.com/vitejs/vite',
 ]
 
 # 10-20k commits
@@ -30,6 +35,11 @@ LARGE_REPOS = [
     'https://github.com/django/django',
     'https://github.com/yt-dlp/yt-dlp',
     'https://github.com/langchain-ai/langchain',
+    'https://github.com/webpack/webpack',
+    'https://github.com/apache/superset',
+    'https://github.com/microsoft/playwright',
+    'https://github.com/netdata/netdata',
+    'https://github.com/nestjs/nest',
 ]
 
 VALID_URL = 'https://github.com/vupdivup/diffhouse'
