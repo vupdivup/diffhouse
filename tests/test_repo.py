@@ -77,10 +77,12 @@ def test_commits_vs_github(repo: Repo):
         assert commit_local['body'] in gh_message_clean
 
         # GitHub commit date is in UTC by default
-        commit_date_gh = dt.fromisoformat(commit_gh['commit']['author']['date'])
+        commit_date_gh = dt.strptime(
+            commit_gh['commit']['author']['date'], '%Y-%m-%dT%H:%M:%SZ'
+        ).replace(tzinfo=tz.utc)
 
-        commit_date_local = dt.fromisoformat(
-            commit_local['author_date']
+        commit_date_local = dt.strptime(
+            commit_local['author_date'], '%Y-%m-%d %H:%M:%S %z'
         ).astimezone(tz.utc)
 
         assert commit_date_local == commit_date_gh
