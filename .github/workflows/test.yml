@@ -35,9 +35,6 @@ jobs:
         with:
           git-version: ${{ matrix.windows_git_version }}
 
-      - name: Log git version
-        run: git --version
-
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
 
@@ -47,7 +44,7 @@ jobs:
       # This installs Python as well
       - name: Install dependencies (uv)
         run: |
-          uv sync --python {{ matrix.python-version }}
+          uv sync --python ${{ matrix.python-version }}
 
       - name: Run tests
         run: uv run pytest -v
