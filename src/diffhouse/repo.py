@@ -1,4 +1,7 @@
 from collections.abc import Iterator
+from pathlib import Path
+
+import validators
 
 from .cloning import TempClone
 from .engine import (
@@ -22,14 +25,21 @@ class Repo:
 
     # TODO: verbose
     def __init__(self, location: str, blobs: bool = False):
-        """Initialize the repository. `location` can be a remote URL or a local path.
+        """Initialize the repository.
 
-        If `blobs` is `True`, load file content for diffs as well. This requires
-        a complete clone and may take a long time.
+        Args:
+            location: URL or local path pointing to a git repository.
+            blobs: Whether to load file content and extract associated metadata.
+
         """
-        # TODO: local path
+        # Convert location to file URI if not a URL
+        self._location = (
+            location.strip()
+            if validators.url(location)
+            else Path(location).absolute().as_uri()
+        )
+
         self._blobs = blobs
-        self._location = location.strip()
         self._active = False
         self._loaded = False
 
@@ -40,7 +50,7 @@ class Repo:
         self._diffs = None
 
     def __enter__(self):
-        self._clone = TempClone(self.url, shallow=not self._blobs)
+        self._clone = TempClone(self._location, shallow=not self._blobs)
         self._clone.__enter__()
         self._active = True
         return self
