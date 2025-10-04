@@ -1,4 +1,8 @@
-from collections.abc import Iterator
+from collections import defaultdict
+from collections.abc import Iterable
+from pathlib import Path
+
+import validators
 
 from .cloning import TempClone
 from .engine import (
@@ -22,25 +26,28 @@ class Repo:
 
     # TODO: verbose
     def __init__(self, location: str, blobs: bool = False):
-        """Initialize the repository. `location` can be a remote URL or a local path.
+        """Initialize the repository.
 
-        If `blobs` is `True`, load file content for diffs as well. This requires
-        a complete clone and may take a long time.
+        Args:
+            location: URL or local path pointing to a git repository.
+            blobs: Whether to load file content and extract associated metadata.
+
         """
-        # TODO: local path
+        # Convert location to file URI if not a URL
+        self._location = (
+            location.strip()
+            if validators.url(location)
+            else Path(location).resolve().as_uri()
+        )
+
         self._blobs = blobs
-        self._location = location.strip()
         self._active = False
         self._loaded = False
 
-        self._branches = None
-        self._tags = None
-        self._commits = None
-        self._changed_files = None
-        self._diffs = None
+        self._cache = defaultdict(lambda: None)
 
     def __enter__(self):
-        self._clone = TempClone(self.url, shallow=not self._blobs)
+        self._clone = TempClone(self._location, shallow=not self._blobs)
         self._clone.__enter__()
         self._active = True
         return self
@@ -57,14 +64,14 @@ class Repo:
         """
         self.__enter__()
 
-        # load properties via getters
-        self.commits
-        self.branches
-        self.tags
+        # load and cache properties via getters
+        self._cache['commits'] = list(self.commits)
+        self._cache['branches'] = list(self.branches)
+        self._cache['tags'] = list(self.tags)
 
         if self._blobs:
-            self.changed_files
-            self.diffs
+            self._cache['changed_files'] = list(self.changed_files)
+            self._cache['diffs'] = list(self.diffs)
 
         self.__exit__(None, None, None)
 
@@ -79,65 +86,64 @@ class Repo:
             )
 
     @property
-    def url(self) -> str:
-        """URL of the remote repository."""
-        # TODO: get it from git for local paths
+    def location(self) -> str:
+        """Location where the repository was cloned from.
+
+        Either the URL of the remote or a local path URI.
+        """
         return self._location
 
     @property
-    def branches(self) -> Iterator[str]:
+    def branches(self) -> Iterable[str]:
         """Branch names of the repository."""
-        if not self._branches:
-            self._raise_if_inactive()
-            self._branches = list(get_branches(self._clone.path))
-        return self._branches
+        if self._cache['branches']:
+            return self._cache['branches']
+
+        self._raise_if_inactive()
+        return get_branches(self._clone.path)
 
     @property
-    def tags(self) -> Iterator[str]:
+    def tags(self) -> Iterable[str]:
         """Tag names of the repository."""
-        if not self._tags:
-            self._raise_if_inactive()
-            self._tags = list(get_tags(self._clone.path))
-        return self._tags
+        if self._cache['tags']:
+            return self._cache['tags']
+
+        self._raise_if_inactive()
+        return get_tags(self._clone.path)
 
     @property
-    def commits(self) -> Iterator[Commit]:
+    def commits(self) -> Iterable[Commit]:
         """Main branch commit history."""
-        if not self._commits:
-            self._raise_if_inactive()
+        if self._cache['commits']:
+            return self._cache['commits']
 
-            if self._blobs:
-                self._commits = list(
-                    collect_commits(self._clone.path, shortstats=True)
-                )
-            else:
-                self._commits = list(
-                    collect_commits(self._clone.path, shortstats=False)
-                )
-
-        return self._commits
+        self._raise_if_inactive()
+        return collect_commits(self._clone.path, shortstats=self._blobs)
 
     @property
-    def changed_files(self) -> Iterator[ChangedFile]:
+    def changed_files(self) -> Iterable[ChangedFile]:
         """Files changed per commit."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load changed files.'
             )
-        if not self._changed_files:
-            self._raise_if_inactive()
-            self._changed_files = list(collect_changed_files(self._clone.path))
 
-        return self._changed_files
+        if self._cache['changed_files']:
+            return self._cache['changed_files']
+
+        self._raise_if_inactive()
+        return collect_changed_files(self._clone.path)
 
     @property
-    def diffs(self) -> Iterator[Diff]:
+    def diffs(self) -> Iterable[Diff]:
         """Line-level changes within a commit."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load diffs.'
             )
-        if not self._diffs:
-            self._raise_if_inactive()
-            self._diffs = list(collect_diffs(self._clone.path))
-        return self._diffs
+
+        if self._cache['diffs']:
+            return self._cache['diffs']
+
+        self._raise_if_inactive()
+        return collect_diffs(self._clone.path)

@@ -9,13 +9,11 @@ import pytest
 from diffhouse import Repo
 
 from . import github
-from .constants import INVALID_URL, LARGE_REPOS, SMALL_REPOS, VALID_URL
+from .constants import INVALID_URL, REPOS, VALID_URL
 from .utils import create_failure_msg
 
-# randomly select 3 repos (2 small, 1 large) for testing to keep it relatively
-# short
-SELECTED_REPOS = random.sample(SMALL_REPOS, 2)
-SELECTED_REPOS.append(random.choice(LARGE_REPOS))
+# randomly select 3 repos for testing to keep it relatively short
+SELECTED_REPOS = random.sample(REPOS, 3)
 
 
 @pytest.fixture(scope='module', params=SELECTED_REPOS)
@@ -44,7 +42,7 @@ def diffs_df(repo: Repo) -> pl.DataFrame:
 
 def test_branches(repo: Repo):
     """Test that an extract of GitHub branches matches `repo.branches`."""
-    branches_gh = [b['name'] for b in github.get_branches(repo.url)]
+    branches_gh = [b['name'] for b in github.get_branches(repo.location)]
 
     for branch in branches_gh:
         assert branch in repo.branches
@@ -52,7 +50,7 @@ def test_branches(repo: Repo):
 
 def test_tags(repo: Repo):
     """Test that an extract of GitHub tags matches `repo.tags`."""
-    tags_gh = [t['name'] for t in github.get_tags(repo.url)]
+    tags_gh = [t['name'] for t in github.get_tags(repo.location)]
 
     for tag in tags_gh:
         assert tag in repo.tags
@@ -61,7 +59,7 @@ def test_tags(repo: Repo):
 # TODO: add more meaningful messages
 def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
     """Test that an extract of commits from GitHub matches `repo.commits`."""
-    commits_gh = github.get_commits(repo.url)
+    commits_gh = github.get_commits(repo.location)
 
     for commit_gh in commits_gh:
         commit_hash_gh = commit_gh['sha']
@@ -73,50 +71,35 @@ def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
 
         commit_local = commit_local.row(0, named=True)
 
-        # author name
-        assert (
-            commit_local['author_name'] == commit_gh['commit']['author']['name']
-        ), create_failure_msg(
-            'Author name differs',
-            {
-                'commit': commit_hash_gh,
-            },
+        comparisons = (
+            (
+                commit_local['author_name'],
+                commit_gh['commit']['author']['name'],
+            ),
+            (
+                commit_local['author_email'],
+                commit_gh['commit']['author']['email'],
+            ),
+            (
+                commit_local['committer_name'],
+                commit_gh['commit']['committer']['name'],
+            ),
+            (
+                commit_local['committer_email'],
+                commit_gh['commit']['committer']['email'],
+            ),
         )
 
-        # author email
-        assert (
-            commit_local['author_email']
-            == commit_gh['commit']['author']['email']
-        ), create_failure_msg(
-            'Author email differs',
-            {
-                'commit': commit_hash_gh,
-            },
-        )
+        for local, remote in comparisons:
+            assert local == remote, create_failure_msg(
+                'Commit metadata differs',
+                {
+                    'commit': commit_hash_gh,
+                    'local': local,
+                    'remote': remote,
+                },
+            )
 
-        # committer name
-        assert (
-            commit_local['committer_name']
-            == commit_gh['commit']['committer']['name']
-        ), create_failure_msg(
-            'Committer name differs',
-            {
-                'commit': commit_hash_gh,
-            },
-        )
-
-        # committer email
-        assert (
-            commit_local['committer_email']
-            == commit_gh['commit']['committer']['email']
-        ), create_failure_msg(
-            'Committer email differs',
-            {
-                'commit': commit_hash_gh,
-            },
-        )
-
-        # commit message similarity
         message_local = f'{commit_local["subject"]}\n\n{commit_local["body"]}'
 
         # GitHub commit messages have varied line endings
@@ -128,6 +111,7 @@ def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
             None, message_local.strip(), message_gh
         ).ratio()
 
+        # commit message similarity
         assert similarity > 0.9, create_failure_msg(
             'Commit messages differ',
             {
@@ -246,6 +230,13 @@ def test_no_blobs():
 
     with pytest.raises(ValueError):
         r.diffs
+
+
+def test_location_as_path():
+    """Test that initializing `Repo` with a local path works correctly."""
+    r = Repo('.', blobs=True).load()
+
+    assert r.location.startswith('file://')
 
 
 if __name__ == '__main__':

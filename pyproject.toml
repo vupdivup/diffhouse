@@ -3,6 +3,7 @@ name = "diffhouse"
 version = "0.2.6"
 dependencies = [
   "packaging>=25.0",
+  "validators>=0.35.0",
 ]
 description = "Metadata extraction tool for git repositories."
 readme = "README.md"
