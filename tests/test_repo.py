@@ -248,5 +248,12 @@ def test_no_blobs():
         r.diffs
 
 
+def test_location_as_path():
+    """Test that initializing `Repo` with a local path works correctly."""
+    r = Repo('.', blobs=True).load()
+
+    assert r.location.startswith('file://')
+
+
 if __name__ == '__main__':
     pytest.main()
