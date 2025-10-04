@@ -10,6 +10,7 @@ from diffhouse import Repo
 
 from . import github
 from .constants import INVALID_URL, LARGE_REPOS, SMALL_REPOS, VALID_URL
+from .utils import create_failure_msg
 
 # randomly select 3 repos (2 small, 1 large) for testing to keep it relatively
 # short
@@ -57,6 +58,7 @@ def test_tags(repo: Repo):
         assert tag in repo.tags
 
 
+# TODO: add more meaningful messages
 def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
     """Test that an extract of commits from GitHub matches `repo.commits`."""
     commits_gh = github.get_commits(repo.url)
@@ -74,34 +76,66 @@ def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
         # author name
         assert (
             commit_local['author_name'] == commit_gh['commit']['author']['name']
-        ), f'Commit: {commit_gh}'
+        ), create_failure_msg(
+            'Author name differs',
+            {
+                'commit': commit_hash_gh,
+            },
+        )
 
         # author email
         assert (
             commit_local['author_email']
             == commit_gh['commit']['author']['email']
-        ), f'Commit: {commit_gh}'
+        ), create_failure_msg(
+            'Author email differs',
+            {
+                'commit': commit_hash_gh,
+            },
+        )
 
         # committer name
         assert (
             commit_local['committer_name']
             == commit_gh['commit']['committer']['name']
-        ), f'Commit: {commit_gh}'
+        ), create_failure_msg(
+            'Committer name differs',
+            {
+                'commit': commit_hash_gh,
+            },
+        )
 
         # committer email
         assert (
             commit_local['committer_email']
             == commit_gh['commit']['committer']['email']
-        ), f'Commit: {commit_gh}'
+        ), create_failure_msg(
+            'Committer email differs',
+            {
+                'commit': commit_hash_gh,
+            },
+        )
 
         # commit message similarity
         message_local = f'{commit_local["subject"]}\n\n{commit_local["body"]}'
 
+        # GitHub commit messages have varied line endings
+        message_gh = (
+            commit_gh['commit']['message'].strip().replace('\r\n', '\n')
+        )
+
         similarity = SequenceMatcher(
-            None, message_local.strip(), commit_gh['commit']['message'].strip()
+            None, message_local.strip(), message_gh
         ).ratio()
 
-        assert similarity > 0.9, f'Commit: {commit_gh}'
+        assert similarity > 0.9, create_failure_msg(
+            'Commit messages differ',
+            {
+                'commit': commit_hash_gh,
+                'parsed message': repr(message_local),
+                'github message': repr(message_gh),
+            },
+        )
 
         # GitHub commit date is in UTC by default
         commit_date_gh = dt.strptime(
