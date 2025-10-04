@@ -2,30 +2,52 @@ name: Test package
 
 on: [pull_request, workflow_dispatch]
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub API requests
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.x"]
+        python-version: ["3.10", "3"]
+        git_version: ["2.22.0", "latest"]
+        include:
+          # Git has different version schemes on Windows; adding mapping here
+          - os: windows-latest
+            git_version: "2.22.0"
+            windows_git_version: "2.22.0.windows.1"
       fail-fast: false
     
     steps:
-      - uses: actions/checkout@v5
+      # Install a specific Git version when not using 'latest'
+      - name: Setup Git (Linux/macOS)
+        if: matrix.git_version != 'latest' && runner.os != 'Windows'
+        uses: isikerhan/setup-git@v1
+        with:
+          git-version: ${{ matrix.git_version }}
+
+      # Same for Windows, using the Windows-specific version
+      - name: Setup Git (Windows)
+        if: matrix.git_version != 'latest' && runner.os == 'Windows'
+        uses: isikerhan/setup-git@v1
+        with:
+          git-version: ${{ matrix.windows_git_version }}
+
       - name: Log git version
         run: git --version
-        
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      
+      # This installs Python as well
+      - name: Install dependencies (uv)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -e .
+          uv sync --python {{ matrix.python-version }}
 
       - name: Run tests
-        run: pytest -v
+        run: uv run pytest -v
