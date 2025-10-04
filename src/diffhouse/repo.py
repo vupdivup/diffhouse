@@ -37,7 +37,7 @@ class Repo:
         self._location = (
             location.strip()
             if validators.url(location)
-            else Path(location).absolute().as_uri()
+            else Path(location).resolve().as_uri()
         )
 
         self._blobs = blobs
@@ -86,9 +86,11 @@ class Repo:
             )
 
     @property
-    def url(self) -> str:
-        """URL of the remote repository."""
-        # TODO: get it from git for local paths
+    def location(self) -> str:
+        """Location where the repository was cloned from.
+
+        Either the URL of the remote or a local path URI.
+        """
         return self._location
 
     @property
