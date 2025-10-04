@@ -1,0 +1,35 @@
+name: Test package compatibility
+
+on: [pull_request, workflow_dispatch]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub API requests
+
+jobs:
+  compatibility-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Install the minimum Git version
+      - name: Setup Git (Linux/macOS)
+        uses: isikerhan/setup-git@v1
+        with:
+          git-version: 2.22.0
+
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: |
+          uv sync --python ${{ steps.setup-python.outputs.python-version }}
+
+      - name: Run tests
+        run: uv run pytest -v
