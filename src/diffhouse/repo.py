@@ -1,136 +1,179 @@
-import pandas as pd
+import logging
+from collections import defaultdict
+from collections.abc import Iterable
+from pathlib import Path
 
-from .logger import logger
+import validators
+
 from .cloning import TempClone
-from .engine import *
+from .engine import (
+    ChangedFile,
+    Commit,
+    Diff,
+    collect_changed_files,
+    collect_commits,
+    collect_diffs,
+    get_branches,
+    get_tags,
+)
+from .logger import log_to_stdout, logger
+
 
 class Repo:
-    '''
-    Represents a git repository.
-    '''
-    def __init__(self, url: str, blobs: bool = False, quiet=False):
-        '''
-        Initialize the repository from remote at `url` and load metadata. This
-        may take some time depending on the repository size.
+    """Git repository wrapper providing access to metadata.
 
-        - If `blobs` is `True`, fetch file-level metadata will as well. Note that
-        this greatly increases processing time.
-        - If `quiet` is `True`, suppress logging output.
-        '''
-        if quiet:
-            logger.disabled = True
+    When used via its `load()` method or in a `with` statement, it sets up and
+    queries a temporary clone to retrieve information.
+    """
+
+    # TODO: verbose
+    def __init__(
+        self, location: str, blobs: bool = False, verbose: bool = False
+    ):
+        """Initialize the repository.
+
+        Args:
+            location: URL or local path pointing to a git repository.
+            blobs: Whether to load file content and extract associated metadata.
+            verbose: Whether to log progress to stdout.
+
+        """
+        # Convert location to file URI if not a URL
+        self._location = (
+            location.strip()
+            if validators.url(location)
+            else Path(location).resolve().as_uri()
+        )
 
         self._blobs = blobs
+        self._active = False
+        self._loaded = False
+        self._verbose = verbose
 
-        logger.info(f'Cloning {url}')
-        with TempClone(url, shallow=not blobs) as c:
-            # get normalized URL via git
-            self._url = get_remote_url(c.path)
+        self._cache = defaultdict(lambda: None)
 
+    def __enter__(self):
+        """Set up a temporary clone of the repository."""
+        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
+            logger.info(f'Cloning {self._location}')
+
+            self._clone = TempClone(self._location, shallow=not self._blobs)
+            self._clone.__enter__()
+
+            logger.info(f'Cloned into {self._clone.path}')
+
+        self._active = True
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Clean up the temporary clone."""
+        self._clone.__exit__(exc_type, exc_value, traceback)
+        self._active = False
+
+    def load(self) -> 'Repo':
+        """Load all repository data into memory.
+
+        This is a convenience method to access properties without the `with`
+        statement. Not recommended for large repositories.
+
+        Returns:
+            self
+
+        """
+        self.__enter__()
+
+        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
+            # load and cache properties via getters
             logger.info('Extracting commits')
-            self._commits = get_commits(c.path).assign(repository=self.url)
+            self._cache['commits'] = list(self.commits)
 
             logger.info('Extracting branches')
-            self._branches = pd.DataFrame({
-            'branch': get_branches(c.path),
-            'repository': self.url})
+            self._cache['branches'] = list(self.branches)
 
             logger.info('Extracting tags')
-            self._tags = pd.DataFrame({
-            'tag': get_tags(c.path),
-            'repository': self.url})
+            self._cache['tags'] = list(self.tags)
 
-            
-            if blobs:
+            if self._blobs:
+                logger.info('Extracting changed files')
+                self._cache['changed_files'] = list(self.changed_files)
+
                 logger.info('Extracting diffs')
-                self._status_changes = get_status_changes(c.path)
-                self._line_changes = get_line_changes(c.path)
+                self._cache['diffs'] = list(self.diffs)
 
-                self._diffs = pd.merge(
-                    left=self._status_changes,
-                    right=self._line_changes,
-                    on=['commit_hash', 'file', 'from_file'],
-                    how='inner',
-                    suffixes=('_status', '_numstat'))
-                
-                self._diffs['repository'] = self.url
+            self.__exit__(None, None, None)
 
-        logger.info('\033[92mDone\033[0m')
+            logger.info('Load complete')
 
-        logger.disabled = False
+        return self
+
+    def _raise_if_inactive(self):
+        """Raise an error if the Repo context manager is inactive."""
+        if not self._active:
+            raise RuntimeError(
+                f'{Repo.__name__} object is not active.'
+                " Wrap in a 'with' statement to query."
+            )
 
     @property
-    def url(self):
-        '''
-        URL of the remote repository.
-        '''
-        return self._url
-    
-    @property
-    def commits(self) -> pd.DataFrame:
-        '''
-        Commit history as a pandas DataFrame.
+    def location(self) -> str:
+        """Location where the repository was cloned from.
 
-        Schema:
-        | Column | Description |
-        | --- | --- |
-        | `commit_hash` | Full hash of the commit. |
-        | `author_name` | Author username. |
-        | `author_email` | Author email. |
-        | `author_date` | Commit creation date. |
-        | `committer_name` | Committer username. |
-        | `committer_email` | Committer email. |
-        | `committer_date` | Commit apply date. |
-        | `subject` | Subject line of the commit message. |
-        | `body` | Body of the commit message. |
-        | `repository` | Remote repository URL. |
-        '''
-        return self._commits.copy()
-    
-    @property
-    def branches(self) -> pd.DataFrame:
-        '''
-        Branches of the repository.
+        Can either be a remote URL or a local file URI based on the
+        original input.
+        """
+        return self._location
 
-        Schema:
-        | Column | Description |
-        | --- | --- |
-        | `branch` | Branch name. |
-        | `repository` | Remote repository URL. |
-        '''
-        return self._branches.copy()
-    
     @property
-    def tags(self) -> pd.DataFrame:
-        '''
-        Tags of the repository.
+    def branches(self) -> Iterable[str]:
+        """Branch names of the repository."""
+        if self._cache['branches']:
+            return self._cache['branches']
 
-        Schema:
-        | Column | Description |
-        | --- | --- |
-        | `tag` | Tag name. |
-        | `repository` | Remote repository URL. |
-        '''
-        return self._tags.copy()
-    
+        self._raise_if_inactive()
+        return get_branches(self._clone.path)
+
     @property
-    def diffs(self) -> pd.DataFrame:
-        '''
-        File-level changes in the repository.
+    def tags(self) -> Iterable[str]:
+        """Tag names of the repository."""
+        if self._cache['tags']:
+            return self._cache['tags']
 
-        Schema:
-        | Column | Description |
-        | --- | --- |
-        | `commit_hash` | Full hash of the commit. |
-        | `file` | Path to file. |
-        | `status` | Single-letter code representing the change type. See [git-status](https://git-scm.com/docs/git-status#_short_format) for possible values. |
-        | `from_file` | Path to file before the change, for renames and copies. |
-        | `lines_added` | Number of lines added. |
-        | `lines_deleted` | Number of lines deleted. |
-        | `repository` | Remote repository URL. |
-        '''
+        self._raise_if_inactive()
+        return get_tags(self._clone.path)
+
+    @property
+    def commits(self) -> Iterable[Commit]:
+        """Main branch commit history."""
+        if self._cache['commits']:
+            return self._cache['commits']
+
+        self._raise_if_inactive()
+        return collect_commits(self._clone.path, shortstats=self._blobs)
+
+    @property
+    def changed_files(self) -> Iterable[ChangedFile]:
+        """Files changed for each commit."""
         if not self._blobs:
             raise ValueError(
-                'Initialize Repo with `blobs`=`True` to load diffs.')
+                'Initialize Repo with `blobs`=`True` to load changed files.'
+            )
 
-        return self._diffs.copy()
+        if self._cache['changed_files']:
+            return self._cache['changed_files']
+
+        self._raise_if_inactive()
+        return collect_changed_files(self._clone.path)
+
+    @property
+    def diffs(self) -> Iterable[Diff]:
+        """Line-level changes within commits."""
+        if not self._blobs:
+            raise ValueError(
+                'Initialize Repo with `blobs`=`True` to load diffs.'
+            )
+
+        if self._cache['diffs']:
+            return self._cache['diffs']
+
+        self._raise_if_inactive()
+        return collect_diffs(self._clone.path)

@@ -2,10 +2,17 @@
 __pycache__/
 .venv*/
 .pytest_cache/
+.ruff_cache/
 
-# build files
+# Build files
 dist/
 *.egg-info/
-temp/
 
+# Local development
+temp/
+.env
+
+uv.lock
+
+# Editor
 .vscode/
