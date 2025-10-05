@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
@@ -15,6 +16,7 @@ from .engine import (
     get_branches,
     get_tags,
 )
+from .logger import log_to_stdout, logger
 
 
 class Repo:
@@ -35,12 +37,15 @@ class Repo:
     """
 
     # TODO: verbose
-    def __init__(self, location: str, blobs: bool = False):
+    def __init__(
+        self, location: str, blobs: bool = False, verbose: bool = False
+    ):
         """Initialize the repository.
 
         Args:
             location: URL or local path pointing to a git repository.
             blobs: Whether to load file content and extract associated metadata.
+            verbose: Whether to log progress to stdout.
 
         """
         # Convert location to file URI if not a URL
@@ -53,16 +58,25 @@ class Repo:
         self._blobs = blobs
         self._active = False
         self._loaded = False
+        self._verbose = verbose
 
         self._cache = defaultdict(lambda: None)
 
     def __enter__(self):
-        self._clone = TempClone(self._location, shallow=not self._blobs)
-        self._clone.__enter__()
+        """Set up a temporary clone of the repository."""
+        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
+            logger.info(f'Cloning {self._location}')
+
+            self._clone = TempClone(self._location, shallow=not self._blobs)
+            self._clone.__enter__()
+
+            logger.info(f'Cloned into {self._clone.path}')
+
         self._active = True
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Clean up the temporary clone."""
         self._clone.__exit__(exc_type, exc_value, traceback)
         self._active = False
 
@@ -78,16 +92,27 @@ class Repo:
         """
         self.__enter__()
 
-        # load and cache properties via getters
-        self._cache['commits'] = list(self.commits)
-        self._cache['branches'] = list(self.branches)
-        self._cache['tags'] = list(self.tags)
+        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
+            # load and cache properties via getters
+            logger.info('Extracting commits')
+            self._cache['commits'] = list(self.commits)
 
-        if self._blobs:
-            self._cache['changed_files'] = list(self.changed_files)
-            self._cache['diffs'] = list(self.diffs)
+            logger.info('Extracting branches')
+            self._cache['branches'] = list(self.branches)
 
-        self.__exit__(None, None, None)
+            logger.info('Extracting tags')
+            self._cache['tags'] = list(self.tags)
+
+            if self._blobs:
+                logger.info('Extracting changed files')
+                self._cache['changed_files'] = list(self.changed_files)
+
+                logger.info('Extracting diffs')
+                self._cache['diffs'] = list(self.diffs)
+
+            self.__exit__(None, None, None)
+
+            logger.info('Load complete')
 
         return self
 
