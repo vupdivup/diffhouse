@@ -29,6 +29,10 @@ plugins:
             members_order: source
             show_root_heading: true
             group_by_category: false
+            filters:
+              - "!^_"
+              - "!^__"
+              - "__init__"
 
 markdown_extensions:
   - pymdownx.highlight:
