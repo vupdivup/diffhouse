@@ -18,10 +18,20 @@ from .engine import (
 
 
 class Repo:
-    """Git repository wrapper providing on-demand access to metadata.
+    """Git repository wrapper providing access to metadata.
 
-    When used in a `with` statement, it creates a clone in the background for
-    querying.
+    When used via its `load()` method or in a `with` statement, it sets up and
+    queries a temporary clone in the background to retrieve information.
+
+    Examples:
+        ```python
+        with Repo('https://github.com/user/repo') as r:
+            for c in r.commits:
+                print(c.commit_hash[:10])
+                print(c.author_email)
+                print(c.subject)
+        ```
+
     """
 
     # TODO: verbose
@@ -56,11 +66,15 @@ class Repo:
         self._clone.__exit__(exc_type, exc_value, traceback)
         self._active = False
 
-    def load(self):
+    def load(self) -> 'Repo':
         """Load all repository data into memory.
 
         This is a convenience method to access properties without the `with`
         statement. Not recommended for large repositories.
+
+        Returns:
+            self
+
         """
         self.__enter__()
 
@@ -89,7 +103,8 @@ class Repo:
     def location(self) -> str:
         """Location where the repository was cloned from.
 
-        Either the URL of the remote or a local path URI.
+        Can either be a remote URL or a local file URI based on the
+        original input.
         """
         return self._location
 
@@ -122,7 +137,7 @@ class Repo:
 
     @property
     def changed_files(self) -> Iterable[ChangedFile]:
-        """Files changed per commit."""
+        """Files changed for each commit."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load changed files.'
@@ -136,7 +151,7 @@ class Repo:
 
     @property
     def diffs(self) -> Iterable[Diff]:
-        """Line-level changes within a commit."""
+        """Line-level changes within commits."""
         if not self._blobs:
             raise ValueError(
                 'Initialize Repo with `blobs`=`True` to load diffs.'
