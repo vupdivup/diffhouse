@@ -14,10 +14,10 @@ class ChangedFile:
     commit_hash: str
     """Full hash of the commit."""
     path_a: str
-    """Path to the file before modifications."""
+    """Path to the file before applying the commit's changes."""
     path_b: str
     """
-    Path to the modified file.
+    Path to the file after applying the commit's changes.
 
     Differs from `path_a` for renames and copies.
     """
