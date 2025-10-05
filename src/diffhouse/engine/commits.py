@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
+from .utils import tweak_git_iso_datetime
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -45,13 +46,13 @@ class Commit:
     files_changed: int | None
     """
     Number of files changed in the commit.
-    
+
     Available if `blobs` is `True`.
     """
     lines_added: int | None
     """
     Number of lines inserted in the commit.
-    
+
     Available if `blobs` is `True`.
     """
     lines_deleted: int | None
@@ -139,10 +140,10 @@ def parse_commits(
             commit_hash=fields['commit_hash'],
             author_name=fields['author_name'],
             author_email=fields['author_email'],
-            author_date=fields['author_date'],
+            author_date=tweak_git_iso_datetime(fields['author_date']),
             committer_name=fields['committer_name'],
             committer_email=fields['committer_email'],
-            committer_date=fields['committer_date'],
+            committer_date=tweak_git_iso_datetime(fields['committer_date']),
             subject=fields['subject'].strip(),
             body=fields['body'].strip(),
             files_changed=files_changed,
