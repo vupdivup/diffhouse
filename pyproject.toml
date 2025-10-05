@@ -5,7 +5,7 @@ dependencies = [
   "packaging>=25.0",
   "validators>=0.35.0",
 ]
-description = "Metadata extraction tool for git repositories."
+description = "Git metadata extractor for analysts."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
