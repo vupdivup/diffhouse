@@ -127,7 +127,7 @@ def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
         ).replace(tzinfo=tz.utc)
 
         commit_date_local = dt.strptime(
-            commit_local['author_date'], '%Y-%m-%d %H:%M:%S %z'
+            commit_local['author_date'], '%Y-%m-%dT%H:%M:%S%z'
         ).astimezone(tz.utc)
 
         assert commit_date_local == commit_date_gh

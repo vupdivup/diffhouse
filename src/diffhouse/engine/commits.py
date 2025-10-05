@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
+from .utils import tweak_git_iso_datetime
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -31,13 +32,17 @@ class Commit:
     author_email: str
     """Author email."""
     author_date: str
-    """Original commit date in ISO 8601 format, with timezone offset."""
+    """Original commit date and time.
+
+    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     committer_name: str
     """Committer name."""
     committer_email: str
     """Committer email."""
     committer_date: str
-    """Actual commit date in ISO 8601 format, with timezone offset."""
+    """Actual commit date and time.
+
+    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     subject: str
     """Commit message subject."""
     body: str
@@ -45,19 +50,19 @@ class Commit:
     files_changed: int | None
     """
     Number of files changed in the commit.
-    
-    Available if `blobs` is `True`.
+
+    Available if `blobs = True`.
     """
     lines_added: int | None
     """
     Number of lines inserted in the commit.
-    
-    Available if `blobs` is `True`.
+
+    Available if `blobs = True`.
     """
     lines_deleted: int | None
     """Number of lines deleted in the commit.
 
-    Available if `blobs` is `True`.
+    Available if `blobs = True`.
     """
 
 
@@ -139,10 +144,10 @@ def parse_commits(
             commit_hash=fields['commit_hash'],
             author_name=fields['author_name'],
             author_email=fields['author_email'],
-            author_date=fields['author_date'],
+            author_date=tweak_git_iso_datetime(fields['author_date']),
             committer_name=fields['committer_name'],
             committer_email=fields['committer_email'],
-            committer_date=fields['committer_date'],
+            committer_date=tweak_git_iso_datetime(fields['committer_date']),
             subject=fields['subject'].strip(),
             body=fields['body'].strip(),
             files_changed=files_changed,

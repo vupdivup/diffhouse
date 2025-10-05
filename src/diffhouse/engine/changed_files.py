@@ -14,11 +14,11 @@ class ChangedFile:
     commit_hash: str
     """Full hash of the commit."""
     path_a: str
-    """Path to file before the commit."""
+    """Path to the file before applying the commit's changes."""
     path_b: str
     """
-    Path to file after the commit.
-    
+    Path to the file after applying the commit's changes.
+
     Differs from `path_a` for renames and copies.
     """
     changed_file_id: str
@@ -27,15 +27,17 @@ class ChangedFile:
     """
     change_type: str
     """
-    Single-letter code representing the change type. 
-    
-    See [git-status](https://git-scm.com/docs/git-status#_short_format) for
+    Single-letter code representing the change type.
+
+    Most commonly one of `A` (added), `C` (copied), `D` (deleted), `M`
+    (modified) or `R` (renamed). See
+    [git-status](https://git-scm.com/docs/git-status#_short_format) for all
     possible values.
     """
     similarity: int
     """
     Similarity index between the two file versions.
-    
+
     `0`-`100` for renames and copies, `100` otherwise.
     """
     lines_added: int

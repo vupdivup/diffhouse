@@ -1,7 +1,9 @@
-# GitHub Action: Generate docs and check for changes
 name: Check documentation freshness
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   check-docs:
@@ -13,17 +15,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.x'
 
-      - name: Install requirements
+      - name: Install dependencies (uv)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pdoc
+          uv sync
 
       - name: Generate documentation
         run: |
-          pdoc -o docs src/diffhouse
+          cd site
+          mkdocs build --site-dir ../docs
 
       - name: Check for changes
         run: |
