@@ -32,13 +32,17 @@ class Commit:
     author_email: str
     """Author email."""
     author_date: str
-    """Original commit date in ISO 8601 format, with timezone offset."""
+    """Original commit date and time.
+
+    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     committer_name: str
     """Committer name."""
     committer_email: str
     """Committer email."""
     committer_date: str
-    """Actual commit date in ISO 8601 format, with timezone offset."""
+    """Actual commit date and time.
+
+    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     subject: str
     """Commit message subject."""
     body: str
@@ -47,18 +51,18 @@ class Commit:
     """
     Number of files changed in the commit.
 
-    Available if `blobs` is `True`.
+    Available if `blobs = True`.
     """
     lines_added: int | None
     """
     Number of lines inserted in the commit.
 
-    Available if `blobs` is `True`.
+    Available if `blobs = True`.
     """
     lines_deleted: int | None
     """Number of lines deleted in the commit.
 
-    Available if `blobs` is `True`.
+    Available if `blobs = True`.
     """
 
 
