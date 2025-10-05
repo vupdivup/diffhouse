@@ -27,7 +27,7 @@ jobs:
       - name: Generate documentation
         run: |
           cd site
-          mkdocs build --site-dir ../docs
+          uv run mkdocs build --site-dir ../docs
 
       - name: Check for changes
         run: |
