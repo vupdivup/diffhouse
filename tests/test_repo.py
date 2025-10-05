@@ -239,5 +239,21 @@ def test_location_as_path():
     assert r.location.startswith('file://')
 
 
+def test_context_manager():
+    """Test that `Repo` works as a context manager."""
+    with Repo(VALID_URL, blobs=True) as r:
+        assert r.branches
+        assert r.tags
+        assert r.commits
+        assert r.changed_files
+        assert r.diffs
+
+    # after exiting the context manager, accessing properties should raise an
+    # error
+    for attr in ('branches', 'tags', 'commits', 'changed_files', 'diffs'):
+        with pytest.raises(RuntimeError):
+            getattr(r, attr)
+
+
 if __name__ == '__main__':
     pytest.main()
