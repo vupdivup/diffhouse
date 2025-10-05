@@ -1,6 +1,6 @@
 [project]
 name = "diffhouse"
-version = "0.2.6"
+version = "0.3.0"
 dependencies = [
   "packaging>=25.0",
   "validators>=0.35.0",
@@ -19,8 +19,8 @@ license-files = ["LICEN[CS]E*"]
 Homepage = "https://github.com/vupdivup/diffhouse"
 
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.23"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 80
