@@ -23,17 +23,7 @@ class Repo:
     """Git repository wrapper providing access to metadata.
 
     When used via its `load()` method or in a `with` statement, it sets up and
-    queries a temporary clone in the background to retrieve information.
-
-    Examples:
-        ```python
-        with Repo('https://github.com/user/repo') as r:
-            for c in r.commits:
-                print(c.commit_hash[:10])
-                print(c.author_email)
-                print(c.subject)
-        ```
-
+    queries a temporary clone to retrieve information.
     """
 
     # TODO: verbose
