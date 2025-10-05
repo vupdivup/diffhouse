@@ -1,0 +1,37 @@
+site_name: diffhouse
+docs_dir: src
+repo_url: https://github.com/vupdivup/diffhouse
+
+nav:
+  - Home: index.md
+  - User Guide: user-guide.md
+  - API Reference: api-reference.md
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_labels: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            separate_signature: true
+            signature_crossrefs: true
+            members_order: source
+            show_root_heading: true
+            group_by_category: false
+
+markdown_extensions:
+  - pymdownx.highlight:
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
