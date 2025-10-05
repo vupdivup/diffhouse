@@ -86,9 +86,6 @@ class Repo:
         This is a convenience method to access properties without the `with`
         statement. Not recommended for large repositories.
 
-        Args:
-            verbose: Whether to log the load progress.
-
         Returns:
             self
 
