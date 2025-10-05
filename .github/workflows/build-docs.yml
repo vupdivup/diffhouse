@@ -1,12 +1,13 @@
-name: Check documentation freshness
+
+name: Build documentation
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
 jobs:
-  check-docs:
+  build-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,14 +25,7 @@ jobs:
         run: |
           uv sync
 
-      - name: Generate documentation
+      - name: Build documentation
         run: |
-          cd site
-          uv run mkdocs build --site-dir ../docs
-
-      - name: Check for changes
-        run: |
-          if [ "$(git status --porcelain docs/*.html)" != "" ]; then
-            echo "Documentation files are out of date."
-            exit 1
-          fi
+          cd docs
+          uv run mkdocs gh-deploy --remote-branch gh-pages
