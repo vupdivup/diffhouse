@@ -6,6 +6,11 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
 
+  - repo: https://github.com/jackdewinter/pymarkdown
+    rev: v0.9.32
+    hooks:
+      - id: pymarkdown
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.2
     hooks:
