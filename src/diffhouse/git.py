@@ -1,10 +1,11 @@
 import re
 import subprocess
+from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryFile
-from typing import Generator, Literal
+from typing import Literal
 
 import packaging.version
 
@@ -38,7 +39,7 @@ class GitCLI:
             )
 
     @contextmanager
-    def run(self, *args: str) -> Generator[StringIO, None, None]:
+    def run(self, *args: str) -> Iterator[StringIO]:
         """Run a git command and stream its outputs.
 
         Use this function as a context manager.
@@ -47,7 +48,7 @@ class GitCLI:
             *args: Arguments for the git command. The `git` keyword is
                 automatically prepended.
 
-        Returns:
+        Yields:
             f: A string stream containing the command's standard output.
 
         """
@@ -60,6 +61,7 @@ class GitCLI:
                     check=True,
                     cwd=self._cwd,
                     stdout=f,
+                    stderr=subprocess.PIPE,  # to suppress console output
                 )
 
                 # move cursor to beginning for read
