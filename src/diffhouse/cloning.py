@@ -40,7 +40,8 @@ class TempClone:
 
         args.extend([self._url, '.'])
 
-        git.run(*args)
+        with git.run(*args):
+            pass
 
         return self
 
