@@ -1,10 +1,12 @@
 import re
 from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
+from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash
+from .utils import hash, split_stream
 
 # TODO: binary diffs
 
@@ -47,30 +49,61 @@ class Diff:
     """Text content of deleted lines."""
 
 
-def collect_diffs(path: str) -> Iterator[Diff]:
-    """Get diffs per commit and file for local repository at `path`."""
-    log = _log_diffs(path)
-    yield from _parse_diffs(log)
+def stream_diffs(path: str) -> Iterator[Diff]:
+    """Stream diffs per commit and file for a local repository.
+
+    Args:
+        path: Path to the local git repository.
+
+    Yields:
+        Diff objects.
+
+    """
+    with log_diffs(path) as log:
+        yield from parse_diffs(log)
 
 
-def _log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> str:
-    """Run a variation of `git log -p` with commits delimited by `sep` and return the output."""
+@contextmanager
+def log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> Iterator[StringIO]:
+    """Run a variation of `git log -p` and return the output as a string stream.
+
+    Args:
+        path: Path to the local repository.
+        sep: Separator between commits.
+
+    Yields:
+        A string stream containing the git log with diffs.
+
+    """
     git = GitCLI(path)
-    log = git.run('log', '-p', '-U0', f'--pretty=format:{sep}%H')
-    return log
+    with git.run('log', '-p', '-U0', f'--pretty=format:{sep}%H') as log:
+        try:
+            yield log
+        finally:
+            log.close()
 
 
-def _parse_diffs(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
-    """Parse the output of `log_diffs`."""
-    commits = log.split(sep)[1:]
+def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
+    """Parse the output of `log_diffs`.
 
+    Args:
+        log: A string stream containing the git log with diffs.
+        sep: Separator between commits.
+
+    Yields:
+        Diff objects.
+
+    """
     file_sep_pat = re.compile(r'^diff --git', flags=re.MULTILINE)
     filepaths_pat = re.compile(r'"?a/(.+)"? "?b/(.+)"?')
     hunk_header_pat = re.compile(
         r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=re.MULTILINE
     )
 
-    for commit in commits:
+    for i, commit in enumerate(split_stream(log, sep=sep)):
+        if i == 0:
+            continue
+
         parts = commit.split('\n', 1)
 
         commit_hash = parts[0]
