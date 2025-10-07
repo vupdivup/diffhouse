@@ -1,10 +1,12 @@
 import re
 from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
+from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash
+from .utils import hash, split_stream
 
 
 @dataclass
@@ -46,49 +48,79 @@ class ChangedFile:
     """Number of lines deleted from the file in the commit."""
 
 
-def collect_changed_files(path: str) -> Iterator[ChangedFile]:
-    """Get changed files per commit for local repository at `path`."""
-    name_statuses = list(parse_name_statuses(log_name_statuses(path)))
-    numstats = list(parse_numstats(log_numstats(path)))
-
-    # TODO: optimize
-    index = {n['changed_file_id']: n for n in name_statuses}
-
-    for numstat in numstats:
-        if numstat['changed_file_id'] in index:
-            name_status = index[numstat['changed_file_id']]
-            yield ChangedFile(
-                commit_hash=name_status['commit_hash'],
-                path_a=name_status['path_a'],
-                path_b=name_status['path_b'],
-                changed_file_id=name_status['changed_file_id'],
-                change_type=name_status['change_type'],
-                similarity=name_status['similarity'],
-                lines_added=numstat['lines_added'],
-                lines_deleted=numstat['lines_deleted'],
-            )
-
-
-def log_name_statuses(path: str, sep: str = RECORD_SEPARATOR) -> str:
-    """Return the output of `git log --name-status` for a local repository.
+def stream_changed_files(path: str) -> Iterator[ChangedFile]:
+    """Get changed files per commit for a local git repository.
 
     Args:
-        path (str): Path to the local git repository.
-        sep (str): Record separator between commits.
+        path: Path to the local git repository.
+
+    Yields:
+        Objects for each file changed in each commit.
+
+    """
+    # Have to read numstat into memory for join
+    # Can experiment with sorting beforehand to see if it's faster
+    with log_numstats(path) as log:
+        index = {n['changed_file_id']: n for n in parse_numstats(log)}
+
+    with log_name_statuses(path) as log:
+        for name_status in parse_name_statuses(log):
+            if name_status['changed_file_id'] in index:
+                numstat = index[name_status['changed_file_id']]
+
+                yield ChangedFile(
+                    commit_hash=name_status['commit_hash'],
+                    path_a=name_status['path_a'],
+                    path_b=name_status['path_b'],
+                    changed_file_id=name_status['changed_file_id'],
+                    change_type=name_status['change_type'],
+                    similarity=name_status['similarity'],
+                    lines_added=numstat['lines_added'],
+                    lines_deleted=numstat['lines_deleted'],
+                )
+
+
+@contextmanager
+def log_name_statuses(
+    path: str, sep: str = RECORD_SEPARATOR
+) -> Iterator[StringIO]:
+    """Return the output of `git log --name-status` for a local repository as a string stream.
+
+    Args:
+        path: Path to the local git repository.
+        sep: Record separator between commits.
+
+    Yields:
+        A string stream containing the log output.
 
     """
     git = GitCLI(path)
-    return git.run('log', f'--pretty=format:{sep}%H', '--name-status')
+    with git.run('log', f'--pretty=format:{sep}%H', '--name-status') as out:
+        try:
+            yield out
+        finally:
+            out.close()
 
 
 def parse_name_statuses(
-    log: str, sep: str = RECORD_SEPARATOR
-) -> Iterator[ChangedFile]:
-    """Parse the output of `log_name_statuses`."""
-    commits = log.split(sep)[1:]
+    log: StringIO, sep: str = RECORD_SEPARATOR
+) -> Iterator[dict]:
+    """Parse the output of `log_name_statuses`.
 
-    for c in commits:
-        lines = c.strip().split('\n')
+    Args:
+        log: The log output as a string stream.
+        sep: Separator between commits.
+
+    Yields:
+        A dictionary containing the parsed name-status information for each
+        changed file.
+
+    """
+    for i, commit in enumerate(split_stream(log, sep)):
+        if i == 0:
+            continue
+
+        lines = commit.strip().split('\n')
         commit_hash = lines[0]
 
         for line in lines[1:]:
@@ -114,18 +146,45 @@ def parse_name_statuses(
             }
 
 
-def log_numstats(path: str, sep: str = RECORD_SEPARATOR) -> str:
-    """Return the output of `git log --numstat` for a local repository at `path`."""
+@contextmanager
+def log_numstats(path: str, sep: str = RECORD_SEPARATOR) -> Iterator[StringIO]:
+    """Return the output of `git log --numstat` for a local repository as a string stream.
+
+    Args:
+        path: Path to the local git repository.
+        sep: Record separator between commits.
+
+    Yields:
+        A string stream containing the log output.
+
+    """
     git = GitCLI(path)
-    return git.run('log', f'--pretty=format:{sep}%H', '--numstat')
+    with git.run('log', f'--pretty=format:{sep}%H', '--numstat') as out:
+        try:
+            yield out
+        finally:
+            out.close()
 
 
-def parse_numstats(log: str, sep: str = RECORD_SEPARATOR) -> Iterator[dict]:
-    """Parse the output of `log_numstats`."""
-    commits = log.split(sep)[1:]
+def parse_numstats(
+    log: StringIO, sep: str = RECORD_SEPARATOR
+) -> Iterator[dict]:
+    """Parse the output of `log_numstats`.
 
-    for c in commits:
-        lines = c.splitlines()
+    Args:
+        log: The log output as a string.
+        sep: Record separator between commits.
+
+    Yields:
+        A dictionary containing the parsed numstat information for each changed
+            file.
+
+    """
+    for i, commit in enumerate(split_stream(log, sep)):
+        if i == 0:
+            continue
+
+        lines = commit.splitlines()
         commit_hash = lines[0]
 
         for line in lines[1:]:

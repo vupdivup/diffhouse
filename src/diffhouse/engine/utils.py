@@ -27,7 +27,7 @@ def tweak_git_iso_datetime(dt: str) -> str:
 def split_stream(
     f: StringIO, sep: str, chunk_size: int = 1024
 ) -> Iterator[str]:
-    """Split a stream into parts based on a separator.
+    """Lazily split a stream into parts based on a separator.
 
     Args:
         f: Input stream to read from.
