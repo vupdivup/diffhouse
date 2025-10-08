@@ -60,13 +60,16 @@ def stream_changed_files(path: str) -> Iterator[ChangedFile]:
     """
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
+    fail_msg = 'Failed to parse changed file. Skipping...'
+
     with log_numstats(path) as log:
         index = {
-            n['changed_file_id']: n for n in safe_iter(parse_numstats(log))
+            n['changed_file_id']: n
+            for n in safe_iter(parse_numstats(log), fail_msg)
         }
 
     with log_name_statuses(path) as log:
-        for name_status in safe_iter(parse_name_statuses(log)):
+        for name_status in safe_iter(parse_name_statuses(log), fail_msg):
             if name_status['changed_file_id'] in index:
                 numstat = index[name_status['changed_file_id']]
 
