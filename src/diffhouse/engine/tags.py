@@ -1,23 +1,44 @@
 import re
-from collections.abc import Iterator
 
 from ..git import GitCLI
 
-# TODO: parse line by line
 
+def get_tags(path: str) -> list[str]:
+    """Get tags of a local git repository.
 
-def get_tags(path: str) -> Iterator[str]:
-    """Get tags of a git repository at `path` via `git ls-remote`."""
+    Args:
+        path: Path to the local git repository.
+
+    Returns:
+        A list of tag names.
+
+    """
     log = log_tags(path)
-    yield from parse_tags(log)
+    return parse_tags(log)
 
 
 def log_tags(path: str) -> str:
-    """Return the output of `git ls-remote --tags` for repository at `path`."""
+    """Return the output of `git ls-remote --tags`.
+
+    Args:
+        path: Path to the local git repository.
+
+    Returns:
+        The output string from `git ls-remote --tags`.
+
+    """
     git = GitCLI(path)
     return git.ls_remote('tags')
 
 
-def parse_tags(log: str) -> Iterator[str]:
-    """Parse the output of `log_tags` passed via the `log` argument."""
-    yield from re.findall(r'refs/tags/(.+)\n', log)
+def parse_tags(log: str) -> list[str]:
+    """Parse the output of `log_tags`.
+
+    Args:
+        log: The output string from `git ls-remote --tags`.
+
+    Returns:
+        A list of tag names.
+
+    """
+    return re.findall(r'refs/tags/(.+)\n', log)

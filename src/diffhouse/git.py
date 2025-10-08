@@ -1,11 +1,15 @@
 import re
 import subprocess
+from collections.abc import Iterator
+from contextlib import contextmanager
+from io import StringIO
 from pathlib import Path
+from tempfile import TemporaryFile
 from typing import Literal
 
 import packaging.version
 
-from .constants import MINIMUM_GIT_VERSION
+from .constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
 
 
 class GitCLI:
@@ -26,7 +30,7 @@ class GitCLI:
         if not self._cwd.is_dir():
             raise NotADirectoryError(f'Path {self._cwd} is not a directory.')
 
-        self._version = self._get_version()
+        self._version = self.get_version()
 
         if self.version < packaging.version.parse(MINIMUM_GIT_VERSION):
             raise GitError(
@@ -34,34 +38,48 @@ class GitCLI:
                 + f'Current version: {self.version}.'
             )
 
-    def run(self, *args: str) -> str:
-        """Run a git command.
+    @contextmanager
+    def run(self, *args: str) -> Iterator[StringIO]:
+        """Run a git command and stream its outputs.
+
+        Use this function as a context manager.
 
         Args:
-            *args (str): Arguments for the git command. The `git` keyword is
+            *args: Arguments for the git command. The `git` keyword is
                 automatically prepended.
 
-        Returns:
-            stdout (str): Standard text output of the git command.
+        Yields:
+            f: A string stream containing the command's standard output.
 
         """
-        try:
-            return subprocess.run(
-                ['git', *args],
-                check=True,
-                cwd=self._cwd,
-                capture_output=True,
-                encoding='utf-8',
-                errors='replace',
-            ).stdout
-        except FileNotFoundError:
-            raise EnvironmentError('Git is not installed or not in PATH.')
-        except subprocess.CalledProcessError as e:
-            raise GitError(e.stderr)
+        with TemporaryFile(
+            'w+', encoding='utf-8', errors='replace', prefix=PACKAGE_NAME
+        ) as f:
+            try:
+                subprocess.run(
+                    ['git', *args],
+                    check=True,
+                    cwd=self._cwd,
+                    stdout=f,
+                    stderr=subprocess.PIPE,  # to suppress console output
+                )
 
-    def _get_version(self) -> packaging.version.Version:
+                # move cursor to beginning for read
+                f.seek(0)
+
+                yield f
+
+            except FileNotFoundError:
+                raise EnvironmentError('Git is not installed or not in PATH.')
+            except subprocess.CalledProcessError as e:
+                raise GitError(e.stderr)
+            finally:
+                f.close()  # maybe unnecessary?
+
+    def get_version(self) -> packaging.version.Version:
         """Get installed git version via `git --version`."""
-        output = self.run('--version')
+        with self.run('--version') as out:
+            output = out.read()
         v = re.match(r'git version (\d+\.\d+\.\d+)', output).group(1)
         return packaging.version.parse(v)
 
@@ -81,7 +99,9 @@ class GitCLI:
         ):
             # use the deprecated --heads option for < 2.46.0
             what = 'heads'
-        return self.run('ls-remote', f'--{what}', '--refs')
+
+        with self.run('ls-remote', f'--{what}', '--refs') as out:
+            return out.read()
 
 
 class GitError(Exception):

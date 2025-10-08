@@ -1,6 +1,5 @@
 import logging
-from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterator
 from pathlib import Path
 
 import validators
@@ -10,27 +9,30 @@ from .engine import (
     ChangedFile,
     Commit,
     Diff,
-    collect_changed_files,
-    collect_commits,
-    collect_diffs,
     get_branches,
     get_tags,
+    stream_changed_files,
+    stream_commits,
+    stream_diffs,
 )
 from .logger import log_to_stdout, logger
 
 
 class Repo:
-    """Git repository wrapper providing access to metadata.
+    """Git repository wrapper for querying mined data.
 
-    When used via its `load()` method or in a `with` statement, it sets up and
-    queries a temporary clone to retrieve information.
+    When used via its `load()` method or in a `with` statement, it sets up a
+    temporary clone to retrieve information; this may take long
+    depending on the repository size and network speed.
     """
 
-    # TODO: verbose
     def __init__(
         self, location: str, blobs: bool = False, verbose: bool = False
     ):
         """Initialize the repository.
+
+        When sourcing from a local path, the `blobs = False` filter
+            may not be available.
 
         Args:
             location: URL or local path pointing to a git repository.
@@ -50,7 +52,10 @@ class Repo:
         self._loaded = False
         self._verbose = verbose
 
-        self._cache = defaultdict(lambda: None)
+        # these two can be accessed in both normal and lazy modes
+        # init with None ensures that data is queried when they are accessed
+        self._branches = None
+        self._tags = None
 
     def __enter__(self):
         """Set up a temporary clone of the repository."""
@@ -73,8 +78,9 @@ class Repo:
     def load(self) -> 'Repo':
         """Load all repository data into memory.
 
-        This is a convenience method to access properties without the `with`
-        statement. Not recommended for large repositories.
+        This is a convenience method to access objects without the `with`
+        statement. For large repositories, take a look at the streaming options
+            instead.
 
         Returns:
             self
@@ -84,35 +90,125 @@ class Repo:
 
         with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
             # load and cache properties via getters
-            logger.info('Extracting commits')
-            self._cache['commits'] = list(self.commits)
-
             logger.info('Extracting branches')
-            self._cache['branches'] = list(self.branches)
+            self.branches
 
             logger.info('Extracting tags')
-            self._cache['tags'] = list(self.tags)
+            self.tags
+
+            logger.info('Extracting commits')
+            self._commits = list(self.stream_commits())
 
             if self._blobs:
                 logger.info('Extracting changed files')
-                self._cache['changed_files'] = list(self.changed_files)
+                self._changed_files = list(self.stream_changed_files())
 
                 logger.info('Extracting diffs')
-                self._cache['diffs'] = list(self.diffs)
+                self._diffs = list(self.stream_diffs())
 
             self.__exit__(None, None, None)
 
             logger.info('Load complete')
 
+        self._loaded = True
+
         return self
 
-    def _raise_if_inactive(self):
-        """Raise an error if the Repo context manager is inactive."""
+    def _require_active(self):
+        """Raise an error if the Repo context manager is not active."""
         if not self._active:
             raise RuntimeError(
                 f'{Repo.__name__} object is not active.'
                 " Wrap in a 'with' statement to query."
             )
+
+    def _require_loaded(self):
+        """Raise an error if the Repo has not been loaded into memory."""
+        if not self._loaded:
+            raise RuntimeError(
+                f'{Repo.__name__} object is not loaded.'
+                " Call the 'load()' method first to load all data into memory."
+            )
+
+    def _require_blobs(self):
+        """Raise an error if the Repo was not initialized with `blobs = True`."""
+        if not self._blobs:
+            raise ValueError(
+                'Load `Repo` with `blobs = True` to access this property.'
+            )
+
+    @property
+    def branches(self) -> list[str]:
+        """Branch names of the repository."""
+        if not self._branches:
+            self._require_active()
+            self._branches = get_branches(self._clone.path)
+        return self._branches
+
+    @property
+    def tags(self) -> list[str]:
+        """Tag names of the repository."""
+        if not self._tags:
+            self._require_active()
+            self._tags = get_tags(self._clone.path)
+        return self._tags
+
+    @property
+    def commits(self) -> list[Commit]:
+        """Main branch commit history.
+
+        Requires `load()`.
+        """
+        self._require_loaded()
+        return self._commits
+
+    @property
+    def changed_files(self) -> list[ChangedFile]:
+        """Files changed for each commit.
+
+        Requires `load()` and `blobs = True`.
+        """
+        self._require_loaded()
+        self._require_blobs()
+        return self._changed_files
+
+    @property
+    def diffs(self) -> list[Diff]:
+        """Text diffs for each commit.
+
+        Requires `load()` and `blobs = True`.
+        """
+        self._require_loaded()
+        self._require_blobs()
+        return self._diffs
+
+    def stream_commits(self) -> Iterator[Commit]:
+        """Stream main branch commit history.
+
+        Requires wrapping the `Repo` in a `with` statement.
+        """
+        self._require_active()
+        return self._safe_stream(
+            stream_commits(self._clone.path, shortstats=self._blobs)
+        )
+
+    def stream_changed_files(self) -> Iterator[ChangedFile]:
+        """Stream files changed for each commit.
+
+        Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
+        """
+        self._require_active()
+        self._require_blobs()
+        return self._safe_stream(stream_changed_files(self._clone.path))
+
+    def stream_diffs(self) -> Iterator[Diff]:
+        """Stream text diffs for each commit.
+
+        Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
+        """
+        self._require_active()
+        self._require_blobs()
+        return self._safe_stream(stream_diffs(self._clone.path))
 
     @property
     def location(self) -> str:
@@ -123,57 +219,24 @@ class Repo:
         """
         return self._location
 
-    @property
-    def branches(self) -> Iterable[str]:
-        """Branch names of the repository."""
-        if self._cache['branches']:
-            return self._cache['branches']
+    def _safe_stream(self, iter: Iterator) -> Iterator:
+        """Wrap a generator to raise an error if not consumed in the `with` block.
 
-        self._raise_if_inactive()
-        return get_branches(self._clone.path)
+        Args:
+            iter: The generator to wrap.
 
-    @property
-    def tags(self) -> Iterable[str]:
-        """Tag names of the repository."""
-        if self._cache['tags']:
-            return self._cache['tags']
+        Yields:
+            Items from the generator.
 
-        self._raise_if_inactive()
-        return get_tags(self._clone.path)
+        """
+        while True:
+            try:
+                next_ = next(iter)
+            except StopIteration:
+                return
+            except FileNotFoundError:
+                raise RuntimeError(
+                    'Generator has to be consumed in the `with` block.'
+                )
 
-    @property
-    def commits(self) -> Iterable[Commit]:
-        """Main branch commit history."""
-        if self._cache['commits']:
-            return self._cache['commits']
-
-        self._raise_if_inactive()
-        return collect_commits(self._clone.path, shortstats=self._blobs)
-
-    @property
-    def changed_files(self) -> Iterable[ChangedFile]:
-        """Files changed for each commit."""
-        if not self._blobs:
-            raise ValueError(
-                'Initialize Repo with `blobs`=`True` to load changed files.'
-            )
-
-        if self._cache['changed_files']:
-            return self._cache['changed_files']
-
-        self._raise_if_inactive()
-        return collect_changed_files(self._clone.path)
-
-    @property
-    def diffs(self) -> Iterable[Diff]:
-        """Line-level changes within commits."""
-        if not self._blobs:
-            raise ValueError(
-                'Initialize Repo with `blobs`=`True` to load diffs.'
-            )
-
-        if self._cache['diffs']:
-            return self._cache['diffs']
-
-        self._raise_if_inactive()
-        return collect_diffs(self._clone.path)
+            yield next_
