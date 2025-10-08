@@ -6,7 +6,7 @@ from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, split_stream
+from .utils import hash, safe_iter, split_stream
 
 
 @dataclass
@@ -61,10 +61,12 @@ def stream_changed_files(path: str) -> Iterator[ChangedFile]:
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
     with log_numstats(path) as log:
-        index = {n['changed_file_id']: n for n in parse_numstats(log)}
+        index = {
+            n['changed_file_id']: n for n in safe_iter(parse_numstats(log))
+        }
 
     with log_name_statuses(path) as log:
-        for name_status in parse_name_statuses(log):
+        for name_status in safe_iter(parse_name_statuses(log)):
             if name_status['changed_file_id'] in index:
                 numstat = index[name_status['changed_file_id']]
 

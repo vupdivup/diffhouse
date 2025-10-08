@@ -6,7 +6,7 @@ from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, split_stream
+from .utils import hash, safe_iter, split_stream
 
 # TODO: binary diffs
 
@@ -60,7 +60,9 @@ def stream_diffs(path: str) -> Iterator[Diff]:
 
     """
     with log_diffs(path) as log:
-        yield from parse_diffs(log)
+        yield from safe_iter(
+            parse_diffs(log), 'Failed to parse diff. Skipping...'
+        )
 
 
 @contextmanager

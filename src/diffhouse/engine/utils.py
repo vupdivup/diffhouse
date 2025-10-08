@@ -1,4 +1,5 @@
 import hashlib
+import warnings
 from collections.abc import Iterator
 from io import StringIO
 
@@ -55,3 +56,28 @@ def split_stream(
             for part in parts[:-1]:
                 yield part
             buffer = parts[-1]
+
+
+def safe_iter(iter: Iterator, warning: str) -> Iterator:
+    """Wrap a generator to raise a warning instead of an error if an item fails.
+
+    Failed items are skipped.
+
+    Args:
+        iter: The generator to wrap.
+        warning: Warning message to display if an item fails.
+
+    Yields:
+        Items from the generator.
+
+    """
+    while True:
+        try:
+            next_ = next(iter)
+        except StopIteration:
+            return
+        except Exception:
+            warnings.warn(warning)
+            continue
+
+        yield next_

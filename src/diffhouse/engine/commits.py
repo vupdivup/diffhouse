@@ -6,7 +6,7 @@ from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import split_stream, tweak_git_iso_datetime
+from .utils import safe_iter, split_stream, tweak_git_iso_datetime
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -80,7 +80,10 @@ def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
 
     """
     with log_commits(path, shortstats=shortstats) as log:
-        yield from parse_commits(log, parse_shortstats=shortstats)
+        yield from safe_iter(
+            parse_commits(log, parse_shortstats=shortstats),
+            'Failed to parse commit. Skipping...',
+        )
 
 
 @contextmanager
