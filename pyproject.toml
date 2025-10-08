@@ -5,7 +5,7 @@ dependencies = [
   "packaging>=25.0",
   "validators>=0.35.0",
 ]
-description = "Git metadata extractor for analysts."
+description = "Repository mining tool for structuring Git metadata at scale."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -16,7 +16,8 @@ license = "MIT"
 license-files = ["LICEN[CS]E*", "THIRD_PARTY_LICENSES*"]
 
 [project.urls]
-Homepage = "https://github.com/vupdivup/diffhouse"
+Documentation = "https://vupdivup.github.io/diffhouse/"
+Repository = "https://github.com/vupdivup/diffhouse"
 
 [build-system]
 requires = ["uv_build>=0.8.23"]
