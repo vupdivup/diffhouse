@@ -13,7 +13,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 license = "MIT"
-license-files = ["LICEN[CS]E*"]
+license-files = ["LICEN[CS]E*", "THIRD_PARTY_LICENSES*"]
 
 [project.urls]
 Homepage = "https://github.com/vupdivup/diffhouse"
