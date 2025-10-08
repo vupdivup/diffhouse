@@ -1,7 +1,15 @@
+# diffhouse: Repository Mining at Scale
+
+<p align="center">
+<a href="https://vupdivup.github.io/diffhouse/">Documentation</a> • <a href="https://pypi.org/project/diffhouse/">PyPI</a>
+</p>
+
+---
+
 <!-- home-start -->
 
-diffhouse is a **Git repository mining tool** for Python, designed to enable
-large-scale codebase analysis within realistic timeframes.
+diffhouse is a Python solution for structuring Git metadata, designed to enable
+large-scale codebase analysis at practical speeds.
 
 Key features are:
 
@@ -11,7 +19,7 @@ Key features are:
 
 ## Requirements
 
-Requires Git 2.22 and Python 3.10 or higher.
+Requires Git 2.22 or higher to be available in the system PATH.
 
 <!-- home-end -->
 
