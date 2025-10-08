@@ -102,7 +102,8 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=re.MULTILINE
     )
 
-    for i, commit in enumerate(split_stream(log, sep=sep)):
+    # note: need big chunk size as diffs can be large
+    for i, commit in enumerate(split_stream(log, sep=sep, chunk_size=100_000)):
         if i == 0:
             continue
 
