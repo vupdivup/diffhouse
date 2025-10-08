@@ -1,6 +1,7 @@
 site_name: diffhouse
 docs_dir: src
 repo_url: https://github.com/vupdivup/diffhouse
+repo_name: vupdivup/diffhouse
 
 nav:
   - Home: index.md

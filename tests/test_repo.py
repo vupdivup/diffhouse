@@ -56,7 +56,6 @@ def test_tags(repo: Repo):
         assert tag in repo.tags
 
 
-# TODO: add more meaningful messages
 def test_commits_vs_github(repo: Repo, commits_df: pl.DataFrame):
     """Test that an extract of commits from GitHub matches `repo.commits`."""
     commits_gh = github.get_commits(repo.location)
@@ -239,20 +238,31 @@ def test_location_as_path():
     assert r.location.startswith('file://')
 
 
-def test_context_manager():
-    """Test that `Repo` works as a context manager."""
+def test_streaming():
+    """Test that streaming methods work correctly."""
     with Repo(VALID_URL, blobs=True) as r:
-        assert r.branches
-        assert r.tags
-        assert r.commits
-        assert r.changed_files
-        assert r.diffs
+        commits_streamed = list(r.stream_commits())
+        changed_files_streamed = list(r.stream_changed_files())
+        diffs_streamed = list(r.stream_diffs())
 
-    # after exiting the context manager, accessing properties should raise an
-    # error
-    for attr in ('branches', 'tags', 'commits', 'changed_files', 'diffs'):
-        with pytest.raises(RuntimeError):
-            getattr(r, attr)
+    repo_eager = r.load()
+
+    assert len(commits_streamed) == len(repo_eager.commits)
+    assert len(changed_files_streamed) == len(repo_eager.changed_files)
+    assert len(diffs_streamed) == len(repo_eager.diffs)
+
+    def test_context_manager_attr_access_raises():
+        """Test that accessing attributes raises an error when the repo is used as a context manager."""
+        with Repo(VALID_URL, blobs=True) as r:
+            for attr in [
+                'branches',
+                'tags',
+                'commits',
+                'changed_files',
+                'diffs',
+            ]:
+                with pytest.raises(RuntimeError):
+                    getattr(r, attr)
 
 
 if __name__ == '__main__':

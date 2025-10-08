@@ -1,10 +1,12 @@
 import re
 from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
+from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import tweak_git_iso_datetime
+from .utils import safe_iter, split_stream, tweak_git_iso_datetime
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -66,25 +68,42 @@ class Commit:
     """
 
 
-def collect_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
-    """Return main branch commit data from a git repository at `path`."""
-    log = log_commits(path, shortstats=shortstats)
-    yield from parse_commits(log, parse_shortstats=shortstats)
+def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
+    """Stream main branch commits from a git repository.
+
+    Args:
+        path: Path to the git repository.
+        shortstats: Whether to include shortstat information.
+
+    Yields:
+        Commit objects.
+
+    """
+    with log_commits(path, shortstats=shortstats) as log:
+        yield from safe_iter(
+            parse_commits(log, parse_shortstats=shortstats),
+            'Failed to parse commit. Skipping...',
+        )
 
 
+@contextmanager
 def log_commits(
     path: str,
     field_sep: str = UNIT_SEPARATOR,
     record_sep: str = RECORD_SEPARATOR,
     shortstats: bool = False,
-) -> str:
-    """Return a normalized git log from a local repository.
+) -> Iterator[StringIO]:
+    """Return a structured git log as a string stream.
 
     Args:
-        path (str): The file system path to the local git repository.
+        path: Path to the git repository.
         field_sep: Separator between fields in each commit.
         record_sep: Separator between commits.
-        shortstats: Whether to include a shortstat summary of changes per commit.
+        shortstats: Whether to include a shortstat summary of changes per
+            commit.
+
+    Yields:
+        A string stream containing the git log.
 
     """
     # prepare git log command
@@ -97,24 +116,29 @@ def log_commits(
         args.append('--shortstat')
 
     git = GitCLI(path)
-    return git.run(*args)
+    with git.run(*args) as log:
+        try:
+            yield log
+        finally:
+            log.close()
 
 
 def parse_commits(
-    log: str,
+    log: StringIO,
     field_sep: str = UNIT_SEPARATOR,
     record_sep: str = RECORD_SEPARATOR,
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
-    commits = log.split(record_sep)[1:]
-
     files_changed_pat = re.compile(r'(\d+) file')
     insertions_pat = re.compile(r'(\d+) insertion')
     deletions_pat = re.compile(r'(\d+) deletion')
 
-    for c in commits:
-        values = c.split(field_sep)
+    for i, commit in enumerate(split_stream(log, record_sep)):
+        if i == 0:
+            continue
+
+        values = commit.split(field_sep)
 
         # match all fields with field names except the shortstat section
         fields = {k: v for k, v in zip(FIELDS, values[:-1])}

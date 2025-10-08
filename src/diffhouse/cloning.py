@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 
+from .constants import PACKAGE_NAME
 from .git import GitCLI
 
 
@@ -26,7 +27,7 @@ class TempClone:
         return self._path
 
     def __enter__(self):
-        self._temp_dir = tempfile.TemporaryDirectory()
+        self._temp_dir = tempfile.TemporaryDirectory(prefix=PACKAGE_NAME)
         self._path = Path(self._temp_dir.name)
 
         # clone repository
@@ -40,7 +41,8 @@ class TempClone:
 
         args.extend([self._url, '.'])
 
-        git.run(*args)
+        with git.run(*args):
+            pass
 
         return self
 
