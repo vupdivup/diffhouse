@@ -188,7 +188,9 @@ class Repo:
         Requires wrapping the `Repo` in a `with` statement.
         """
         self._require_active()
-        return stream_commits(self._clone.path, shortstats=self._blobs)
+        return self._safe_stream(
+            stream_commits(self._clone.path, shortstats=self._blobs)
+        )
 
     def stream_changed_files(self) -> Iterator[ChangedFile]:
         """Stream files changed for each commit.
@@ -197,7 +199,7 @@ class Repo:
         """
         self._require_active()
         self._require_blobs()
-        return stream_changed_files(self._clone.path)
+        return self._safe_stream(stream_changed_files(self._clone.path))
 
     def stream_diffs(self) -> Iterator[Diff]:
         """Stream text diffs for each commit.
@@ -206,7 +208,7 @@ class Repo:
         """
         self._require_active()
         self._require_blobs()
-        return stream_diffs(self._clone.path)
+        return self._safe_stream(stream_diffs(self._clone.path))
 
     @property
     def location(self) -> str:
@@ -216,3 +218,25 @@ class Repo:
         original input.
         """
         return self._location
+
+    def _safe_stream(self, iter: Iterator) -> Iterator:
+        """Wrap a generator to raise an error if not consumed in the `with` block.
+
+        Args:
+            iter: The generator to wrap.
+
+        Yields:
+            Items from the generator.
+
+        """
+        while True:
+            try:
+                next_ = next(iter)
+            except StopIteration:
+                return
+            except FileNotFoundError:
+                raise RuntimeError(
+                    'Generator has to be consumed in the `with` block.'
+                )
+
+            yield next_
