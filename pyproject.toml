@@ -3,7 +3,9 @@ name = "diffhouse"
 version = "0.4.0"
 dependencies = [
   "packaging>=25.0",
+  "regex>=2025.9.18",
   "validators>=0.35.0",
+  "xxhash>=3.6.0",
 ]
 description = "Repository mining tool for structuring Git metadata at scale."
 readme = "README.md"
@@ -52,4 +54,8 @@ dev = [
     "pytest>=8.4.2",
     "requests>=2.32.5",
     "ruff>=0.13.2",
+]
+perf = [
+    "pyinstrument>=5.1.1",
+    "pympler>=1.1",
 ]
