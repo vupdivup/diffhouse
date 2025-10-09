@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
 
-import regex
+import regex  # runs super fast for the complex diff patterns compared to re
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
