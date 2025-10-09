@@ -140,18 +140,17 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
             for hunk in hunks_grouped:
                 lines = hunk['content'].splitlines()
 
-                lines_added = 0
-                lines_deleted = 0
                 additions = []
                 deletions = []
 
                 for line in lines:
                     if line.startswith('+'):
                         additions.append(line[1:])
-                        lines_added += 1
                     elif line.startswith('-'):
                         deletions.append(line[1:])
-                        lines_deleted += 1
+
+                lines_added = len(additions)
+                lines_deleted = len(deletions)
 
                 yield Diff(
                     commit_hash=commit_hash,
