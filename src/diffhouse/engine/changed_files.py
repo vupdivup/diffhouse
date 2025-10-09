@@ -185,7 +185,7 @@ def parse_numstats(
             file.
 
     """
-    commits = split_stream(log, sep)
+    commits = split_stream(log, sep, 10_000)
     next(commits)  # skip first empty record
 
     for commit in commits:
@@ -213,9 +213,10 @@ def parse_numstats(
                 )
             else:
                 # ../../a => ../../b
-                match = re.match(r'(.+) => (.+)', file_expr)
-                path_a = match.group(1) if match else file_expr
-                path_b = match.group(2) if match else file_expr
+                # NOTE: technically => can be in a unix filename
+                paths = file_expr.split(' => ')
+                path_a = paths[0]
+                path_b = paths[1] if len(paths) > 1 else file_expr
 
             yield {
                 'changed_file_id': hash(commit_hash, path_a, path_b),
