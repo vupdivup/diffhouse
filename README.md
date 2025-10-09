@@ -1,6 +1,6 @@
 # diffhouse: Repository Mining at Scale
 
-![](https://img.shields.io/pypi/v/diffhouse) ![](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml) ![](https://img.shields.io/github/license/vupdivup/diffhouse)
+[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![License](https://img.shields.io/github/license/vupdivup/diffhouse)](https://raw.githubusercontent.com/vupdivup/diffhouse/main/LICENSE.md)
 
 [Documentation](https://vupdivup.github.io/diffhouse/)
 
