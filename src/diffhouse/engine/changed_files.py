@@ -9,7 +9,7 @@ from .constants import RECORD_SEPARATOR
 from .utils import hash, safe_iter, split_stream
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class ChangedFile:
     """Snapshot of a file that was modified in a specific commit."""
 
