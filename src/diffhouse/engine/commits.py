@@ -134,10 +134,10 @@ def parse_commits(
     insertions_pat = re.compile(r'(\d+) insertion')
     deletions_pat = re.compile(r'(\d+) deletion')
 
-    for i, commit in enumerate(split_stream(log, record_sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, record_sep, chunk_size=10_000)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         values = commit.split(field_sep)
 
         # match all fields with field names except the shortstat section

@@ -1,8 +1,9 @@
-import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
+
+import regex  # runs super fast for the complex diff patterns compared to re
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
@@ -96,17 +97,18 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         Diff objects.
 
     """
-    file_sep_pat = re.compile(r'^diff --git', flags=re.MULTILINE)
-    filepaths_pat = re.compile(r'"?a/(.+)"? "?b/(.+)"?')
-    hunk_header_pat = re.compile(
-        r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=re.MULTILINE
+    # regex lib provides significant gains over re
+    file_sep_pat = regex.compile(r'^diff --git', flags=regex.MULTILINE)
+    filepaths_pat = regex.compile(r'"?a/(.+)"? "?b/(.+)"?')
+    hunk_header_pat = regex.compile(
+        r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=regex.MULTILINE
     )
 
-    # note: need big chunk size as diffs can be large
-    for i, commit in enumerate(split_stream(log, sep=sep, chunk_size=100_000)):
-        if i == 0:
-            continue
+    commits = split_stream(log, sep, chunk_size=100_000)
+    next(commits)  # skip first empty record
 
+    # note: need big chunk size as diffs can be large
+    for commit in commits:
         parts = commit.split('\n', 1)
 
         commit_hash = parts[0]
@@ -115,13 +117,13 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         if len(parts) == 1:
             continue
 
-        files = re.split(file_sep_pat, parts[1])[1:]
+        files = file_sep_pat.split(parts[1])[1:]
         for file in files:
-            # format: a/path b/path
+            # format: a/path b/path, both quoted if having misc chars
             header = file.split('\n', 1)[0]
 
-            path_a, path_b = re.search(filepaths_pat, header).groups()
-            hunks_raw = re.split(hunk_header_pat, file)[1:]
+            path_a, path_b = filepaths_pat.search(header).groups()
+            hunks_raw = hunk_header_pat.split(file)[1:]
 
             # zip hunk header data with content
             hunks_grouped = tuple(
@@ -138,18 +140,17 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
             for hunk in hunks_grouped:
                 lines = hunk['content'].splitlines()
 
-                lines_added = 0
-                lines_deleted = 0
                 additions = []
                 deletions = []
 
                 for line in lines:
                     if line.startswith('+'):
                         additions.append(line[1:])
-                        lines_added += 1
                     elif line.startswith('-'):
                         deletions.append(line[1:])
-                        lines_deleted += 1
+
+                lines_added = len(additions)
+                lines_deleted = len(deletions)
 
                 yield Diff(
                     commit_hash=commit_hash,
