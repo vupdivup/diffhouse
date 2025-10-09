@@ -121,10 +121,10 @@ def parse_name_statuses(
         changed file.
 
     """
-    for i, commit in enumerate(split_stream(log, sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, sep)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         lines = commit.strip().split('\n')
         commit_hash = lines[0]
 
@@ -185,10 +185,10 @@ def parse_numstats(
             file.
 
     """
-    for i, commit in enumerate(split_stream(log, sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, sep)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         lines = commit.splitlines()
         commit_hash = lines[0]
 
