@@ -134,7 +134,9 @@ def parse_commits(
     insertions_pat = re.compile(r'(\d+) insertion')
     deletions_pat = re.compile(r'(\d+) deletion')
 
-    for i, commit in enumerate(split_stream(log, record_sep)):
+    for i, commit in enumerate(
+        split_stream(log, record_sep, chunk_size=10_000)
+    ):
         if i == 0:
             continue
 
