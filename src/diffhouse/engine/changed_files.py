@@ -121,7 +121,7 @@ def parse_name_statuses(
         changed file.
 
     """
-    commits = split_stream(log, sep)
+    commits = split_stream(log, sep, 10_000)
     next(commits)  # skip first empty record
 
     for commit in commits:
