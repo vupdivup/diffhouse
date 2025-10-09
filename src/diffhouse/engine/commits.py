@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import StringIO
 
 from ..git import GitCLI
@@ -23,9 +23,18 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class Commit:
     """Commit metadata."""
+
+    def to_dict(self) -> dict:
+        """Convert the object to a dictionary.
+
+        Returns:
+            A dictionary representation of the commit.
+
+        """
+        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""
@@ -36,7 +45,7 @@ class Commit:
     author_date: str
     """Original commit date and time.
 
-    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
+    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     committer_name: str
     """Committer name."""
     committer_email: str
@@ -44,7 +53,7 @@ class Commit:
     committer_date: str
     """Actual commit date and time.
 
-    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
+    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     subject: str
     """Commit message subject."""
     body: str
