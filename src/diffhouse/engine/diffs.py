@@ -11,7 +11,7 @@ from .utils import hash, safe_iter, split_stream
 # TODO: binary diffs
 
 
-@dataclass
+@dataclass(slots=True)
 class Diff:
     """Changes made to a hunk of code in a specific commit."""
 

@@ -23,7 +23,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-@dataclass
+@dataclass(slots=True)
 class Commit:
     """Commit metadata."""
 
