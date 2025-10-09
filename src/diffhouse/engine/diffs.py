@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import StringIO
 
 from ..git import GitCLI
@@ -14,6 +14,15 @@ from .utils import hash, safe_iter, split_stream
 @dataclass
 class Diff:
     """Changes made to a hunk of code in a specific commit."""
+
+    def to_dict(self) -> dict:
+        """Convert the object to a dictionary.
+
+        Returns:
+            A dictionary representation of the diff.
+
+        """
+        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""
