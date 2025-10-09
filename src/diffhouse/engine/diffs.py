@@ -1,8 +1,9 @@
-import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
+
+import regex
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
@@ -96,10 +97,11 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         Diff objects.
 
     """
-    file_sep_pat = re.compile(r'^diff --git', flags=re.MULTILINE)
-    filepaths_pat = re.compile(r'"?a/(.+)"? "?b/(.+)"?')
-    hunk_header_pat = re.compile(
-        r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=re.MULTILINE
+    # regex lib provides significant gains over re
+    file_sep_pat = regex.compile(r'^diff --git', flags=regex.MULTILINE)
+    filepaths_pat = regex.compile(r'"?a/(.+)"? "?b/(.+)"?')
+    hunk_header_pat = regex.compile(
+        r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=regex.MULTILINE
     )
 
     commits = split_stream(log, sep, chunk_size=100_000)
@@ -115,13 +117,13 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         if len(parts) == 1:
             continue
 
-        files = re.split(file_sep_pat, parts[1])[1:]
+        files = file_sep_pat.split(parts[1])[1:]
         for file in files:
-            # format: a/path b/path
+            # format: a/path b/path, both quoted if having misc chars
             header = file.split('\n', 1)[0]
 
-            path_a, path_b = re.search(filepaths_pat, header).groups()
-            hunks_raw = re.split(hunk_header_pat, file)[1:]
+            path_a, path_b = filepaths_pat.search(header).groups()
+            hunks_raw = hunk_header_pat.split(file)[1:]
 
             # zip hunk header data with content
             hunks_grouped = tuple(
