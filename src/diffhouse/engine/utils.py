@@ -1,15 +1,15 @@
-import hashlib
 import warnings
 from collections.abc import Iterator
 from io import StringIO
+
+import xxhash
 
 from .constants import UNIT_SEPARATOR
 
 
 def hash(*args: str) -> str:
-    """Create a deterministic hash. Not meant for cryptographic security."""
-    m = hashlib.md5(UNIT_SEPARATOR.join(args).encode())
-    return m.hexdigest()
+    """Fast deterministic hash."""
+    return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
 
 
 def tweak_git_iso_datetime(dt: str) -> str:
