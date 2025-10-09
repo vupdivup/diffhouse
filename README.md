@@ -1,5 +1,9 @@
 # diffhouse: Repository Mining at Scale
 
+![](https://img.shields.io/pypi/v/diffhouse) ![](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml) ![](https://img.shields.io/github/license/vupdivup/diffhouse)
+
+[Documentation](https://vupdivup.github.io/diffhouse/)
+
 <!-- home-start -->
 
 diffhouse is a **Python solution for structuring Git metadata**, designed to enable
@@ -11,7 +15,7 @@ Key features are:
 - Easy integration with `pandas` and `polars`
 - Simple-to-use Python interface
 
-[See documentation](https://vupdivup.github.io/diffhouse/)
+
 
 ## Requirements
 
