@@ -53,7 +53,7 @@ class GitCLI:
 
         """
         with TemporaryFile(
-            'w+', encoding='utf-8', errors='replace', prefix=PACKAGE_NAME
+            'w+', encoding='utf-8', errors='replace', prefix=f'{PACKAGE_NAME}_'
         ) as f:
             try:
                 subprocess.run(

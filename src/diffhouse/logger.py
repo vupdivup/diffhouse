@@ -5,15 +5,15 @@ from contextlib import contextmanager
 from . import constants
 
 formatter = logging.Formatter(
-    f'{constants.PACKAGE_NAME} %(asctime)s.%(msecs)03d %(message)s',
+    f'{constants.PACKAGE_NAME} %(asctime)s.%(msecs)03d %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
 )
 
-logger = logging.getLogger(constants.PACKAGE_NAME)
-logger.setLevel(logging.INFO)
+package_logger = logging.getLogger(constants.PACKAGE_NAME)
+package_logger.setLevel(logging.INFO)
 
 # self-contained logger
-logger.propagate = False
+package_logger.propagate = False
 
 
 @contextmanager
@@ -37,7 +37,7 @@ def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
         handler.setFormatter(formatter)
 
         # filter for a single level
-        handler.addFilter(lambda record: record.levelno == level)
+        handler.setLevel(level)
 
         logger.addHandler(handler)
 

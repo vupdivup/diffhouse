@@ -27,7 +27,7 @@ class TempClone:
         return self._path
 
     def __enter__(self):
-        self._temp_dir = tempfile.TemporaryDirectory(prefix=PACKAGE_NAME)
+        self._temp_dir = tempfile.TemporaryDirectory(prefix=f'{PACKAGE_NAME}_')
         self._path = Path(self._temp_dir.name)
 
         # clone repository
