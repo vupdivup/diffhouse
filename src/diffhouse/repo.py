@@ -15,7 +15,7 @@ from .engine import (
     stream_commits,
     stream_diffs,
 )
-from .logger import log_to_stdout, logger
+from .logger import log_to_stdout, package_logger
 
 
 class Repo:
@@ -59,13 +59,13 @@ class Repo:
 
     def __enter__(self):
         """Set up a temporary clone of the repository."""
-        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
-            logger.info(f'Cloning {self._location}')
+        with log_to_stdout(package_logger, logging.INFO, enabled=self._verbose):
+            package_logger.info(f'Cloning {self._location}')
 
             self._clone = TempClone(self._location, shallow=not self._blobs)
             self._clone.__enter__()
 
-            logger.info(f'Cloned into {self._clone.path}')
+            package_logger.info(f'Cloned into {self._clone.path}')
 
         self._active = True
         return self
@@ -86,29 +86,28 @@ class Repo:
             self
 
         """
-        self.__enter__()
-
-        with log_to_stdout(logger, logging.INFO, enabled=self._verbose):
+        with (
+            self,
+            log_to_stdout(package_logger, logging.INFO, enabled=self._verbose),
+        ):
             # load and cache properties via getters
-            logger.info('Extracting branches')
+            package_logger.info('Extracting branches')
             self.branches
 
-            logger.info('Extracting tags')
+            package_logger.info('Extracting tags')
             self.tags
 
-            logger.info('Extracting commits')
+            package_logger.info('Extracting commits')
             self._commits = list(self.stream_commits())
 
             if self._blobs:
-                logger.info('Extracting changed files')
+                package_logger.info('Extracting changed files')
                 self._changed_files = list(self.stream_changed_files())
 
-                logger.info('Extracting diffs')
+                package_logger.info('Extracting diffs')
                 self._diffs = list(self.stream_diffs())
 
-            self.__exit__(None, None, None)
-
-            logger.info('Load complete')
+            package_logger.info('Load complete')
 
         self._loaded = True
 
