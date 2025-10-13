@@ -31,3 +31,6 @@ VALID_URL = 'https://github.com/ohmyzsh/ohmyzsh'
 CLEANUP_REPO_URL = 'https://github.com/Significant-Gravitas/AutoGPT'
 
 INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
+
+GITHUB_COMMITS_SAMPLE_SIZE = 1000
+GITHUB_SHORTSTATS_SAMPLE_SIZE = 10
