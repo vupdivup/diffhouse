@@ -25,7 +25,9 @@ REPOS = [
     'https://github.com/vitejs/vite',
 ]
 
+VALID_URL = 'https://github.com/ohmyzsh/ohmyzsh'
 
-VALID_URL = 'https://github.com/vupdivup/diffhouse'
+# used in test_cleanup.py, cloning should take 5-10s, never less
+CLEANUP_REPO_URL = 'https://github.com/Significant-Gravitas/AutoGPT'
 
 INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
