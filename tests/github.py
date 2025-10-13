@@ -37,11 +37,15 @@ def extract_repo_info(repo_url: str) -> tuple[str, str]:
     return owner, repo
 
 
-def get_github_response(url: str, headers={}, params={}) -> requests.Response:
+def get_github_response(
+    repo_url: str, endpoint: str, headers={}, params={}
+) -> requests.Response:
     """Get a response from the GitHub API.
 
     Args:
-        url: The API endpoint URL.
+        repo_url: URL of the GitHub repository.
+        endpoint: The API endpoint to query (e.g., 'commits', 'branches',
+            'tags').
         headers: Optional headers to include in the request.
         params: Optional query parameters to include in the request.
 
@@ -52,10 +56,11 @@ def get_github_response(url: str, headers={}, params={}) -> requests.Response:
     headers = {**headers}
     params = {**params}
 
-    params['per_page'] = PER_PAGE_LIMIT
-
     if GITHUB_TOKEN:
         headers['Authorization'] = f'Bearer {GITHUB_TOKEN}'
+
+    owner, repo = extract_repo_info(repo_url)
+    url = f'https://api.github.com/repos/{owner}/{repo}/{endpoint}'
 
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
@@ -66,17 +71,19 @@ def get_github_response(url: str, headers={}, params={}) -> requests.Response:
 def sample_github_endpoint(
     repo_url: str,
     entity: Literal['commits', 'branches', 'tags'],
-    n: int,
+    n: int = PER_PAGE_LIMIT,
+    per_page: int = PER_PAGE_LIMIT,
     headers: dict = {},
     params: dict = {},
 ) -> Iterator[dict]:
-    """Sample at least n items from a GitHub repository endpoint, in a semi-random manner.
+    """Sample at least `n` items from a GitHub repository endpoint, in a semi-random manner.
 
     Args:
         repo_url: URL of the GitHub repository.
         entity: The entity to fetch (e.g., 'branches', 'tags', 'commits').
         n: Minimum number of items to sample. Actual number is determined by
             pagination.
+        per_page: Number of items to fetch per page.
         headers: Optional headers to include in the request.
         params: Optional query parameters to include in the request.
 
@@ -84,10 +91,10 @@ def sample_github_endpoint(
         An item from the specified entity.
 
     """
-    owner, repo = extract_repo_info(repo_url)
-    url = f'https://api.github.com/repos/{owner}/{repo}/{entity}'
+    params = {**params}
+    params['per_page'] = min(per_page, PER_PAGE_LIMIT)
 
-    resp = get_github_response(url, headers, params)
+    resp = get_github_response(repo_url, entity, headers, params)
     yield from resp.json()
 
     link = resp.headers.get('Link', None)
@@ -107,5 +114,5 @@ def sample_github_endpoint(
 
     for p in pages:
         yield from get_github_response(
-            url, headers, {**params, 'page': p}
+            repo_url, entity, headers, {**params, 'page': p}
         ).json()
