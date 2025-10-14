@@ -18,6 +18,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     'committer_date': '%cd',
     'message_subject': '%s',
     'message_body': '%b',
+    'parents': '%p',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -38,6 +39,8 @@ class Commit:
 
     commit_hash: str
     """Full hash of the commit."""
+    is_merge: bool
+    """Whether the commit is a merge commit."""
     author_name: str
     """Author name."""
     author_email: str
@@ -173,8 +176,12 @@ def parse_commits(
             insertions = None
             deletions = None
 
+        # merge if parents field has more than one hash (separated by spaces)
+        is_merge = fields['parents'].find(' ') != -1
+
         yield Commit(
             commit_hash=fields['commit_hash'],
+            is_merge=is_merge,
             author_name=fields['author_name'],
             author_email=fields['author_email'],
             author_date=tweak_git_iso_datetime(fields['author_date']),
