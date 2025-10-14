@@ -1,6 +1,10 @@
 name: Test package with minimum supported versions
 
-on: [pull_request, workflow_dispatch]
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # 00:00 UTC on the 1st of every month
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub API requests
