@@ -1,5 +1,6 @@
 import logging
 import sys
+import warnings
 from contextlib import contextmanager
 
 from . import constants
@@ -12,9 +13,6 @@ formatter = logging.Formatter(
 package_logger = logging.getLogger(constants.PACKAGE_NAME)
 package_logger.setLevel(logging.INFO)
 
-# self-contained logger
-package_logger.propagate = False
-
 
 @contextmanager
 def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
@@ -22,21 +20,19 @@ def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
 
     Args:
         logger: The logger to attach the handler to.
-        level: The exact logging level to capture.
+        level: The minimum logging level to capture.
         enabled: Whether to enable the temporary logging.
 
-    Raises:
-        RuntimeError: If the logger already has handlers attached.
-
     """
-    if enabled:
-        if logger.hasHandlers():
-            raise RuntimeError('Logger already has handlers attached.')
+    apply = enabled and not logger.hasHandlers()  # TODO: has stream handlers
 
+    if enabled and not apply:
+        warnings.warn('Logger already has handlers attached. Skipping...')
+
+    if apply:
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
 
-        # filter for a single level
         handler.setLevel(level)
 
         logger.addHandler(handler)
@@ -44,6 +40,6 @@ def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
     try:
         yield None
     finally:
-        if enabled:
+        if apply:
             logger.removeHandler(handler)
             handler.close()
