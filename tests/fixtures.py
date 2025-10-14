@@ -44,9 +44,9 @@ def changed_files_df(repo: Repo) -> pl.DataFrame:
 
 
 @pytest.fixture(scope='session')
-def diffs_df(repo: Repo) -> pl.DataFrame:
+def diffs_df(repo: Repo) -> pl.LazyFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
-    return pl.DataFrame(repo.diffs)
+    return pl.DataFrame(repo.diffs).lazy()
 
 
 @pytest.fixture(scope='session')

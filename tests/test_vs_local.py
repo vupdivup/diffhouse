@@ -35,7 +35,7 @@ def test_commits_vs_changed_files(
 
 def test_changed_files_vs_diffs(
     changed_files_df: pl.DataFrame,  # noqa: F811
-    diffs_df: pl.DataFrame,  # noqa: F811
+    diffs_df: pl.LazyFrame,  # noqa: F811
 ):
     """Test that overlapping data of `repo.changed_files` and `repo.diffs` matches."""
     # using lazy loading as this is an expensive operation
@@ -43,18 +43,18 @@ def test_changed_files_vs_diffs(
         pl.sum('lines_added'), pl.sum('lines_deleted')
     )
 
-    joined = changed_files_df.join(
+    joined = changed_files_df.lazy().join(
         diffs_grouped, on=['commit_hash', 'changed_file_id'], how='left'
     )
 
     errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
         | (pl.col('lines_deleted') != pl.col('lines_deleted_right'))
-    )
+    ).collect()
 
     # allow a bit of wiggle room as line change counts can be different for
     # `git log shortstat` and `git log -p`
-    assert len(errors) / len(joined) < 0.01, (
+    assert len(errors) / joined.select(pl.len()).collect().item() < 0.01, (
         'Changed files and diffs do not match: ' + repr(errors.to_dicts())
     )
 
