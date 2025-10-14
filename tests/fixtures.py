@@ -16,13 +16,13 @@ from .github import get_github_response, sample_github_endpoint
 SELECTED_REPOS = random.sample(REPOS, 3)
 
 
-@pytest.fixture(scope='module', params=SELECTED_REPOS)
+@pytest.fixture(scope='session', params=SELECTED_REPOS)
 def repo(request) -> Repo:
     """Fixture that provides a `Repo` instance for a given GitHub URL."""
     return Repo(request.param, blobs=True).load()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def commits_df(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.commits`.
 
@@ -37,19 +37,19 @@ def commits_df(repo: Repo) -> pl.DataFrame:
     return df
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def changed_files_df(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.changed_files`."""
     return pl.DataFrame(repo.changed_files)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def diffs_df(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
     return pl.DataFrame(repo.diffs)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def commits_gh(repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of commits sampled from GitHub API."""
     df = pl.DataFrame(
@@ -85,7 +85,7 @@ def commits_gh(repo) -> pl.DataFrame:
     return df.collect()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def shortstats_gh(repo, commits_df) -> pl.DataFrame:
     """Fixture that provides a DataFrame of commit shortstats sampled from GitHub API."""
     commits = random.sample(
