@@ -89,8 +89,12 @@ def commits_gh(repo) -> pl.DataFrame:
 def shortstats_gh(repo, commits_df) -> pl.DataFrame:
     """Fixture that provides a DataFrame of commit shortstats sampled from GitHub API."""
     # get k random non-merge commits
+    # for huge commits, GitHub paginates the 'files' array, so limit to <50
+    # changed files
     commits = random.sample(
-        commits_df.filter(pl.col('is_merge').not_())['commit_hash'].to_list(),
+        commits_df.filter(
+            (pl.col('is_merge').not_()) & (pl.col('files_changed') < 50)
+        )['commit_hash'].to_list(),
         k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 
