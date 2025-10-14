@@ -4,11 +4,11 @@ from rapidfuzz import fuzz
 
 from diffhouse import Repo
 
+from .fixtures import commits_df, commits_gh, repo, shortstats_gh  # noqa: F401
 from .github import sample_github_endpoint
-from .utils import create_failure_msg
 
 
-def test_branches(repo: Repo):
+def test_branches(repo: Repo):  # noqa: F811
     """Test that an extract of GitHub branches matches `repo.branches`."""
     branches_gh = [
         b['name']
@@ -16,12 +16,10 @@ def test_branches(repo: Repo):
     ]
 
     for branch in branches_gh:
-        assert branch in repo.branches, create_failure_msg(
-            'Branch missing locally', {'branch': branch}
-        )
+        assert branch in repo.branches, f'Branch {branch} missing locally'
 
 
-def test_tags(repo: Repo):
+def test_tags(repo: Repo):  # noqa: F811
     """Test that an extract of GitHub tags matches `repo.tags`."""
     tags_gh = [
         t['name']
@@ -29,25 +27,28 @@ def test_tags(repo: Repo):
     ]
 
     for tag in tags_gh:
-        assert tag in repo.tags, create_failure_msg(
-            'Tag missing locally', {'tag': tag}
-        )
+        assert tag in repo.tags, f'Tag {tag} missing locally'
 
 
-def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):
+def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):  # noqa: F811
     """Test that an extract of commits from GitHub matches `repo.commits`."""
     suffixed = commits_gh.rename(
         {col: f'{col}_gh' for col in commits_gh.columns}
     )
 
-    joined = commits_df.join(
-        suffixed, left_on='commit_hash', right_on='commit_hash_gh', how='full'
+    joined = suffixed.join(
+        commits_df,
+        left_on='commit_hash_gh',
+        right_on='commit_hash',
+        how='left',
+        coalesce=False,
     )
 
-    # ensure all GitHub commits are found locally
-    assert joined.filter(pl.col('commit_hash').is_null()).is_empty()
-
-    joined = joined.filter(pl.col('commit_hash_gh').is_not_null())
+    # ensure we have a match for every commit sampled from GitHub
+    assert joined['commit_hash'].is_not_null().all(), (
+        'Not all GitHub commits found locally: '
+        + repr(joined.filter(pl.col('commit_hash').is_null()).to_dicts())
+    )
 
     # compare fields
     for col in (
@@ -59,7 +60,10 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):
         'committer_date',
     ):
         errors = joined.filter(pl.col(col) != pl.col(f'{col}_gh'))
-        assert errors.is_empty(), errors.to_dicts()
+        assert errors.is_empty(), (
+            f'{col} mismatch between GitHub and local: '
+            + repr(errors.to_dicts())
+        )
 
     # compare commit messages (fuzzy match)
     message_mismatches = joined.filter(
@@ -68,22 +72,33 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):
         )
     )
 
-    assert message_mismatches.is_empty(), repr(message_mismatches.to_dicts())
+    assert message_mismatches.is_empty(), 'Commit message mismatch: ' + repr(
+        message_mismatches.to_dicts()
+    )
 
 
-def test_shortstats(commits_df, shortstats_gh):
+def test_shortstats(commits_df, shortstats_gh):  # noqa: F811
     """Test that a sample of commit shortstats from GitHub matches `repo.commits`."""
     suffixed = shortstats_gh.rename(
         {col: f'{col}_gh' for col in shortstats_gh.columns}
     )
 
-    joined = commits_df.join(
-        suffixed, left_on='commit_hash', right_on='commit_hash_gh', how='inner'
+    joined = suffixed.join(
+        commits_df,
+        left_on='commit_hash_gh',
+        right_on='commit_hash',
+        how='left',
+        coalesce=False,
+    )
+
+    assert joined['commit_hash'].is_not_null().all(), (
+        'Not all GitHub commits found locally: '
+        + repr(joined.filter(pl.col('commit_hash').is_null()).to_dicts())
     )
 
     for col in ('lines_added', 'lines_deleted', 'files_changed'):
         errors = joined.filter(pl.col(col) != pl.col(f'{col}_gh'))
-        assert errors.is_empty(), repr(errors.to_dicts())
+        assert errors.is_empty(), f'{col} mismatch: ' + repr(errors.to_dicts())
 
 
 if __name__ == '__main__':
