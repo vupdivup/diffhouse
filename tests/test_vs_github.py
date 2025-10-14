@@ -1,3 +1,5 @@
+import logging
+
 import polars as pl
 import pytest
 from rapidfuzz import fuzz
@@ -6,6 +8,8 @@ from diffhouse import Repo
 
 from .fixtures import commits_df, commits_gh, repo, shortstats_gh  # noqa: F401
 from .github import sample_github_endpoint
+
+logger = logging.getLogger()
 
 
 def test_branches(repo: Repo):  # noqa: F811
@@ -50,6 +54,8 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):  # noqa: F
         + repr(joined.filter(pl.col('commit_hash').is_null()).to_dicts())
     )
 
+    logger.info(f'Comparing {len(joined)} commits between GitHub and local')
+
     # compare fields
     for col in (
         'author_name',
@@ -67,8 +73,12 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):  # noqa: F
 
     # compare commit messages (fuzzy match)
     message_mismatches = joined.filter(
-        pl.struct('subject', 'body', 'message_gh').map_elements(
-            lambda x: fuzz.ratio(x['subject'] + x['body'], x['message_gh']) < 90
+        pl.struct('message_subject', 'message_body', 'message_gh').map_elements(
+            lambda x: fuzz.ratio(
+                (x['message_subject'] + '\n\n' + x['message_body']).strip(),
+                x['message_gh'],
+            )
+            < 90
         )
     )
 
@@ -90,6 +100,8 @@ def test_shortstats(commits_df, shortstats_gh):  # noqa: F811
         how='left',
         coalesce=False,
     )
+
+    logger.info(f'Comparing {len(joined)} commit shortstats')
 
     assert joined['commit_hash'].is_not_null().all(), (
         'Not all GitHub commits found locally: '

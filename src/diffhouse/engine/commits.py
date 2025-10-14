@@ -16,8 +16,9 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     'committer_name': '%cn',
     'committer_email': '%ce',
     'committer_date': '%cd',
-    'subject': '%s',
-    'body': '%b',
+    # using raw body as the sanitized subject would remove single newlines
+    'message': '%B',
+    'parents': '%p',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -38,6 +39,8 @@ class Commit:
 
     commit_hash: str
     """Full hash of the commit."""
+    is_merge: bool
+    """Whether the commit is a merge commit."""
     author_name: str
     """Author name."""
     author_email: str
@@ -54,9 +57,9 @@ class Commit:
     """Actual commit date and time.
 
     Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
-    subject: str
+    message_subject: str
     """Commit message subject."""
-    body: str
+    message_body: str
     """Commit message body."""
     files_changed: int | None
     """
@@ -173,16 +176,26 @@ def parse_commits(
             insertions = None
             deletions = None
 
+        # merge if parents field has more than one hash (separated by spaces)
+        is_merge = fields['parents'].find(' ') != -1
+
+        message_parts = fields['message'].split('\n\n', 1)
+        message_subject = message_parts[0].strip()
+        message_body = (
+            message_parts[1].strip() if len(message_parts) > 1 else ''
+        )
+
         yield Commit(
             commit_hash=fields['commit_hash'],
+            is_merge=is_merge,
             author_name=fields['author_name'],
             author_email=fields['author_email'],
             author_date=tweak_git_iso_datetime(fields['author_date']),
             committer_name=fields['committer_name'],
             committer_email=fields['committer_email'],
             committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            subject=fields['subject'].strip(),
-            body=fields['body'].strip(),
+            message_subject=message_subject,
+            message_body=message_body,
             files_changed=files_changed,
             lines_added=insertions,
             lines_deleted=deletions,

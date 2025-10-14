@@ -88,8 +88,14 @@ def commits_gh(repo) -> pl.DataFrame:
 @pytest.fixture(scope='session')
 def shortstats_gh(repo, commits_df) -> pl.DataFrame:
     """Fixture that provides a DataFrame of commit shortstats sampled from GitHub API."""
+    # get k random non-merge commits
+    # for huge commits, GitHub paginates the 'files' array, so limit to <50
+    # changed files
     commits = random.sample(
-        commits_df['commit_hash'].to_list(), k=GITHUB_SHORTSTATS_SAMPLE_SIZE
+        commits_df.filter(
+            (pl.col('is_merge').not_()) & (pl.col('files_changed') < 50)
+        )['commit_hash'].to_list(),
+        k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 
     patches = []
@@ -101,8 +107,7 @@ def shortstats_gh(repo, commits_df) -> pl.DataFrame:
 
     df = pl.DataFrame(patches).lazy()
 
-    df = df.with_columns((pl.col('parents').len() > 1).alias('is_merge'))
-    df = df.with_columns(pl.col('files').len().alias('files_changed'))
+    df = df.with_columns(pl.col('files').list.len().alias('files_changed'))
     df = df.unnest('stats')
     df = df.rename(
         {
@@ -116,9 +121,6 @@ def shortstats_gh(repo, commits_df) -> pl.DataFrame:
         'lines_added',
         'lines_deleted',
         'files_changed',
-        'is_merge',
     )
-
-    df = df.filter(pl.col('is_merge').not_())
 
     return df.collect()

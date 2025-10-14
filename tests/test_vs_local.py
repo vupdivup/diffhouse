@@ -1,7 +1,11 @@
+import logging
+
 import polars as pl
 import pytest
 
 from .fixtures import changed_files_df, commits_df, diffs_df, repo  # noqa: F401
+
+logger = logging.getLogger()
 
 
 def test_commits_vs_changed_files(
@@ -18,6 +22,8 @@ def test_commits_vs_changed_files(
     joined = commits_df.join(
         files_grouped, on='commit_hash', how='left', coalesce=False
     ).fill_nan(0)
+
+    logger.info(f'Comparing {len(joined)} commits locally')
 
     errors = joined.filter(
         (pl.col('commit_hash_right').is_null() & (pl.col('files_changed') > 0))
@@ -47,6 +53,10 @@ def test_changed_files_vs_diffs(
         diffs_grouped, on=['commit_hash', 'changed_file_id'], how='left'
     )
 
+    joined_len = joined.select(pl.len()).collect().item()
+
+    logger.info(f'Comparing {joined_len} changed files locally')
+
     errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
         | (pl.col('lines_deleted') != pl.col('lines_deleted_right'))
@@ -54,7 +64,7 @@ def test_changed_files_vs_diffs(
 
     # allow a bit of wiggle room as line change counts can be different for
     # `git log shortstat` and `git log -p`
-    assert len(errors) / joined.select(pl.len()).collect().item() < 0.01, (
+    assert len(errors) / joined_len < 0.01, (
         'Changed files and diffs do not match: ' + repr(errors.to_dicts())
     )
 
