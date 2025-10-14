@@ -3,6 +3,7 @@ import tempfile
 import time
 from pathlib import Path
 
+import psutil
 import pytest
 
 
@@ -14,13 +15,20 @@ def test_cleanup():
     p = subprocess.Popen(['uv', 'run', 'python', '-m', DUMMY_PATH], cwd=root)
 
     # abruptly kill the process
-    time.sleep(1)
-    p.kill()
+    time.sleep(3)
+
+    # p.send_signal(signal.CTRL_BREAK_EVENT)
+
+    # need psutil to recursively kill child processes
+    parent = psutil.Process(p.pid)
+    for child in parent.children(recursive=True):
+        child.kill()
+    parent.kill()
 
     assert not is_cleanup_complete()
 
-    p = subprocess.Popen(
-        ['uv', 'run', 'python', '-m', DUMMY_PATH], cwd=root
+    subprocess.Popen(
+        ['uv', 'run', 'python', '-c', 'import diffhouse'], cwd=root
     ).wait()
 
     assert is_cleanup_complete()

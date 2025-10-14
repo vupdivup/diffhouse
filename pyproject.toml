@@ -58,6 +58,7 @@ perf = [
     "pympler>=1.1",
 ]
 test = [
+    "psutil>=7.1.0",
     "pytest>=8.4.2",
     "rapidfuzz>=3.14.1",
     "requests>=2.32.5",

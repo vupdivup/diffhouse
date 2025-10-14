@@ -1,6 +1,10 @@
+import time
+
 from diffhouse import Repo
 
-from .constants import CLEANUP_REPO_URL
+from .constants import VALID_URL
 
 if __name__ == '__main__':
-    Repo(CLEANUP_REPO_URL, blobs=True).load()
+    with Repo(VALID_URL, blobs=True) as r:
+        while True:
+            time.sleep(1)
