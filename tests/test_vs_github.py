@@ -67,8 +67,11 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):  # noqa: F
 
     # compare commit messages (fuzzy match)
     message_mismatches = joined.filter(
-        pl.struct('subject', 'body', 'message_gh').map_elements(
-            lambda x: fuzz.ratio(x['subject'] + x['body'], x['message_gh']) < 90
+        pl.struct('message_subject', 'message_body', 'message_gh').map_elements(
+            lambda x: fuzz.ratio(
+                x['message_subject'] + x['message_body'], x['message_gh']
+            )
+            < 90
         )
     )
 

@@ -16,8 +16,8 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     'committer_name': '%cn',
     'committer_email': '%ce',
     'committer_date': '%cd',
-    'subject': '%s',
-    'body': '%b',
+    'message_subject': '%s',
+    'message_body': '%b',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -54,9 +54,9 @@ class Commit:
     """Actual commit date and time.
 
     Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
-    subject: str
+    message_subject: str
     """Commit message subject."""
-    body: str
+    message_body: str
     """Commit message body."""
     files_changed: int | None
     """
@@ -181,8 +181,8 @@ def parse_commits(
             committer_name=fields['committer_name'],
             committer_email=fields['committer_email'],
             committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            subject=fields['subject'].strip(),
-            body=fields['body'].strip(),
+            message_subject=fields['message_subject'].strip(),
+            message_body=fields['message_body'].strip(),
             files_changed=files_changed,
             lines_added=insertions,
             lines_deleted=deletions,
