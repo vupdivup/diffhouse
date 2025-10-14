@@ -1,4 +1,10 @@
+# Hacking
+
+Here's some tips for working on diffhouse:
+
 ## Setup
+
+To get started with local development:
 
 1. Clone the repository:
 
@@ -18,7 +24,7 @@ uv sync --group test
 pre-commit install
 ```
 
-3. Load the following variables into your environment:
+4. Load the following variables into your environment:
 
 | Variable| Purpose |
 | --- | --- |
@@ -28,9 +34,11 @@ pre-commit install
 
 A `.env` file with terminal auto-injection is recommended.
 
-4. You're good to go!
+5. You're good to go!
 
 ## Releases
+
+To release a new package version:
 
 1. Bump the package version in `pyproject.toml`.
 
@@ -54,8 +62,10 @@ pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://
 
 5. Manually test the basic functionalities.
 
-5. If everything looks good, publish to PyPI:
+6. If everything looks good, publish to PyPI:
 
 ```bash
 uv publish --token $PYPI_TOKEN
 ```
+
+7. Create a GitHub tag + release, listing every major change made since the last one.
