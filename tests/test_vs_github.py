@@ -1,3 +1,5 @@
+import logging
+
 import polars as pl
 import pytest
 from rapidfuzz import fuzz
@@ -6,6 +8,8 @@ from diffhouse import Repo
 
 from .fixtures import commits_df, commits_gh, repo, shortstats_gh  # noqa: F401
 from .github import sample_github_endpoint
+
+logger = logging.getLogger()
 
 
 def test_branches(repo: Repo):  # noqa: F811
@@ -49,6 +53,8 @@ def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame):  # noqa: F
         'Not all GitHub commits found locally: '
         + repr(joined.filter(pl.col('commit_hash').is_null()).to_dicts())
     )
+
+    logger.info(f'Comparing {len(joined)} commits between GitHub and local')
 
     # compare fields
     for col in (
@@ -94,6 +100,8 @@ def test_shortstats(commits_df, shortstats_gh):  # noqa: F811
         how='left',
         coalesce=False,
     )
+
+    logger.info(f'Comparing {len(joined)} commit shortstats')
 
     assert joined['commit_hash'].is_not_null().all(), (
         'Not all GitHub commits found locally: '
