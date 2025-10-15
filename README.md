@@ -1,6 +1,6 @@
 # diffhouse: Repository Mining at Scale
 
-[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![License](https://img.shields.io/github/license/vupdivup/diffhouse)](https://raw.githubusercontent.com/vupdivup/diffhouse/main/LICENSE.md)
+[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![Test status](https://img.shields.io/github/actions/workflow/status/vupdivup/diffhouse/os-test.yml?label=tests)](https://github.com/vupdivup/diffhouse/actions/workflows/os-test.yml)
 
 [Documentation](https://vupdivup.github.io/diffhouse/)
 
@@ -14,8 +14,6 @@ Key features are:
 - Fast access to commit data, file changes and more
 - Easy integration with `pandas` and `polars`
 - Simple-to-use Python interface
-
-
 
 ## Requirements
 
