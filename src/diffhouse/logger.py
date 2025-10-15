@@ -13,6 +13,12 @@ formatter = logging.Formatter(
 package_logger = logging.getLogger(constants.PACKAGE_NAME)
 package_logger.setLevel(logging.INFO)
 
+# the package logger is meant for:
+# 1. debugging during local development
+# 2. printing to stdout when `verbose=True`
+# but not for user-configured logging, so we disable propagation
+package_logger.propagate = False
+
 
 @contextmanager
 def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
