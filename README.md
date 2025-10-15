@@ -46,12 +46,13 @@ from diffhouse import Repo
 
 url = 'https://github.com/user/repo'
 
-r = Repo(location = url, blobs = False).load()
+r = Repo(location = url, blobs = True).load()
 
 for c in r.commits:
     print(c.commit_hash[:10], c.committer_date, c.author_email)
 
 print(r.branches)
+print(r.diffs[0].to_dict())
 ```
 
 First, construct a `Repo` object and define
