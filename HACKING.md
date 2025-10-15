@@ -1,6 +1,4 @@
-# Hacking
-
-Here's some tips for working on diffhouse:
+# Developer Guide
 
 ## Setup
 
@@ -12,10 +10,10 @@ To get started with local development:
 git clone https://github.com/vupdivup/diffhouse.git .
 ```
 
-2. Run a [uv](https://docs.astral.sh/uv/) sync to install dependencies. Install additional groups as needed:
+2. Run a [uv](https://docs.astral.sh/uv/) sync to install dependencies.
 
 ```bash
-uv sync --group test
+uv sync
 ```
 
 3. Install [pre-commit](https://pre-commit.com/) hooks:
@@ -34,38 +32,54 @@ pre-commit install
 
 A `.env` file with terminal auto-injection is recommended.
 
-5. You're good to go!
+## Branching
+
+The `main` branch always reflects the latest stable release.
+
+For each upcoming version, start by creating a branch named `release/x.y.z` from `main`. Develop features on dedicated branches forked from and eventually merged back into this release branch. Direct commits to the release branch are allowed for admin-type changes.
+
+If a feature branch is linked to an issue, prefix its name with the issue number, e.g. `72-fix-bugs`.
 
 ## Releases
 
-To release a new package version:
+To publish a new package version when development of a release is complete:
 
-1. Bump the package version in `pyproject.toml`.
+1. Bump the version field in `pyproject.toml` to a new release candidate, e.g. `x.y.zrc1`.
 
-2. Build the package:
+2. Delete the `/dist` directory if it exists locally.
+
+3. Build the package and publish to TestPyPI for a smoke test:
 
 ```bash
 uv build
 ```
 
-3. Publish to TestPyPI first for a smoke test:
-
 ```bash
 uv publish --index testpypi --token $TESTPYPI_TOKEN
 ```
 
-4. Install the pending version in an isolated environment (e.g. [Google Colab](https://colab.research.google.com/)):
+4. Install the TestPyPI release in an isolated environment (e.g. [Google Colab](https://colab.research.google.com/)) and test for basic functionality:
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ diffhouse
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ diffhouse==x.y.zrc1
 ```
 
-5. Manually test the basic functionalities.
+5. Bump the version field in `pyproject.toml` to the target (stable) release, e.g. `x.y.z`.
 
-6. If everything looks good, publish to PyPI:
+6. Open a PR from the release branch onto `main` to run CI checks.
+
+7. Build and publish to PyPI:
+
+```bash
+uv build
+```
 
 ```bash
 uv publish --token $PYPI_TOKEN
 ```
 
-7. Create a GitHub tag + release, listing every major change made since the last one.
+8. Merge the release branch onto `main`.
+
+9. Create a GitHub release, listing every major change made since the last one.
+
+If an error is encountered during any stage, debug and restart from step 1.
