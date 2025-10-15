@@ -1,15 +1,15 @@
-import hashlib
 import warnings
 from collections.abc import Iterator
 from io import StringIO
+
+import xxhash
 
 from .constants import UNIT_SEPARATOR
 
 
 def hash(*args: str) -> str:
-    """Create a deterministic hash. Not meant for cryptographic security."""
-    m = hashlib.md5(UNIT_SEPARATOR.join(args).encode())
-    return m.hexdigest()
+    """Fast deterministic hash."""
+    return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
 
 
 def tweak_git_iso_datetime(dt: str) -> str:
@@ -22,7 +22,7 @@ def tweak_git_iso_datetime(dt: str) -> str:
         ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
 
     """
-    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[-2:]
+    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
 
 
 def split_stream(
@@ -51,11 +51,15 @@ def split_stream(
 
         buffer += chunk
 
-        if sep in buffer:
-            parts = buffer.split(sep)
-            for part in parts[:-1]:
-                yield part
-            buffer = parts[-1]
+        parts = buffer.split(sep)
+
+        if len(parts) == 1:
+            continue
+
+        for part in parts[:-1]:
+            yield part
+
+        buffer = parts[-1]
 
 
 def safe_iter(iter: Iterator, warning: str) -> Iterator:

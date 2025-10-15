@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import StringIO
 
 from ..git import GitCLI
@@ -16,19 +16,31 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     'committer_name': '%cn',
     'committer_email': '%ce',
     'committer_date': '%cd',
-    'subject': '%s',
-    'body': '%b',
+    # using raw body as the sanitized subject would remove single newlines
+    'message': '%B',
+    'parents': '%p',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class Commit:
     """Commit metadata."""
 
+    def to_dict(self) -> dict:
+        """Convert the object to a dictionary.
+
+        Returns:
+            A dictionary representation of the commit.
+
+        """
+        return asdict(self)
+
     commit_hash: str
     """Full hash of the commit."""
+    is_merge: bool
+    """Whether the commit is a merge commit."""
     author_name: str
     """Author name."""
     author_email: str
@@ -36,7 +48,7 @@ class Commit:
     author_date: str
     """Original commit date and time.
 
-    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
+    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     committer_name: str
     """Committer name."""
     committer_email: str
@@ -44,10 +56,10 @@ class Commit:
     committer_date: str
     """Actual commit date and time.
 
-    Adheres to the ISO 8601 datetime format (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
-    subject: str
+    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
+    message_subject: str
     """Commit message subject."""
-    body: str
+    message_body: str
     """Commit message body."""
     files_changed: int | None
     """
@@ -134,10 +146,10 @@ def parse_commits(
     insertions_pat = re.compile(r'(\d+) insertion')
     deletions_pat = re.compile(r'(\d+) deletion')
 
-    for i, commit in enumerate(split_stream(log, record_sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, record_sep, chunk_size=10_000)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         values = commit.split(field_sep)
 
         # match all fields with field names except the shortstat section
@@ -164,16 +176,26 @@ def parse_commits(
             insertions = None
             deletions = None
 
+        # merge if parents field has more than one hash (separated by spaces)
+        is_merge = fields['parents'].find(' ') != -1
+
+        message_parts = fields['message'].split('\n\n', 1)
+        message_subject = message_parts[0].strip()
+        message_body = (
+            message_parts[1].strip() if len(message_parts) > 1 else ''
+        )
+
         yield Commit(
             commit_hash=fields['commit_hash'],
+            is_merge=is_merge,
             author_name=fields['author_name'],
             author_email=fields['author_email'],
             author_date=tweak_git_iso_datetime(fields['author_date']),
             committer_name=fields['committer_name'],
             committer_email=fields['committer_email'],
             committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            subject=fields['subject'].strip(),
-            body=fields['body'].strip(),
+            message_subject=message_subject,
+            message_body=message_body,
             files_changed=files_changed,
             lines_added=insertions,
             lines_deleted=deletions,

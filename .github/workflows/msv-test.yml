@@ -1,6 +1,10 @@
 name: Test package with minimum supported versions
 
-on: [pull_request, workflow_dispatch]
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # 00:00 UTC on the 1st of every month
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub API requests
@@ -26,10 +30,12 @@ jobs:
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ steps.setup-python.outputs.python-version }}
 
       - name: Install dependencies
         run: |
-          uv sync --python ${{ steps.setup-python.outputs.python-version }}
+          uv sync --group test
 
       - name: Run tests
         run: uv run pytest -v

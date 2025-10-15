@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import StringIO
 
 from ..git import GitCLI
@@ -9,9 +9,18 @@ from .constants import RECORD_SEPARATOR
 from .utils import hash, safe_iter, split_stream
 
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class ChangedFile:
     """Snapshot of a file that was modified in a specific commit."""
+
+    def to_dict(self) -> dict:
+        """Convert the object to a dictionary.
+
+        Returns:
+            A dictionary representation of the changed file.
+
+        """
+        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""
@@ -121,10 +130,10 @@ def parse_name_statuses(
         changed file.
 
     """
-    for i, commit in enumerate(split_stream(log, sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, sep, 10_000)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         lines = commit.strip().split('\n')
         commit_hash = lines[0]
 
@@ -185,10 +194,10 @@ def parse_numstats(
             file.
 
     """
-    for i, commit in enumerate(split_stream(log, sep)):
-        if i == 0:
-            continue
+    commits = split_stream(log, sep, 10_000)
+    next(commits)  # skip first empty record
 
+    for commit in commits:
         lines = commit.splitlines()
         commit_hash = lines[0]
 
@@ -213,9 +222,10 @@ def parse_numstats(
                 )
             else:
                 # ../../a => ../../b
-                match = re.match(r'(.+) => (.+)', file_expr)
-                path_a = match.group(1) if match else file_expr
-                path_b = match.group(2) if match else file_expr
+                # NOTE: technically => can be in a unix filename
+                paths = file_expr.split(' => ')
+                path_a = paths[0]
+                path_b = paths[1] if len(paths) > 1 else file_expr
 
             yield {
                 'changed_file_id': hash(commit_hash, path_a, path_b),
