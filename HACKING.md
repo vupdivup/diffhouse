@@ -44,7 +44,11 @@ If a feature branch is linked to an issue, prefix its name with the issue number
 
 To publish a new package version when development of a release is complete:
 
-1. Bump the version field in `pyproject.toml` to a new release candidate, e.g. `x.y.zrc1`.
+1. Bump the package version to a new release candidate:
+
+```bash
+uv version --bump <major|minor|patch> --bump rc
+```
 
 2. Delete the `/dist` directory if it exists locally.
 
@@ -64,7 +68,11 @@ uv publish --index testpypi --token $TESTPYPI_TOKEN
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ diffhouse==x.y.zrc1
 ```
 
-5. Bump the version field in `pyproject.toml` to the target (stable) release, e.g. `x.y.z`.
+5. Bump the package version in `pyproject.toml` to the target release:
+
+```bash
+uv version --bump stable
+```
 
 6. Open a PR from the release branch onto `main` to run CI checks.
 
