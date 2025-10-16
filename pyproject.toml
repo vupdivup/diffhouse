@@ -38,8 +38,8 @@ explicit = true
 line-length = 80
 
 [tool.ruff.lint]
-select = ["E", "F", "D", "I"]
-ignore = ["D100", "D105", "D203", "D213", "E501"]
+select = ["A", "ANN", "ARG", "B", "C4", "E", "F", "D", "I", "SIM"]
+ignore = ["ANN204", "B028", "D100", "D203", "D213", "E501"]
 
 [tool.ruff.format]
 quote-style = "single"

@@ -7,22 +7,17 @@ import xxhash
 from .constants import UNIT_SEPARATOR
 
 
-def hash(*args: str) -> str:
-    """Fast deterministic hash."""
-    return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
-
-
-def tweak_git_iso_datetime(dt: str) -> str:
-    """Convert git ISO datetime to precise ISO 8601 format.
+def fast_hash_64(*args: str) -> str:
+    """Fast deterministic hash.
 
     Args:
-        dt: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
+        *args: Strings to hash.
 
     Returns:
-        ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
+        A 64-bit hexadecimal hash string.
 
     """
-    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
+    return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
 
 
 def split_stream(
@@ -62,13 +57,13 @@ def split_stream(
         buffer = parts[-1]
 
 
-def safe_iter(iter: Iterator, warning: str) -> Iterator:
+def safe_iter(iter_: Iterator, warning: str) -> Iterator:
     """Wrap a generator to raise a warning instead of an error if an item fails.
 
     Failed items are skipped.
 
     Args:
-        iter: The generator to wrap.
+        iter_: The generator to wrap.
         warning: Warning message to display if an item fails.
 
     Yields:
@@ -77,7 +72,7 @@ def safe_iter(iter: Iterator, warning: str) -> Iterator:
     """
     while True:
         try:
-            next_ = next(iter)
+            next_ = next(iter_)
         except StopIteration:
             return
         except Exception:

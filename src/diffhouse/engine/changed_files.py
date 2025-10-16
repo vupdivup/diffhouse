@@ -6,7 +6,7 @@ from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, safe_iter, split_stream
+from .utils import fast_hash_64, safe_iter, split_stream
 
 
 @dataclass(slots=True, frozen=True)
@@ -154,7 +154,7 @@ def parse_name_statuses(
                 'commit_hash': commit_hash,
                 'path_a': path_a,
                 'path_b': path_b,
-                'changed_file_id': hash(commit_hash, path_a, path_b),
+                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
                 'change_type': change_type,
                 'similarity': similarity,
             }
@@ -205,7 +205,7 @@ def parse_numstats(
             if line == '':
                 continue
 
-            items = [i for i in line.split('\t')]
+            items = line.split('\t')
             lines_added = 0 if items[0] == '-' else int(items[0])
             lines_deleted = 0 if items[1] == '-' else int(items[1])
 
@@ -228,7 +228,7 @@ def parse_numstats(
                 path_b = paths[1] if len(paths) > 1 else file_expr
 
             yield {
-                'changed_file_id': hash(commit_hash, path_a, path_b),
+                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
                 'lines_added': lines_added,
                 'lines_deleted': lines_deleted,
             }

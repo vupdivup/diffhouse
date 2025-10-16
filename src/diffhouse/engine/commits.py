@@ -6,7 +6,7 @@ from io import StringIO
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import safe_iter, split_stream, tweak_git_iso_datetime
+from .utils import safe_iter, split_stream
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -135,6 +135,19 @@ def log_commits(
             log.close()
 
 
+def tweak_git_iso_datetime(dt: str) -> str:
+    """Convert git ISO datetime to precise ISO 8601 format.
+
+    Args:
+        dt: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
+
+    Returns:
+        ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
+
+    """
+    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
+
+
 def parse_commits(
     log: StringIO,
     field_sep: str = UNIT_SEPARATOR,
@@ -153,7 +166,7 @@ def parse_commits(
         values = commit.split(field_sep)
 
         # match all fields with field names except the shortstat section
-        fields = {k: v for k, v in zip(FIELDS, values[:-1])}
+        fields = dict(zip(FIELDS, values[:-1], strict=True))
 
         if parse_shortstats:
             shortstat = values[-1]
