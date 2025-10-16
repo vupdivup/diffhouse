@@ -22,11 +22,12 @@ class TempClone:
         self._shallow = shallow
 
     @property
-    def path(self):
+    def path(self) -> Path:
         """Path to the local clone. Points to a temporary directory."""
         return self._path
 
     def __enter__(self):
+        """Set up the temporary directory and clone the repository into it."""
         self._temp_dir = tempfile.TemporaryDirectory(prefix=f'{PACKAGE_NAME}_')
         self._path = Path(self._temp_dir.name)
 
@@ -46,5 +47,6 @@ class TempClone:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, traceback):
+    def __exit__(self, exc_type, exc_val, traceback):  # noqa: ANN001
+        """Clean up the temporary directory."""
         self._temp_dir.cleanup()

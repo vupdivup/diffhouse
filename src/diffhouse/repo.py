@@ -57,8 +57,13 @@ class Repo:
         self._branches = None
         self._tags = None
 
-    def __enter__(self):
-        """Set up a temporary clone of the repository."""
+    def __enter__(self) -> 'Repo':
+        """Set up a temporary clone of the repository.
+
+        Returns:
+            self
+
+        """
         with log_to_stdout(package_logger, logging.INFO, enabled=self._verbose):
             package_logger.info(f'Cloning {self._location}')
 
@@ -70,7 +75,7 @@ class Repo:
         self._active = True
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # noqa: ANN001
         """Clean up the temporary clone."""
         self._clone.__exit__(exc_type, exc_value, traceback)
         self._active = False
@@ -92,10 +97,10 @@ class Repo:
         ):
             # load and cache properties via getters
             package_logger.info('Extracting branches')
-            self.branches
+            _ = self.branches
 
             package_logger.info('Extracting tags')
-            self.tags
+            _ = self.tags
 
             package_logger.info('Extracting commits')
             self._commits = list(self.stream_commits())
@@ -113,7 +118,7 @@ class Repo:
 
         return self
 
-    def _require_active(self):
+    def _require_active(self) -> None:
         """Raise an error if the Repo context manager is not active."""
         if not self._active:
             raise RuntimeError(
@@ -121,7 +126,7 @@ class Repo:
                 " Wrap in a 'with' statement to query."
             )
 
-    def _require_loaded(self):
+    def _require_loaded(self) -> None:
         """Raise an error if the Repo has not been loaded into memory."""
         if not self._loaded:
             raise RuntimeError(
@@ -129,7 +134,7 @@ class Repo:
                 " Call the 'load()' method first to load all data into memory."
             )
 
-    def _require_blobs(self):
+    def _require_blobs(self) -> None:
         """Raise an error if the Repo was not initialized with `blobs = True`."""
         if not self._blobs:
             raise ValueError(
@@ -218,11 +223,11 @@ class Repo:
         """
         return self._location
 
-    def _safe_stream(self, iter: Iterator) -> Iterator:
+    def _safe_stream(self, iter_: Iterator) -> Iterator:
         """Wrap a generator to raise an error if not consumed in the `with` block.
 
         Args:
-            iter: The generator to wrap.
+            iter_: The generator to wrap.
 
         Yields:
             Items from the generator.
@@ -230,12 +235,12 @@ class Repo:
         """
         while True:
             try:
-                next_ = next(iter)
+                next_ = next(iter_)
             except StopIteration:
                 return
             except FileNotFoundError:
                 raise RuntimeError(
                     'Generator has to be consumed in the `with` block.'
-                )
+                ) from None
 
             yield next_

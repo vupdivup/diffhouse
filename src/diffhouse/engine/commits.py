@@ -153,7 +153,7 @@ def parse_commits(
         values = commit.split(field_sep)
 
         # match all fields with field names except the shortstat section
-        fields = {k: v for k, v in zip(FIELDS, values[:-1])}
+        fields = dict(zip(FIELDS, values[:-1], strict=True))
 
         if parse_shortstats:
             shortstat = values[-1]

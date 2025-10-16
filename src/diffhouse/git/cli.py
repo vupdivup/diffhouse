@@ -73,10 +73,12 @@ class GitCLI:
 
                 yield f
 
-            except FileNotFoundError:
-                raise EnvironmentError('Git is not installed or not in PATH.')
+            except FileNotFoundError as e:
+                raise EnvironmentError(
+                    'Git is not installed or not in PATH.'
+                ) from e
             except subprocess.CalledProcessError as e:
-                raise GitError(e.stderr)
+                raise GitError(e.stderr) from e
             finally:
                 f.close()  # maybe unnecessary?
 

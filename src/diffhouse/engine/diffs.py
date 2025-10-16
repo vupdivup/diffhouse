@@ -7,7 +7,7 @@ import regex  # runs super fast for the complex diff patterns compared to re
 
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, safe_iter, split_stream
+from .utils import fast_hash_64, safe_iter, split_stream
 
 # TODO: binary diffs
 
@@ -165,7 +165,7 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
                     commit_hash=commit_hash,
                     path_a=path_a,
                     path_b=path_b,
-                    changed_file_id=hash(commit_hash, path_a, path_b),
+                    changed_file_id=fast_hash_64(commit_hash, path_a, path_b),
                     start_a=hunk['start_a'],
                     length_a=hunk['length_a'],
                     start_b=hunk['start_b'],

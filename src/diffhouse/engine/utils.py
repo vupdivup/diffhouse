@@ -7,8 +7,16 @@ import xxhash
 from .constants import UNIT_SEPARATOR
 
 
-def hash(*args: str) -> str:
-    """Fast deterministic hash."""
+def fast_hash_64(*args: str) -> str:
+    """Fast deterministic hash.
+
+    Args:
+        *args: Strings to hash.
+
+    Returns:
+        A 64-bit hexadecimal hash string.
+
+    """
     return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
 
 
@@ -62,13 +70,13 @@ def split_stream(
         buffer = parts[-1]
 
 
-def safe_iter(iter: Iterator, warning: str) -> Iterator:
+def safe_iter(iter_: Iterator, warning: str) -> Iterator:
     """Wrap a generator to raise a warning instead of an error if an item fails.
 
     Failed items are skipped.
 
     Args:
-        iter: The generator to wrap.
+        iter_: The generator to wrap.
         warning: Warning message to display if an item fails.
 
     Yields:
@@ -77,7 +85,7 @@ def safe_iter(iter: Iterator, warning: str) -> Iterator:
     """
     while True:
         try:
-            next_ = next(iter)
+            next_ = next(iter_)
         except StopIteration:
             return
         except Exception:
