@@ -1,9 +1,9 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
 from io import StringIO
 
+from ..entities import Commit
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
 from .utils import safe_iter, split_stream
@@ -22,62 +22,6 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
-
-
-@dataclass(slots=True, frozen=True)
-class Commit:
-    """Commit metadata."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the commit.
-
-        """
-        return asdict(self)
-
-    commit_hash: str
-    """Full hash of the commit."""
-    is_merge: bool
-    """Whether the commit is a merge commit."""
-    author_name: str
-    """Author name."""
-    author_email: str
-    """Author email."""
-    author_date: str
-    """Original commit date and time.
-
-    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
-    committer_name: str
-    """Committer name."""
-    committer_email: str
-    """Committer email."""
-    committer_date: str
-    """Actual commit date and time.
-
-    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
-    message_subject: str
-    """Commit message subject."""
-    message_body: str
-    """Commit message body."""
-    files_changed: int | None
-    """
-    Number of files changed in the commit.
-
-    Available if `blobs = True`.
-    """
-    lines_added: int | None
-    """
-    Number of lines inserted in the commit.
-
-    Available if `blobs = True`.
-    """
-    lines_deleted: int | None
-    """Number of lines deleted in the commit.
-
-    Available if `blobs = True`.
-    """
 
 
 def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:

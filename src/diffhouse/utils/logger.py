@@ -4,7 +4,7 @@ import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from . import constants
+from .. import constants
 
 formatter = logging.Formatter(
     f'{constants.PACKAGE_NAME} %(asctime)s.%(msecs)03d %(levelname)s %(message)s',

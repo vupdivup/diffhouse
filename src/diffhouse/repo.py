@@ -4,18 +4,16 @@ from pathlib import Path
 
 import validators
 
-from .engine import (
-    ChangedFile,
-    Commit,
-    Diff,
+from .core import (
     get_branches,
     get_tags,
     stream_changed_files,
     stream_commits,
     stream_diffs,
 )
+from .entities import ChangedFile, Commit, Diff
 from .git import TempClone
-from .logger import log_to_stdout, package_logger
+from .utils.logger import log_to_stdout, package_logger
 
 
 class Repo:
