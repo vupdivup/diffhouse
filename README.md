@@ -1,6 +1,6 @@
 # diffhouse: Repository Mining at Scale
 
-[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![Test status](https://img.shields.io/github/actions/workflow/status/vupdivup/diffhouse/os-test.yml?label=tests&branch=main)](https://github.com/vupdivup/diffhouse/actions/workflows/os-test.yml)
+[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![DOI](https://zenodo.org/badge/1052651155.svg)](https://doi.org/10.5281/zenodo.17368264) [![Test status](https://img.shields.io/github/actions/workflow/status/vupdivup/diffhouse/os-test.yml?label=tests&branch=main)](https://github.com/vupdivup/diffhouse/actions/workflows/os-test.yml)
 
 [Documentation](https://vupdivup.github.io/diffhouse/)
 
@@ -17,7 +17,11 @@ Key features are:
 
 ## Requirements
 
-Requires Git 2.22 or higher to be available in the system PATH.
+| Python | Git |
+| --- | --- |
+| 3.10 or higher | 2.22 or higher |
+
+Git also needs to be available in the system PATH.
 
 ## Limitations
 
