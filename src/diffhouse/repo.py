@@ -4,7 +4,6 @@ from pathlib import Path
 
 import validators
 
-from .cloning import TempClone
 from .engine import (
     ChangedFile,
     Commit,
@@ -15,6 +14,7 @@ from .engine import (
     stream_commits,
     stream_diffs,
 )
+from .git import TempClone
 from .logger import log_to_stdout, package_logger
 
 

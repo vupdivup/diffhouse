@@ -1,8 +1,8 @@
 import tempfile
 from pathlib import Path
 
-from .constants import PACKAGE_NAME
-from .git import GitCLI
+from ..constants import PACKAGE_NAME
+from ..git import GitCLI
 
 
 class TempClone:

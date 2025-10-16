@@ -9,7 +9,7 @@ from typing import Literal
 
 import packaging.version
 
-from .constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
+from ..constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
 
 
 class GitCLI:
@@ -19,7 +19,7 @@ class GitCLI:
         """Initialize the git CLI.
 
         Args:
-            cwd (str): Working directory for the git commands.
+            cwd: Working directory for the git commands.
 
         """
         self._cwd = Path(cwd).absolute()
@@ -51,6 +51,10 @@ class GitCLI:
         Yields:
             f: A string stream containing the command's standard output.
 
+        Raises:
+            EnvironmentError: If git is not installed or not in PATH.
+            GitError: If the git command fails.
+
         """
         with TemporaryFile(
             'w+', encoding='utf-8', errors='replace', prefix=f'{PACKAGE_NAME}_'
@@ -77,7 +81,12 @@ class GitCLI:
                 f.close()  # maybe unnecessary?
 
     def get_version(self) -> packaging.version.Version:
-        """Get installed git version via `git --version`."""
+        """Get installed git version via `git --version`.
+
+        Returns:
+            Parsed git version.
+
+        """
         with self.run('--version') as out:
             output = out.read()
         v = re.match(r'git version (\d+\.\d+\.\d+)', output).group(1)
@@ -91,7 +100,12 @@ class GitCLI:
     def ls_remote(self, what: Literal['branches', 'tags']) -> str:
         """Run `git ls-remote` in the working directory.
 
-        Set `what` to either `branches` or `tags` to list the respective refs.
+        Args:
+            what: Specify whether to list branches or tags.
+
+        Returns:
+            List of refs as a string.
+
         """
         if (
             self.version < packaging.version.parse('2.46.0')
@@ -111,7 +125,7 @@ class GitError(Exception):
         """Initialize the exception.
 
         Args:
-            stderr (str): Standard error output from the git command.
+            stderr: Standard error output from the git command.
 
         """
         self.message = f'Git command failed with the following error:\n{stderr}'
