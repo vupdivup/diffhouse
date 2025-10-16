@@ -159,7 +159,7 @@ class Repo:
 
     @property
     def commits(self) -> list[Commit]:
-        """Main branch commit history.
+        """Commit history of the default branch.
 
         Requires `load()`.
         """
@@ -168,7 +168,7 @@ class Repo:
 
     @property
     def changed_files(self) -> list[ChangedFile]:
-        """Files changed for each commit.
+        """Files of all default-branch commits.
 
         Requires `load()` and `blobs = True`.
         """
@@ -178,7 +178,7 @@ class Repo:
 
     @property
     def diffs(self) -> list[Diff]:
-        """Text diffs for each commit.
+        """Diffs of all default-branch commits.
 
         Requires `load()` and `blobs = True`.
         """
@@ -187,9 +187,13 @@ class Repo:
         return self._diffs
 
     def stream_commits(self) -> Iterator[Commit]:
-        """Stream main branch commit history.
+        """Stream the commit history of the default branch.
 
         Requires wrapping the `Repo` in a `with` statement.
+
+        Yields:
+            Commit data.
+
         """
         self._require_active()
         return self._safe_stream(
@@ -197,18 +201,26 @@ class Repo:
         )
 
     def stream_changed_files(self) -> Iterator[ChangedFile]:
-        """Stream files changed for each commit.
+        """Stream the files of default-branch commits.
 
         Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
+
+        Yields:
+            File change metadata.
+
         """
         self._require_active()
         self._require_blobs()
         return self._safe_stream(stream_changed_files(self._clone.path))
 
     def stream_diffs(self) -> Iterator[Diff]:
-        """Stream text diffs for each commit.
+        """Stream diffs of default-branch commits.
 
         Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
+
+        Yields:
+            Text diffs.
+
         """
         self._require_active()
         self._require_blobs()
