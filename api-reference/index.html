@@ -1643,12 +1643,12 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">commits</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Commit (diffhouse.engine.Commit)" href="#diffhouse.Commit">Commit</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">commits</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Commit (diffhouse.entities.Commit)" href="#diffhouse.Commit">Commit</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Main branch commit history.</p>
+        <p>Commit history of the default branch.</p>
 <p>Requires <code>load()</code>.</p>
 
     </div>
@@ -1669,12 +1669,12 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">changed_files</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ChangedFile (diffhouse.engine.ChangedFile)" href="#diffhouse.ChangedFile">ChangedFile</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">changed_files</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ChangedFile (diffhouse.entities.ChangedFile)" href="#diffhouse.ChangedFile">ChangedFile</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Files changed for each commit.</p>
+        <p>Files of all default-branch commits.</p>
 <p>Requires <code>load()</code> and <code>blobs = True</code>.</p>
 
     </div>
@@ -1695,12 +1695,12 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">diffs</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Diff (diffhouse.engine.Diff)" href="#diffhouse.Diff">Diff</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">diffs</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Diff (diffhouse.entities.Diff)" href="#diffhouse.Diff">Diff</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Text diffs for each commit.</p>
+        <p>Diffs of all default-branch commits.</p>
 <p>Requires <code>load()</code> and <code>blobs = True</code>.</p>
 
     </div>
@@ -1720,13 +1720,36 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_commits</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Commit (diffhouse.engine.Commit)" href="#diffhouse.Commit">Commit</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_commits</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Commit (diffhouse.entities.Commit)" href="#diffhouse.Commit">Commit</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Stream main branch commit history.</p>
+        <p>Stream the commit history of the default branch.</p>
 <p>Requires wrapping the <code>Repo</code> in a <code>with</code> statement.</p>
+
+
+    <p><span class="doc-section-title">Yields:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            Commit (diffhouse.entities.Commit)" href="#diffhouse.Commit">Commit</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Commit data.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1746,13 +1769,36 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_changed_files</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ChangedFile (diffhouse.engine.ChangedFile)" href="#diffhouse.ChangedFile">ChangedFile</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_changed_files</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ChangedFile (diffhouse.entities.ChangedFile)" href="#diffhouse.ChangedFile">ChangedFile</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Stream files changed for each commit.</p>
+        <p>Stream the files of all default-branch commits.</p>
 <p>Requires <code>blobs = True</code> and wrapping the <code>Repo</code> in a <code>with</code> statement.</p>
+
+
+    <p><span class="doc-section-title">Yields:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            ChangedFile (diffhouse.entities.ChangedFile)" href="#diffhouse.ChangedFile">ChangedFile</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>File change metadata.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1772,13 +1818,36 @@ statement. For large repositories, take a look at the streaming options
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_diffs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Diff (diffhouse.engine.Diff)" href="#diffhouse.Diff">Diff</a></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">stream_diffs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Diff (diffhouse.entities.Diff)" href="#diffhouse.Diff">Diff</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Stream text diffs for each commit.</p>
+        <p>Stream diffs of all default-branch commits.</p>
 <p>Requires <code>blobs = True</code> and wrapping the <code>Repo</code> in a <code>with</code> statement.</p>
+
+
+    <p><span class="doc-section-title">Yields:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            Diff (diffhouse.entities.Diff)" href="#diffhouse.Diff">Diff</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Text diffs.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
