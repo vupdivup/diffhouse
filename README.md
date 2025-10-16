@@ -19,6 +19,12 @@ Key features are:
 
 Requires Git 2.22 or higher to be available in the system PATH.
 
+## Limitations
+
+At its core, diffhouse is a data *extraction* tool and therefore does not calculate software metrics like code churn or cyclomatic complexity; if this is needed, take a look at [PyDriller](https://github.com/ishepard/pydriller) instead.
+
+Also note that revision data is limited to **default branches only**.
+
 <!-- home-end -->
 
 ## User Guide
