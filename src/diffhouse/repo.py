@@ -201,7 +201,7 @@ class Repo:
         )
 
     def stream_changed_files(self) -> Iterator[ChangedFile]:
-        """Stream the files of default-branch commits.
+        """Stream the files of all default-branch commits.
 
         Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
 
@@ -214,7 +214,7 @@ class Repo:
         return self._safe_stream(stream_changed_files(self._clone.path))
 
     def stream_diffs(self) -> Iterator[Diff]:
-        """Stream diffs of default-branch commits.
+        """Stream diffs of all default-branch commits.
 
         Requires `blobs = True` and wrapping the `Repo` in a `with` statement.
 
