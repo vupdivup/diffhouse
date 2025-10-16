@@ -1,9 +1,10 @@
 import logging
 import sys
 import warnings
+from collections.abc import Iterator
 from contextlib import contextmanager
 
-from . import constants
+from .. import constants
 
 formatter = logging.Formatter(
     f'{constants.PACKAGE_NAME} %(asctime)s.%(msecs)03d %(levelname)s %(message)s',
@@ -21,7 +22,9 @@ package_logger.propagate = False
 
 
 @contextmanager
-def log_to_stdout(logger, level: int = logging.INFO, enabled: bool = True):
+def log_to_stdout(
+    logger: logging.Logger, level: int = logging.INFO, enabled: bool = True
+) -> Iterator[None]:
     """Temporarily direct messages of a logger to stdout.
 
     Args:

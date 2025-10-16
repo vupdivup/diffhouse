@@ -1,62 +1,13 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
 from io import StringIO
 
 import regex  # runs super fast for the complex diff patterns compared to re
 
+from ..entities import Diff
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, safe_iter, split_stream
-
-# TODO: binary diffs
-
-
-@dataclass(slots=True, frozen=True)
-class Diff:
-    """Changes made to a hunk of code in a specific commit."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the diff.
-
-        """
-        return asdict(self)
-
-    commit_hash: str
-    """Full hash of the commit."""
-    path_a: str
-    """Path to the file before applying the commit's changes."""
-    path_b: str
-    """
-    Path to the file after applying the commit's changes.
-
-    Differs from `path_a` for renames and copies.
-    """
-    changed_file_id: str
-    """
-    Hash of `commit_hash`, `path_a`, and `path_b`.
-
-    Use it to match with a `ChangedFile`.
-    """
-    start_a: int
-    """Line number that starts the hunk in file version A."""
-    length_a: int
-    """Line count of the hunk in file version A."""
-    start_b: int
-    """Line number that starts the hunk in file version B."""
-    length_b: int
-    """Line count of the hunk in file version B."""
-    lines_added: int
-    """Number of lines added."""
-    lines_deleted: int
-    """Number of lines deleted."""
-    additions: list[str]
-    """Text content of added lines."""
-    deletions: list[str]
-    """Text content of deleted lines."""
+from .utils import fast_hash_64, safe_iter, split_stream
 
 
 def stream_diffs(path: str) -> Iterator[Diff]:
@@ -165,7 +116,7 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
                     commit_hash=commit_hash,
                     path_a=path_a,
                     path_b=path_b,
-                    changed_file_id=hash(commit_hash, path_a, path_b),
+                    changed_file_id=fast_hash_64(commit_hash, path_a, path_b),
                     start_a=hunk['start_a'],
                     length_a=hunk['length_a'],
                     start_b=hunk['start_b'],

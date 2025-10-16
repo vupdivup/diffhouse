@@ -1,6 +1,6 @@
 # diffhouse: Repository Mining at Scale
 
-[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![Test status](https://img.shields.io/github/actions/workflow/status/vupdivup/diffhouse/os-test.yml?label=tests)](https://github.com/vupdivup/diffhouse/actions/workflows/os-test.yml)
+[![PyPI](https://img.shields.io/pypi/v/diffhouse)](https://pypi.org/project/diffhouse/) [![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvupdivup%2Fdiffhouse%2Fmain%2Fpyproject.toml)](https://pypi.org/project/diffhouse/) [![Test status](https://img.shields.io/github/actions/workflow/status/vupdivup/diffhouse/os-test.yml?label=tests&branch=main)](https://github.com/vupdivup/diffhouse/actions/workflows/os-test.yml)
 
 [Documentation](https://vupdivup.github.io/diffhouse/)
 
@@ -18,6 +18,12 @@ Key features are:
 ## Requirements
 
 Requires Git 2.22 or higher to be available in the system PATH.
+
+## Limitations
+
+At its core, diffhouse is a data *extraction* tool and therefore does not calculate software metrics like code churn or cyclomatic complexity; if this is needed, take a look at [PyDriller](https://github.com/ishepard/pydriller) instead.
+
+Also note that revision data is limited to **default branches only**.
 
 <!-- home-end -->
 

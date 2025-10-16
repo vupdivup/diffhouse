@@ -4,11 +4,11 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from .constants import PACKAGE_NAME
+from ..constants import PACKAGE_NAME
 from .logger import log_to_stdout, package_logger
 
 
-def remove_residual_resources():
+def remove_residual_resources() -> None:
     """Remove residual files created by the package in the system's temporary directory."""
     temp_dir = Path(tempfile.gettempdir())
 
@@ -27,7 +27,7 @@ def remove_residual_resources():
                     )
 
 
-def _on_rm_error(func, path, exc_info):
+def _on_rm_error(func, path, exc_info) -> None:  # noqa: ANN001, ARG001
     """Error handler for `shutil.rmtree`.
 
     If the error is due to a read-only file (true for some git resources),

@@ -20,9 +20,9 @@
 
 """Repository mining tool for structuring Git metadata at scale."""
 
-from .cleanup import remove_residual_resources
-from .engine import ChangedFile, Commit, Diff
+from .entities import ChangedFile, Commit, Diff
 from .repo import Repo
+from .utils.cleanup import remove_residual_resources
 
 __all__ = ['Repo', 'Commit', 'Diff', 'ChangedFile']
 

@@ -1,60 +1,12 @@
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
 from io import StringIO
 
+from ..entities import ChangedFile
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import hash, safe_iter, split_stream
-
-
-@dataclass(slots=True, frozen=True)
-class ChangedFile:
-    """Snapshot of a file that was modified in a specific commit."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the changed file.
-
-        """
-        return asdict(self)
-
-    commit_hash: str
-    """Full hash of the commit."""
-    path_a: str
-    """Path to the file before applying the commit's changes."""
-    path_b: str
-    """
-    Path to the file after applying the commit's changes.
-
-    Differs from `path_a` for renames and copies.
-    """
-    changed_file_id: str
-    """
-    Unique record identifier hashed from `commit_hash`, `path_a`, and `path_b`.
-    """
-    change_type: str
-    """
-    Single-letter code representing the change type.
-
-    Most commonly one of `A` (added), `C` (copied), `D` (deleted), `M`
-    (modified) or `R` (renamed). See
-    [git-status](https://git-scm.com/docs/git-status#_short_format) for all
-    possible values.
-    """
-    similarity: int
-    """
-    Similarity index between the two file versions.
-
-    `0`-`100` for renames and copies, `100` otherwise.
-    """
-    lines_added: int
-    """Number of lines added to the file in the commit."""
-    lines_deleted: int
-    """Number of lines deleted from the file in the commit."""
+from .utils import fast_hash_64, safe_iter, split_stream
 
 
 def stream_changed_files(path: str) -> Iterator[ChangedFile]:
@@ -154,7 +106,7 @@ def parse_name_statuses(
                 'commit_hash': commit_hash,
                 'path_a': path_a,
                 'path_b': path_b,
-                'changed_file_id': hash(commit_hash, path_a, path_b),
+                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
                 'change_type': change_type,
                 'similarity': similarity,
             }
@@ -205,7 +157,7 @@ def parse_numstats(
             if line == '':
                 continue
 
-            items = [i for i in line.split('\t')]
+            items = line.split('\t')
             lines_added = 0 if items[0] == '-' else int(items[0])
             lines_deleted = 0 if items[1] == '-' else int(items[1])
 
@@ -228,7 +180,7 @@ def parse_numstats(
                 path_b = paths[1] if len(paths) > 1 else file_expr
 
             yield {
-                'changed_file_id': hash(commit_hash, path_a, path_b),
+                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
                 'lines_added': lines_added,
                 'lines_deleted': lines_deleted,
             }
