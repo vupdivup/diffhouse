@@ -9,8 +9,6 @@ from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, safe_iter, split_stream
 
-# TODO: binary diffs
-
 
 @dataclass(slots=True, frozen=True)
 class Diff:
