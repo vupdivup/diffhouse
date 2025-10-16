@@ -4,7 +4,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from .constants import PACKAGE_NAME
+from ..constants import PACKAGE_NAME
 from .logger import log_to_stdout, package_logger
 
 
