@@ -20,19 +20,6 @@ def fast_hash_64(*args: str) -> str:
     return xxhash.xxh64_hexdigest(UNIT_SEPARATOR.join(args))
 
 
-def tweak_git_iso_datetime(dt: str) -> str:
-    """Convert git ISO datetime to precise ISO 8601 format.
-
-    Args:
-        dt: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
-
-    Returns:
-        ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
-
-    """
-    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
-
-
 def split_stream(
     f: StringIO, sep: str, chunk_size: int = 1024
 ) -> Iterator[str]:
