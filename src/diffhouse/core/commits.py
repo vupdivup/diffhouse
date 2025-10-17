@@ -18,7 +18,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     'committer_date': '%cd',
     # using raw body as the sanitized subject would remove single newlines
     'message': '%B',
-    'parents': '%p',
+    'parents': '%P',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -133,8 +133,14 @@ def parse_commits(
             insertions = None
             deletions = None
 
-        # merge if parents field has more than one hash (separated by spaces)
-        is_merge = fields['parents'].find(' ') != -1
+        if fields['parents'] == '':
+            # first commit has no parents
+            parents = []
+        else:
+            parents = fields['parents'].split(' ')
+
+        # it's a merge commit if parents field has more than one hash
+        is_merge = len(parents) > 1
 
         message_parts = fields['message'].split('\n\n', 1)
         message_subject = message_parts[0].strip()
@@ -145,6 +151,7 @@ def parse_commits(
         yield Commit(
             commit_hash=fields['commit_hash'],
             is_merge=is_merge,
+            parents=parents,
             author_name=fields['author_name'],
             author_email=fields['author_email'],
             author_date=tweak_git_iso_datetime(fields['author_date']),
