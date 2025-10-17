@@ -29,7 +29,7 @@ def test_validity__changed_files(repo: Repo) -> None:  # noqa: F811
         assert f.path_a != ''
         assert f.path_b != ''
 
-        assert f.change_type in ['A', 'D', 'M', 'R', 'C']
+        assert f.change_type in ['A', 'D', 'M', 'R', 'C', 'T', 'U']
 
         assert f.path_a == f.path_b or f.change_type in ['R', 'C']
         assert f.similarity == 100 or f.change_type in ['R', 'C']
