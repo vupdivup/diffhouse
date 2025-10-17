@@ -17,11 +17,18 @@ Key features are:
 
 ## Requirements
 
-| Python | Git |
-| --- | --- |
-| 3.10 or higher | 2.22 or higher |
+<table>
+    <tr>
+        <td><strong>Python</strong></td>
+        <td>3.10 or higher</td>
+    </tr>
+    <tr>
+        <td><strong>Git</strong></td>
+        <td>2.22 or higher</td>
+    </tr>
+</table>
 
-Git also needs to be available in the system PATH.
+Git also needs to be added to the system PATH.
 
 ## Limitations
 
