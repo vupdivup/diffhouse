@@ -4,15 +4,15 @@ from pathlib import Path
 
 import validators
 
-from .core import (
+from .entities import ChangedFile, Commit, Diff
+from .git import TempClone
+from .pipelines import (
     get_branches,
     get_tags,
     stream_changed_files,
     stream_commits,
     stream_diffs,
 )
-from .entities import ChangedFile, Commit, Diff
-from .git import TempClone
 from .utils.logger import log_to_stdout, package_logger
 
 
