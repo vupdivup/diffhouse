@@ -1,10 +1,10 @@
 """Git metadata extractors."""
 
-from .branches import get_branches
-from .changed_files import stream_changed_files
-from .commits import stream_commits
-from .diffs import stream_diffs
-from .tags import get_tags
+from .branch_pipeline import get_branches
+from .changed_file_pipeline import stream_changed_files
+from .commit_pipeline import stream_commits
+from .diff_pipeline import stream_diffs
+from .tag_pipeline import get_tags
 
 __all__ = [
     'stream_commits',
