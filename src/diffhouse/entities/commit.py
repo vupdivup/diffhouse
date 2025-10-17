@@ -18,6 +18,8 @@ class Commit:
     """Full hash of the commit."""
     is_merge: bool
     """Whether the commit is a merge commit."""
+    parents: list[str]
+    """List of parent commit hashes."""
     author_name: str
     """Author name."""
     author_email: str
