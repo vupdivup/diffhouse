@@ -12,7 +12,6 @@ from .fixtures import (  # noqa: F401
     commits_df,
     commits_gh,
     repo,
-    shortstats_gh,
 )
 from .github import sample_github_endpoint
 
