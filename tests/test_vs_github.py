@@ -30,7 +30,7 @@ def test_branches(repo: Repo) -> None:  # noqa: F811
     )
 
     for branch in branches_gh:
-        assert branch in repo.branches, f'Branch {branch} missing locally'
+        assert branch in repo.branches
 
 
 def test_tags(repo: Repo) -> None:  # noqa: F811
@@ -43,7 +43,7 @@ def test_tags(repo: Repo) -> None:  # noqa: F811
     logger.info(f'Comparing {len(tags_gh)} tags between GitHub and local')
 
     for tag in tags_gh:
-        assert tag in repo.tags, f'Tag {tag} missing locally'
+        assert tag in repo.tags
 
 
 def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame) -> None:  # noqa: F811
