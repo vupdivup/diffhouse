@@ -1,0 +1,16 @@
+{
+    "title": "vupdivup/diffhouse: diffhouse",
+    "creators": [
+        {
+            "name": "Verseghi-Nagy, Mátyás"
+        }
+    ],
+    "description": "diffhouse is a repository mining tool for structuring Git metadata at scale.",
+    "keywords": [
+        "git",
+        "repository mining",
+        "software analysis",
+        "open source"
+    ],
+    "language": "python"
+}
