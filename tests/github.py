@@ -114,7 +114,7 @@ def sample_github_endpoint(
 
     last_page = int(re.search(r'page=(\d+)>; rel="last"', link).group(1))
 
-    pages_left = math.ceil(n / PER_PAGE_LIMIT) - 1
+    pages_left = math.ceil(n / per_page) - 1
 
     # randomly select pages
     pages = random.sample(
