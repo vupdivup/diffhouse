@@ -33,12 +33,15 @@ def extract_repo_info(repo_url: str) -> tuple[str, str]:
     parts = repo_url.split('/')
 
     owner = parts[-2]
-    repo = parts[-1]
+    repo = parts[-1].removesuffix('.git')
     return owner, repo
 
 
 def get_github_response(
-    repo_url: str, endpoint: str, headers={}, params={}
+    repo_url: str,
+    endpoint: str,
+    headers: dict | None = None,
+    params: dict | None = None,
 ) -> requests.Response:
     """Get a response from the GitHub API.
 
@@ -53,6 +56,9 @@ def get_github_response(
         response: The response object from the API call.
 
     """
+    headers = headers or {}
+    params = params or {}
+
     headers = {**headers}
     params = {**params}
 
@@ -73,8 +79,8 @@ def sample_github_endpoint(
     entity: Literal['commits', 'branches', 'tags'],
     n: int = PER_PAGE_LIMIT,
     per_page: int = PER_PAGE_LIMIT,
-    headers: dict = {},
-    params: dict = {},
+    headers: dict = None,
+    params: dict = None,
 ) -> Iterator[dict]:
     """Sample at least `n` items from a GitHub repository endpoint, in a semi-random manner.
 
@@ -91,6 +97,9 @@ def sample_github_endpoint(
         An item from the specified entity.
 
     """
+    headers = headers or {}
+    params = params or {}
+
     params = {**params}
     params['per_page'] = min(per_page, PER_PAGE_LIMIT)
 
