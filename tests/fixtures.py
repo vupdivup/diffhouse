@@ -23,7 +23,7 @@ def repo(request: pytest.FixtureRequest) -> Repo:
 
 
 @pytest.fixture(scope='session')
-def commits_df(repo: Repo) -> pl.DataFrame:
+def commits__diffhouse(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.commits`.
 
     Datetime strings are converted to objects.
@@ -32,13 +32,13 @@ def commits_df(repo: Repo) -> pl.DataFrame:
 
 
 @pytest.fixture(scope='session')
-def changed_files_df(repo: Repo) -> pl.DataFrame:
+def changed_files__diffhouse(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.changed_files`."""
     return pl.DataFrame(repo.changed_files)
 
 
 @pytest.fixture(scope='session')
-def diffs_df(repo: Repo) -> pl.LazyFrame:
+def diffs__diffhouse(repo: Repo) -> pl.LazyFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
     return pl.DataFrame(repo.diffs).lazy()
 
@@ -64,14 +64,18 @@ def commits__github(repo: Repo) -> list[dict]:
 
 
 @pytest.fixture(scope='session')
-def changed_files__github(repo: Repo, commits_df: pl.DataFrame) -> list[dict]:
+def changed_files__github(
+    repo: Repo, commits__diffhouse: pl.DataFrame
+) -> list[dict]:
     """Fixture that provides a list of file changes from the GitHub API.
 
     Samples non-merge commits only.
     """
     # get k random non-merge commits
     selected_commits = random.sample(
-        commits_df.filter((pl.col('is_merge').not_()))['commit_hash'].to_list(),
+        commits__diffhouse.filter((pl.col('is_merge').not_()))[
+            'commit_hash'
+        ].to_list(),
         k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 

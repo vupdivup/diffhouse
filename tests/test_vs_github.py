@@ -9,10 +9,10 @@ from rapidfuzz import fuzz
 from diffhouse import Repo
 
 from .fixtures import (  # noqa: F401
+    changed_files__diffhouse,
     changed_files__github,
-    changed_files_df,
+    commits__diffhouse,
     commits__github,
-    commits_df,
     repo,
 )
 from .github import sample_github_endpoint
@@ -49,14 +49,17 @@ def test_tags(repo: Repo) -> None:  # noqa: F811
         assert tag in repo.tags
 
 
-def test_commits(commits_df: pl.DataFrame, commits__github: list[dict]) -> None:  # noqa: F811
+def test_commits(
+    commits__diffhouse: pl.DataFrame,  # noqa: F811
+    commits__github: list[dict],  # noqa: F811
+) -> None:
     """Test that an extract of commits from GitHub matches `repo.commits`."""
     logger.info(
         f'Comparing {len(commits__github)} commits between GitHub and local'
     )
 
     for c_gh in commits__github:
-        c_local = commits_df.filter(
+        c_local = commits__diffhouse.filter(
             pl.col('commit_hash') == c_gh['commit_hash']
         )
 
@@ -99,7 +102,7 @@ def test_commits(commits_df: pl.DataFrame, commits__github: list[dict]) -> None:
 
 
 def test_changed_files(
-    changed_files_df: pl.DataFrame,  # noqa: F811
+    changed_files__diffhouse: pl.DataFrame,  # noqa: F811
     changed_files__github: list[dict],  # noqa: F811
 ) -> None:
     """Test that an extract of changed files from GitHub matches `repo.changed_files`."""
@@ -108,7 +111,7 @@ def test_changed_files(
     )
 
     for cf_gh in changed_files__github:
-        cf_local = changed_files_df.filter(
+        cf_local = changed_files__diffhouse.filter(
             (pl.col('commit_hash') == cf_gh['commit_hash'])
             & (pl.col('path_b') == cf_gh.get('path_b'))
         )
