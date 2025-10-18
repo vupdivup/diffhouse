@@ -17,7 +17,7 @@ SELECTED_REPOS = random.sample(REPOS, 3)
 
 
 @pytest.fixture(scope='session', params=SELECTED_REPOS)
-def repo(request) -> Repo:
+def repo(request: pytest.FixtureRequest) -> Repo:
     """Fixture that provides a `Repo` instance for a given GitHub URL."""
     return Repo(request.param, blobs=True).load()
 
@@ -50,7 +50,7 @@ def diffs_df(repo: Repo) -> pl.LazyFrame:
 
 
 @pytest.fixture(scope='session')
-def commits_gh(repo) -> pl.DataFrame:
+def commits_gh(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of commits sampled from GitHub API."""
     df = pl.DataFrame(
         sample_github_endpoint(
@@ -86,41 +86,31 @@ def commits_gh(repo) -> pl.DataFrame:
 
 
 @pytest.fixture(scope='session')
-def shortstats_gh(repo, commits_df) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of commit shortstats sampled from GitHub API."""
+def changed_files__github(repo: Repo, commits_df: pl.DataFrame) -> list[dict]:
+    """Fixture that provides a list of file changes from the GitHub API.
+
+    Samples non-merge commits only.
+    """
     # get k random non-merge commits
-    # for huge commits, GitHub paginates the 'files' array, so limit to <50
-    # changed files
-    commits = random.sample(
-        commits_df.filter(
-            (pl.col('is_merge').not_()) & (pl.col('files_changed') < 50)
-        )['commit_hash'].to_list(),
+    selected_commits = random.sample(
+        commits_df.filter((pl.col('is_merge').not_()))['commit_hash'].to_list(),
         k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 
-    patches = []
+    patches = [
+        get_github_response(repo.location, f'commits/{c}').json()
+        for c in selected_commits
+    ]
 
-    for commit in commits:
-        patches.append(
-            get_github_response(repo.location, f'commits/{commit}').json()
-        )
-
-    df = pl.DataFrame(patches).lazy()
-
-    df = df.with_columns(pl.col('files').list.len().alias('files_changed'))
-    df = df.unnest('stats')
-    df = df.rename(
+    return [
         {
-            'sha': 'commit_hash',
-            'additions': 'lines_added',
-            'deletions': 'lines_deleted',
+            'commit_hash': p['sha'],
+            'path_b': f['filename'],
+            'change_type': f['status'],
+            'lines_added': f['additions'],
+            'lines_deleted': f['deletions'],
+            'path_a': f.get('previous_filename', f['filename']),
         }
-    )
-    df = df.select(
-        'commit_hash',
-        'lines_added',
-        'lines_deleted',
-        'files_changed',
-    )
-
-    return df.collect()
+        for p in patches
+        for f in p['files']
+    ]
