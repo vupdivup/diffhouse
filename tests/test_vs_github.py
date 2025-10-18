@@ -1,4 +1,6 @@
 import logging
+from datetime import datetime as dt
+from datetime import timezone as tz
 
 import polars as pl
 import pytest
@@ -9,11 +11,12 @@ from diffhouse import Repo
 from .fixtures import (  # noqa: F401
     changed_files__github,
     changed_files_df,
+    commits__github,
     commits_df,
-    commits_gh,
     repo,
 )
 from .github import sample_github_endpoint
+from .utils import select_keys
 
 logger = logging.getLogger()
 
@@ -46,60 +49,56 @@ def test_tags(repo: Repo) -> None:  # noqa: F811
         assert tag in repo.tags
 
 
-def test_commits(commits_df: pl.DataFrame, commits_gh: pl.DataFrame) -> None:  # noqa: F811
+def test_commits(commits_df: pl.DataFrame, commits__github: list[dict]) -> None:  # noqa: F811
     """Test that an extract of commits from GitHub matches `repo.commits`."""
-    suffixed = commits_gh.rename(
-        {col: f'{col}_gh' for col in commits_gh.columns}
+    logger.info(
+        f'Comparing {len(commits__github)} commits between GitHub and local'
     )
 
-    joined = suffixed.join(
-        commits_df,
-        left_on='commit_hash_gh',
-        right_on='commit_hash',
-        how='left',
-        coalesce=False,
-    )
-
-    # ensure we have a match for every commit sampled from GitHub
-    assert joined['commit_hash'].is_not_null().all(), (
-        'Not all GitHub commits found locally: '
-        + repr(joined.filter(pl.col('commit_hash').is_null()).to_dicts())
-    )
-
-    logger.info(f'Comparing {len(joined)} commits between GitHub and local')
-
-    # compare fields
-    for col in (
-        'author_name',
-        'author_email',
-        'author_date',
-        'committer_name',
-        'committer_email',
-        'committer_date',
-    ):
-        errors = joined.filter(pl.col(col) != pl.col(f'{col}_gh'))
-        assert errors.is_empty(), (
-            f'{col} mismatch between GitHub and local: '
-            + repr(errors.to_dicts())
+    for c_gh in commits__github:
+        c_local = commits_df.filter(
+            pl.col('commit_hash') == c_gh['commit_hash']
         )
 
-    # compare commit messages (fuzzy match)
-    message_mismatches = joined.filter(
-        pl.struct('message_subject', 'message_body', 'message_gh').map_elements(
-            lambda x: fuzz.ratio(
-                (x['message_subject'] + '\n\n' + x['message_body']).strip(),
-                x['message_gh'],
+        assert len(c_local) == 1, c_gh['commit_hash']
+
+        c_local = c_local.row(0, named=True)
+
+        comparison_fields = [
+            'commit_hash',
+            'author_name',
+            'author_email',
+            'committer_name',
+            'committer_email',
+        ]
+
+        assert select_keys(c_local, comparison_fields) == select_keys(
+            c_gh, comparison_fields
+        )
+
+        # convert and compare datetimes in UTC
+        for field in ['author_date', 'committer_date']:
+            assert dt.fromisoformat(c_local[field]).astimezone(
+                tz.utc
+            ) == dt.fromisoformat(c_gh[field].replace('Z', '+00:00')), c_gh[
+                'commit_hash'
+            ]
+
+        # compare commit message with fuzzy matching
+        assert (
+            fuzz.ratio(
+                (
+                    c_local['message_subject']
+                    + '\n\n'
+                    + c_local['message_body']
+                ).strip(),
+                c_gh['message'],
             )
-            < 90
-        )
-    )
-
-    assert message_mismatches.is_empty(), 'Commit message mismatch: ' + repr(
-        message_mismatches.to_dicts()
-    )
+            >= 90
+        ), c_gh['commit_hash']
 
 
-def test_vs_github__changed_files(
+def test_changed_files(
     changed_files_df: pl.DataFrame,  # noqa: F811
     changed_files__github: list[dict],  # noqa: F811
 ) -> None:
@@ -118,18 +117,21 @@ def test_vs_github__changed_files(
 
         cf_local = cf_local.row(0, named=True)
 
-        cf_local.pop('changed_file_id')
-        cf_local.pop('similarity')
-
-        # the mapping of GitHub status is unclear for T, U etc., so skip for now
-        cf_local.pop('change_type')
-        cf_gh.pop('change_type')
-
         if cf_local['lines_added'] == 0 and cf_local['lines_deleted'] == 0:
             # local may omit lines_added/lines_deleted for binary files
             continue
 
-        assert cf_local == cf_gh
+        comparison_fields = [
+            'commit_hash',
+            'path_a',
+            'path_b',
+            'lines_added',
+            'lines_deleted',
+        ]
+
+        assert select_keys(cf_local, comparison_fields) == select_keys(
+            cf_gh, comparison_fields
+        )
 
 
 if __name__ == '__main__':
