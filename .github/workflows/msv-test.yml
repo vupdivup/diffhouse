@@ -4,7 +4,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 1 * *' # 00:00 UTC on the 1st of every month
+    - cron: '0 6 * * 3' # 06:00 UTC every Wednesday
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub API requests
@@ -38,4 +38,4 @@ jobs:
           uv sync --group test
 
       - name: Run tests
-        run: uv run pytest -v
+        run: uv run pytest -vv

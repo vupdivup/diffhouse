@@ -3,23 +3,28 @@ import logging
 import polars as pl
 import pytest
 
-from .fixtures import changed_files_df, commits_df, diffs_df, repo  # noqa: F401
+from .fixtures import (  # noqa: F401
+    changed_files__diffhouse,
+    commits__diffhouse,
+    diffs__diffhouse,
+    repo,
+)
 
 logger = logging.getLogger()
 
 
 def test_commits_vs_changed_files(
-    commits_df: pl.DataFrame,  # noqa: F811
-    changed_files_df: pl.DataFrame,  # noqa: F811
-):
+    commits__diffhouse: pl.DataFrame,  # noqa: F811
+    changed_files__diffhouse: pl.DataFrame,  # noqa: F811
+) -> None:
     """Test that overlapping data of `repo.commits` and `repo.changed_files` matches."""
-    files_grouped = changed_files_df.group_by('commit_hash').agg(
+    files_grouped = changed_files__diffhouse.group_by('commit_hash').agg(
         pl.len().alias('files_changed'),
         pl.col('lines_added').sum().alias('lines_added'),
         pl.col('lines_deleted').sum().alias('lines_deleted'),
     )
 
-    joined = commits_df.join(
+    joined = commits__diffhouse.join(
         files_grouped, on='commit_hash', how='left', coalesce=False
     ).fill_nan(0)
 
@@ -40,16 +45,16 @@ def test_commits_vs_changed_files(
 
 
 def test_changed_files_vs_diffs(
-    changed_files_df: pl.DataFrame,  # noqa: F811
-    diffs_df: pl.LazyFrame,  # noqa: F811
-):
+    changed_files__diffhouse: pl.DataFrame,  # noqa: F811
+    diffs__diffhouse: pl.LazyFrame,  # noqa: F811
+) -> None:
     """Test that overlapping data of `repo.changed_files` and `repo.diffs` matches."""
     # using lazy loading as this is an expensive operation
-    diffs_grouped = diffs_df.group_by('commit_hash', 'changed_file_id').agg(
-        pl.sum('lines_added'), pl.sum('lines_deleted')
-    )
+    diffs_grouped = diffs__diffhouse.group_by(
+        'commit_hash', 'changed_file_id'
+    ).agg(pl.sum('lines_added'), pl.sum('lines_deleted'))
 
-    joined = changed_files_df.lazy().join(
+    joined = changed_files__diffhouse.lazy().join(
         diffs_grouped, on=['commit_hash', 'changed_file_id'], how='left'
     )
 

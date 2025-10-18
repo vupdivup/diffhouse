@@ -17,110 +17,82 @@ SELECTED_REPOS = random.sample(REPOS, 3)
 
 
 @pytest.fixture(scope='session', params=SELECTED_REPOS)
-def repo(request) -> Repo:
+def repo(request: pytest.FixtureRequest) -> Repo:
     """Fixture that provides a `Repo` instance for a given GitHub URL."""
     return Repo(request.param, blobs=True).load()
 
 
 @pytest.fixture(scope='session')
-def commits_df(repo: Repo) -> pl.DataFrame:
+def commits__diffhouse(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.commits`.
 
     Datetime strings are converted to objects.
     """
-    df = pl.DataFrame(repo.commits)
-
-    df = df.with_columns(pl.col('author_date').str.to_datetime(time_zone='utc'))
-    df = df.with_columns(
-        pl.col('committer_date').str.to_datetime(time_zone='utc')
-    )
-    return df
+    return pl.DataFrame(repo.commits)
 
 
 @pytest.fixture(scope='session')
-def changed_files_df(repo: Repo) -> pl.DataFrame:
+def changed_files__diffhouse(repo: Repo) -> pl.DataFrame:
     """Fixture that provides a DataFrame of `repo.changed_files`."""
     return pl.DataFrame(repo.changed_files)
 
 
 @pytest.fixture(scope='session')
-def diffs_df(repo: Repo) -> pl.LazyFrame:
+def diffs__diffhouse(repo: Repo) -> pl.LazyFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
     return pl.DataFrame(repo.diffs).lazy()
 
 
 @pytest.fixture(scope='session')
-def commits_gh(repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of commits sampled from GitHub API."""
-    df = pl.DataFrame(
-        sample_github_endpoint(
+def commits__github(repo: Repo) -> list[dict]:
+    """Fixture that provides commits sampled from GitHub API."""
+    return [
+        {
+            'commit_hash': c['sha'],
+            'author_name': c['commit']['author']['name'],
+            'author_email': c['commit']['author']['email'],
+            'author_date': c['commit']['author']['date'],
+            'committer_name': c['commit']['committer']['name'],
+            'committer_email': c['commit']['committer']['email'],
+            'committer_date': c['commit']['committer']['date'],
+            'message': c['commit']['message'],
+        }
+        for c in sample_github_endpoint(
             repo.location, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
         )
-    ).lazy()
-
-    # select columns of interest
-    df = df.select('sha', 'commit').unnest('commit')
-    df = df.select('sha', 'author', 'committer', 'message').rename(
-        {'sha': 'commit_hash'}
-    )
-
-    # unnest author and committer
-    df = df.unnest('author').rename(
-        {'name': 'author_name', 'email': 'author_email', 'date': 'author_date'}
-    )
-    df = df.unnest('committer').rename(
-        {
-            'name': 'committer_name',
-            'email': 'committer_email',
-            'date': 'committer_date',
-        }
-    )
-
-    # convert datetime strings to objects
-    df = df.with_columns(pl.col('author_date').str.to_datetime(time_zone='utc'))
-    df = df.with_columns(
-        pl.col('committer_date').str.to_datetime(time_zone='utc')
-    )
-
-    return df.collect()
+    ]
 
 
 @pytest.fixture(scope='session')
-def shortstats_gh(repo, commits_df) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of commit shortstats sampled from GitHub API."""
+def changed_files__github(
+    repo: Repo, commits__diffhouse: pl.DataFrame
+) -> list[dict]:
+    """Fixture that provides a list of file changes from the GitHub API.
+
+    Samples non-merge commits only.
+    """
     # get k random non-merge commits
-    # for huge commits, GitHub paginates the 'files' array, so limit to <50
-    # changed files
-    commits = random.sample(
-        commits_df.filter(
-            (pl.col('is_merge').not_()) & (pl.col('files_changed') < 50)
-        )['commit_hash'].to_list(),
+    selected_commits = random.sample(
+        commits__diffhouse.filter((pl.col('is_merge').not_()))[
+            'commit_hash'
+        ].to_list(),
         k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 
-    patches = []
+    patches = [
+        get_github_response(repo.location, f'commits/{c}').json()
+        for c in selected_commits
+    ]
 
-    for commit in commits:
-        patches.append(
-            get_github_response(repo.location, f'commits/{commit}').json()
-        )
-
-    df = pl.DataFrame(patches).lazy()
-
-    df = df.with_columns(pl.col('files').list.len().alias('files_changed'))
-    df = df.unnest('stats')
-    df = df.rename(
+    return [
         {
-            'sha': 'commit_hash',
-            'additions': 'lines_added',
-            'deletions': 'lines_deleted',
+            'commit_hash': p['sha'],
+            'path_b': f['filename'],
+            'change_type': f['status'],
+            'lines_added': f['additions'],
+            'lines_deleted': f['deletions'],
+            'path_a': f.get('previous_filename', f['filename']),
         }
-    )
-    df = df.select(
-        'commit_hash',
-        'lines_added',
-        'lines_deleted',
-        'files_changed',
-    )
-
-    return df.collect()
+        for p in patches
+        for f in p['files']
+    ]
