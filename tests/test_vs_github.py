@@ -25,6 +25,10 @@ def test_branches(repo: Repo) -> None:  # noqa: F811
         for b in sample_github_endpoint(repo.location, 'branches', 200, 50)
     ]
 
+    logger.info(
+        f'Comparing {len(branches_gh)} branches between GitHub and local'
+    )
+
     for branch in branches_gh:
         assert branch in repo.branches, f'Branch {branch} missing locally'
 
@@ -35,6 +39,8 @@ def test_tags(repo: Repo) -> None:  # noqa: F811
         t['name']
         for t in sample_github_endpoint(repo.location, 'tags', 200, 50)
     ]
+
+    logger.info(f'Comparing {len(tags_gh)} tags between GitHub and local')
 
     for tag in tags_gh:
         assert tag in repo.tags, f'Tag {tag} missing locally'
@@ -98,23 +104,32 @@ def test_vs_github__changed_files(
     changed_files__github: list[dict],  # noqa: F811
 ) -> None:
     """Test that an extract of changed files from GitHub matches `repo.changed_files`."""
+    logger.info(
+        f'Comparing {len(changed_files__github)} changed files between GitHub and local'
+    )
+
     for cf_gh in changed_files__github:
         cf_local = changed_files_df.filter(
             (pl.col('commit_hash') == cf_gh['commit_hash'])
             & (pl.col('path_b') == cf_gh.get('path_b'))
         )
 
-        assert len(cf_local) == 1
+        assert len(cf_local) == 1, cf_gh['commit_hash']
 
         cf_local = cf_local.row(0, named=True)
+
+        cf_local.pop('changed_file_id')
+        cf_local.pop('similarity')
+
+        # the mapping of GitHub status is unclear for T, U etc., so skip for now
+        cf_local.pop('change_type')
+        cf_gh.pop('change_type')
 
         if cf_local['lines_added'] == 0 and cf_local['lines_deleted'] == 0:
             # local may omit lines_added/lines_deleted for binary files
             continue
 
-        assert cf_local['lines_added'] == cf_gh['lines_added']
-        assert cf_local['lines_deleted'] == cf_gh['lines_deleted']
-        assert cf_local['path_a'] == cf_gh['path_a']
+        assert cf_local == cf_gh
 
 
 if __name__ == '__main__':
