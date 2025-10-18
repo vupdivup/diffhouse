@@ -28,13 +28,7 @@ def commits_df(repo: Repo) -> pl.DataFrame:
 
     Datetime strings are converted to objects.
     """
-    df = pl.DataFrame(repo.commits)
-
-    df = df.with_columns(pl.col('author_date').str.to_datetime(time_zone='utc'))
-    df = df.with_columns(
-        pl.col('committer_date').str.to_datetime(time_zone='utc')
-    )
-    return df
+    return pl.DataFrame(repo.commits)
 
 
 @pytest.fixture(scope='session')
@@ -50,39 +44,23 @@ def diffs_df(repo: Repo) -> pl.LazyFrame:
 
 
 @pytest.fixture(scope='session')
-def commits_gh(repo: Repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of commits sampled from GitHub API."""
-    df = pl.DataFrame(
-        sample_github_endpoint(
+def commits__github(repo: Repo) -> list[dict]:
+    """Fixture that provides commits sampled from GitHub API."""
+    return [
+        {
+            'commit_hash': c['sha'],
+            'author_name': c['commit']['author']['name'],
+            'author_email': c['commit']['author']['email'],
+            'author_date': c['commit']['author']['date'],
+            'committer_name': c['commit']['committer']['name'],
+            'committer_email': c['commit']['committer']['email'],
+            'committer_date': c['commit']['committer']['date'],
+            'message': c['commit']['message'],
+        }
+        for c in sample_github_endpoint(
             repo.location, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
         )
-    ).lazy()
-
-    # select columns of interest
-    df = df.select('sha', 'commit').unnest('commit')
-    df = df.select('sha', 'author', 'committer', 'message').rename(
-        {'sha': 'commit_hash'}
-    )
-
-    # unnest author and committer
-    df = df.unnest('author').rename(
-        {'name': 'author_name', 'email': 'author_email', 'date': 'author_date'}
-    )
-    df = df.unnest('committer').rename(
-        {
-            'name': 'committer_name',
-            'email': 'committer_email',
-            'date': 'committer_date',
-        }
-    )
-
-    # convert datetime strings to objects
-    df = df.with_columns(pl.col('author_date').str.to_datetime(time_zone='utc'))
-    df = df.with_columns(
-        pl.col('committer_date').str.to_datetime(time_zone='utc')
-    )
-
-    return df.collect()
+    ]
 
 
 @pytest.fixture(scope='session')
