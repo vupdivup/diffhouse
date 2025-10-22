@@ -3,13 +3,13 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
-from ..entities import ChangedFile
+from ..entities import FileMod
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, safe_iter, split_stream
 
 
-def stream_changed_files(path: str) -> Iterator[ChangedFile]:
+def stream_changed_files(path: str) -> Iterator[FileMod]:
     """Get changed files per commit for a local git repository.
 
     Args:
@@ -34,7 +34,7 @@ def stream_changed_files(path: str) -> Iterator[ChangedFile]:
             if name_status['changed_file_id'] in index:
                 numstat = index[name_status['changed_file_id']]
 
-                yield ChangedFile(
+                yield FileMod(
                     commit_hash=name_status['commit_hash'],
                     path_a=name_status['path_a'],
                     path_b=name_status['path_b'],
