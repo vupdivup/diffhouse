@@ -25,22 +25,22 @@ class Repo:
     depending on the repository size and network speed.
     """
 
-    def __init__(self, location: str, blobs: bool = False):
+    def __init__(self, source: str, blobs: bool = False):
         """Initialize the repository.
 
         When sourcing from a local path, the `blobs = False` filter
             may not be available.
 
         Args:
-            location: URL or local path pointing to a git repository.
+            source: URL or local path pointing to a git repository.
             blobs: Whether to load file content and extract associated metadata.
 
         """
-        # Convert location to file URI if not a URL
-        self._location = (
-            location.strip()
-            if validators.url(location)
-            else Path(location).resolve().as_uri()
+        # Convert source to file URI if not a URL
+        self._source = (
+            source.strip()
+            if validators.url(source)
+            else Path(source).resolve().as_uri()
         )
 
         self._blobs = blobs
@@ -59,9 +59,9 @@ class Repo:
             self
 
         """
-        logger.info(f'Cloning {self._location}')
+        logger.info(f'Cloning {self._source}')
 
-        self._clone = TempClone(self._location, shallow=not self._blobs)
+        self._clone = TempClone(self._source, shallow=not self._blobs)
         self._clone.__enter__()
 
         logger.info(f'Cloned into {self._clone.path}')
@@ -218,13 +218,13 @@ class Repo:
         return self._safe_stream(stream_diffs(self._clone.path))
 
     @property
-    def location(self) -> str:
+    def source(self) -> str:
         """Location where the repository was cloned from.
 
         Can either be a remote URL or a local file URI based on the
         original input.
         """
-        return self._location
+        return self._source
 
     def _safe_stream(self, iter_: Iterator) -> Iterator:
         """Wrap a generator to raise an error if not consumed in the `with` block.

@@ -25,7 +25,7 @@ def test_branches(repo: Repo) -> None:  # noqa: F811
     """Test that an extract of GitHub branches matches `repo.branches`."""
     branches_gh = [
         b['name']
-        for b in sample_github_endpoint(repo.location, 'branches', 200, 50)
+        for b in sample_github_endpoint(repo.source, 'branches', 200, 50)
     ]
 
     logger.info(
@@ -39,8 +39,7 @@ def test_branches(repo: Repo) -> None:  # noqa: F811
 def test_tags(repo: Repo) -> None:  # noqa: F811
     """Test that an extract of GitHub tags matches `repo.tags`."""
     tags_gh = [
-        t['name']
-        for t in sample_github_endpoint(repo.location, 'tags', 200, 50)
+        t['name'] for t in sample_github_endpoint(repo.source, 'tags', 200, 50)
     ]
 
     logger.info(f'Comparing {len(tags_gh)} tags between GitHub and local')

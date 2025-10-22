@@ -58,7 +58,7 @@ def commits__github(repo: Repo) -> list[dict]:
             'message': c['commit']['message'],
         }
         for c in sample_github_endpoint(
-            repo.location, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
+            repo.source, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
         )
     ]
 
@@ -82,7 +82,7 @@ def changed_files__github(
     )
 
     patches = [
-        get_github_response(repo.location, f'commits/{c}').json()
+        get_github_response(repo.source, f'commits/{c}').json()
         for c in selected_commits
     ]
 

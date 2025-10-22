@@ -1,34 +1,35 @@
 import pytest
 
 from diffhouse import Repo
+from diffhouse.git.cli import GitError
 
 from .constants import INVALID_URL, VALID_URL
 
 
-def test_invalid_url():
+def test_invalid_url() -> None:
     """Test that initializing `Repo` with an invalid URL raises an exception."""
-    with pytest.raises(Exception):
+    with pytest.raises(GitError):
         Repo(INVALID_URL).load()
 
 
-def test_no_blobs():
+def test_no_blobs() -> None:
     """Test that initializing `Repo` with `blobs`=`False` does not load diffs."""
     r = Repo(VALID_URL, blobs=False).load()
     with pytest.raises(ValueError):
-        r.changed_files
+        _ = r.changed_files
 
     with pytest.raises(ValueError):
-        r.diffs
+        _ = r.diffs
 
 
-def test_path_as_location():
+def test_path_as_source() -> None:
     """Test that initializing `Repo` with a local path works correctly."""
     r = Repo('.', blobs=True).load()
 
-    assert r.location.startswith('file://')
+    assert r.source.startswith('file://')
 
 
-def test_streaming():
+def test_streaming() -> None:
     """Test that streaming methods output the same results as eager loading."""
     with Repo(VALID_URL, blobs=True) as r:
         commits_streamed = list(r.stream_commits())
@@ -42,7 +43,7 @@ def test_streaming():
     assert len(diffs_streamed) == len(repo_eager.diffs)
 
 
-def test_incorrect_member_access():
+def test_incorrect_member_access() -> None:
     """Test that accessing members in incorrect states raises exceptions."""
     # no attribute should be available without load() or context manager
     r0 = Repo(VALID_URL)
