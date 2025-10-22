@@ -13,7 +13,8 @@ from .pipelines import (
     stream_commits,
     stream_diffs,
 )
-from .utils.logger import log_to_stdout, package_logger
+
+logger = logging.getLogger(__name__)
 
 
 class Repo:
@@ -24,9 +25,7 @@ class Repo:
     depending on the repository size and network speed.
     """
 
-    def __init__(
-        self, location: str, blobs: bool = False, verbose: bool = False
-    ):
+    def __init__(self, location: str, blobs: bool = False):
         """Initialize the repository.
 
         When sourcing from a local path, the `blobs = False` filter
@@ -35,7 +34,6 @@ class Repo:
         Args:
             location: URL or local path pointing to a git repository.
             blobs: Whether to load file content and extract associated metadata.
-            verbose: Whether to log progress to stdout.
 
         """
         # Convert location to file URI if not a URL
@@ -48,7 +46,6 @@ class Repo:
         self._blobs = blobs
         self._active = False
         self._loaded = False
-        self._verbose = verbose
 
         # these two can be accessed in both normal and lazy modes
         # init with None ensures that data is queried when they are accessed
@@ -62,13 +59,12 @@ class Repo:
             self
 
         """
-        with log_to_stdout(package_logger, logging.INFO, enabled=self._verbose):
-            package_logger.info(f'Cloning {self._location}')
+        logger.info(f'Cloning {self._location}')
 
-            self._clone = TempClone(self._location, shallow=not self._blobs)
-            self._clone.__enter__()
+        self._clone = TempClone(self._location, shallow=not self._blobs)
+        self._clone.__enter__()
 
-            package_logger.info(f'Cloned into {self._clone.path}')
+        logger.info(f'Cloned into {self._clone.path}')
 
         self._active = True
         return self
@@ -89,28 +85,25 @@ class Repo:
             self
 
         """
-        with (
-            self,
-            log_to_stdout(package_logger, logging.INFO, enabled=self._verbose),
-        ):
+        with self:
             # load and cache properties via getters
-            package_logger.info('Extracting branches')
+            logger.info('Extracting branches')
             _ = self.branches
 
-            package_logger.info('Extracting tags')
+            logger.info('Extracting tags')
             _ = self.tags
 
-            package_logger.info('Extracting commits')
+            logger.info('Extracting commits')
             self._commits = list(self.stream_commits())
 
             if self._blobs:
-                package_logger.info('Extracting changed files')
+                logger.info('Extracting changed files')
                 self._changed_files = list(self.stream_changed_files())
 
-                package_logger.info('Extracting diffs')
+                logger.info('Extracting diffs')
                 self._diffs = list(self.stream_diffs())
 
-            package_logger.info('Load complete')
+            logger.info('Load complete')
 
         self._loaded = True
 
