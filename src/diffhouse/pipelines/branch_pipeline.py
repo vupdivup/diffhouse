@@ -1,20 +1,22 @@
 import re
+from typing import Iterator
 
-from ..git import GitCLI
+from diffhouse.entities import Branch
+from diffhouse.git import GitCLI
 
 
-def get_branches(path: str) -> list[str]:
+def extract_branches(path: str) -> Iterator[Branch]:
     """Get branches of a local git repository.
 
     Args:
         path: Path to the local git repository.
 
-    Returns:
-        A list of branch names.
+    Yields:
+        Branch objects.
 
     """
     log = log_branches(path)
-    return parse_branches(log)
+    yield from parse_branches(log)
 
 
 def log_branches(path: str) -> str:
@@ -28,14 +30,15 @@ def log_branches(path: str) -> str:
     return git.ls_remote('branches')
 
 
-def parse_branches(log: str) -> list[str]:
+def parse_branches(log: str) -> Iterator[Branch]:
     """Parse the output of `log_branches`.
 
     Args:
         log: The output string from `git ls-remote --heads/--branches`.
 
-    Returns:
-        A list of branch names.
+    Yields:
+        Branch objects.
 
     """
-    return re.findall(r'refs/heads/(.+)\n', log)
+    for branch in re.findall(r'refs/heads/(.+)\n', log):
+        yield Branch(name=branch)
