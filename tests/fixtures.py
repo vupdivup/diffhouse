@@ -73,9 +73,11 @@ def changed_files__github(
     """
     # get k random non-merge commits
     selected_commits = random.sample(
-        commits__diffhouse.filter((pl.col('is_merge').not_()))[
-            'commit_hash'
-        ].to_list(),
+        commits__diffhouse.filter(
+            # data quality for commits with too many changed files is often poor
+            # this is true for both local & GitHub, so excluding them here
+            (pl.col('is_merge').not_()) & (pl.col('files_changed') < 10)
+        )['commit_hash'].to_list(),
         k=GITHUB_SHORTSTATS_SAMPLE_SIZE,
     )
 
