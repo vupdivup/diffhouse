@@ -9,7 +9,7 @@ from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, safe_iter, split_stream
 
 
-def stream_file_mods(path: str) -> Iterator[FileMod]:
+def extract_file_mods(path: str) -> Iterator[FileMod]:
     """Get changed files per commit for a local git repository.
 
     Args:

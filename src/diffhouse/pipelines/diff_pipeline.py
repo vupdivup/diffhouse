@@ -10,7 +10,7 @@ from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, safe_iter, split_stream
 
 
-def stream_diffs(path: str) -> Iterator[Diff]:
+def extract_diffs(path: str) -> Iterator[Diff]:
     """Stream diffs per commit and file for a local repository.
 
     Args:
