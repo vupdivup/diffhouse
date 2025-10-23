@@ -1,7 +1,7 @@
 import pytest
 
 from diffhouse import Repo
-from diffhouse.git.cli import GitError
+from diffhouse.api.exceptions import FilterError, GitError, NotClonedError
 from tests.constants import INVALID_URL, VALID_URL
 
 
@@ -14,10 +14,10 @@ def test_invalid_url() -> None:
 def test_no_blobs() -> None:
     """Test that initializing `Repo` with `blobs`=`False` does not load diffs."""
     r = Repo(VALID_URL, blobs=False).clone()
-    with pytest.raises(ValueError):
+    with pytest.raises(FilterError):
         _ = r.filemods
 
-    with pytest.raises(ValueError):
+    with pytest.raises(FilterError):
         _ = r.diffs
 
     r.dispose()
@@ -38,7 +38,7 @@ def test_incorrect_member_access() -> None:
 
     r = Repo(VALID_URL)
     for attr in attrs:
-        with pytest.raises(RuntimeError):
+        with pytest.raises(NotClonedError):
             getattr(r, attr)
 
     r.clone()
@@ -48,10 +48,10 @@ def test_incorrect_member_access() -> None:
     r.dispose()
 
     for extractor in extractors:
-        with pytest.raises(RuntimeError):
+        with pytest.raises(NotClonedError):
             _ = list(extractor)
 
     # after dispose(), no attribute should be available
     for attr in ('branches', 'tags', 'commits', 'filemods', 'diffs'):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(NotClonedError):
             getattr(r, attr)

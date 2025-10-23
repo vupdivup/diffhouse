@@ -4,6 +4,7 @@ from pathlib import Path
 import validators
 
 from diffhouse.api import Extractor
+from diffhouse.api.exceptions import FilterError, NotClonedError
 from diffhouse.entities import Branch, Commit, Diff, FileMod
 from diffhouse.git import TempClone
 from diffhouse.pipelines import (
@@ -64,17 +65,12 @@ class Repo:
     def _require_active(self) -> None:
         """Raise an error if the Repo context manager is not active."""
         if not self._active:
-            raise RuntimeError(
-                f'{Repo.__name__} object is not active.'
-                " Wrap in a 'with' statement to query."
-            )
+            raise NotClonedError()
 
     def _require_blobs(self) -> None:
         """Raise an error if the Repo was not initialized with `blobs = True`."""
         if not self._blobs:
-            raise ValueError(
-                'Load `Repo` with `blobs = True` to access this property.'
-            )
+            raise FilterError('blobs')
 
     @property
     def branches(self) -> Extractor[Branch]:
@@ -172,8 +168,6 @@ class Repo:
             except StopIteration:
                 return
             except FileNotFoundError:
-                raise RuntimeError(
-                    'Generator has to be consumed in the `with` block.'
-                ) from None
+                raise NotClonedError() from None
 
             yield next_
