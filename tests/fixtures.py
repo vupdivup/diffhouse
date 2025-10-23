@@ -1,4 +1,5 @@
 import random
+from typing import Iterator
 
 import polars as pl
 import pytest
@@ -17,30 +18,29 @@ SELECTED_REPOS = random.sample(REPOS, 3)
 
 
 @pytest.fixture(scope='session', params=SELECTED_REPOS)
-def repo(request: pytest.FixtureRequest) -> Repo:
+def repo(request: pytest.FixtureRequest) -> Iterator[Repo]:
     """Fixture that provides a `Repo` instance for a given GitHub URL."""
-    return Repo(request.param, blobs=True).load()
+    r = Repo(request.param, blobs=True).clone()
+    yield r
+    r.dispose()
 
 
 @pytest.fixture(scope='session')
 def commits__diffhouse(repo: Repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of `repo.commits`.
-
-    Datetime strings are converted to objects.
-    """
-    return pl.DataFrame(repo.commits)
+    """Fixture that provides a DataFrame of `repo.commits`."""
+    return repo.commits.pl()
 
 
 @pytest.fixture(scope='session')
-def changed_files__diffhouse(repo: Repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of `repo.changed_files`."""
-    return pl.DataFrame(repo.changed_files)
+def filemods__diffhouse(repo: Repo) -> pl.DataFrame:
+    """Fixture that provides a DataFrame of `repo.filemods`."""
+    return repo.filemods.pl()
 
 
 @pytest.fixture(scope='session')
 def diffs__diffhouse(repo: Repo) -> pl.LazyFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
-    return pl.DataFrame(repo.diffs).lazy()
+    return repo.diffs.pl().lazy()
 
 
 @pytest.fixture(scope='session')
@@ -58,13 +58,13 @@ def commits__github(repo: Repo) -> list[dict]:
             'message': c['commit']['message'],
         }
         for c in sample_github_endpoint(
-            repo.location, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
+            repo.source, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
         )
     ]
 
 
 @pytest.fixture(scope='session')
-def changed_files__github(
+def filemods__github(
     repo: Repo, commits__diffhouse: pl.DataFrame
 ) -> list[dict]:
     """Fixture that provides a list of file changes from the GitHub API.
@@ -82,7 +82,7 @@ def changed_files__github(
     )
 
     patches = [
-        get_github_response(repo.location, f'commits/{c}').json()
+        get_github_response(repo.source, f'commits/{c}').json()
         for c in selected_commits
     ]
 

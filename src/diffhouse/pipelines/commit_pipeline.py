@@ -24,7 +24,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
 
-def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
+def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
     """Stream main branch commits from a git repository.
 
     Args:

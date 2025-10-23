@@ -1,8 +1,23 @@
 """Tests to validate data of extracted entities internally."""
 
 from diffhouse import Repo
+from tests.fixtures import repo  # noqa: F401
 
-from .fixtures import repo  # noqa: F401
+
+def test_validity__branches(repo: Repo) -> None:  # noqa: F811
+    """Test that extracted branch data is valid."""
+    for b in repo.branches:
+        assert b.name != ''
+        assert ' ' not in b.name
+        assert ': ' not in b.name
+
+
+def test_validity__tags(repo: Repo) -> None:  # noqa: F811
+    """Test that extracted tag data is valid."""
+    for t in repo.tags:
+        assert t.name != ''
+        assert ' ' not in t.name
+        assert ': ' not in t.name
 
 
 def test_validity__commits(repo: Repo) -> None:  # noqa: F811
@@ -21,9 +36,9 @@ def test_validity__commits(repo: Repo) -> None:  # noqa: F811
         assert c.files_changed >= 0
 
 
-def test_validity__changed_files(repo: Repo) -> None:  # noqa: F811
-    """Test that extracted changed file data is valid."""
-    for f in repo.changed_files:
+def test_validity__filemods(repo: Repo) -> None:  # noqa: F811
+    """Test that extracted file modification data is valid."""
+    for f in repo.filemods:
         assert len(f.commit_hash) == 40
 
         assert f.path_a != ''

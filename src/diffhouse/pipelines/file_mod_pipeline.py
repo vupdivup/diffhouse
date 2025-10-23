@@ -3,13 +3,13 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
-from ..entities import ChangedFile
+from ..entities import FileMod
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, safe_iter, split_stream
 
 
-def stream_changed_files(path: str) -> Iterator[ChangedFile]:
+def extract_file_mods(path: str) -> Iterator[FileMod]:
     """Get changed files per commit for a local git repository.
 
     Args:
@@ -21,24 +21,23 @@ def stream_changed_files(path: str) -> Iterator[ChangedFile]:
     """
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
-    fail_msg = 'Failed to parse changed file. Skipping...'
+    fail_msg = 'Failed to parse file mod. Skipping...'
 
     with log_numstats(path) as log:
         index = {
-            n['changed_file_id']: n
-            for n in safe_iter(parse_numstats(log), fail_msg)
+            n['filemod_id']: n for n in safe_iter(parse_numstats(log), fail_msg)
         }
 
     with log_name_statuses(path) as log:
         for name_status in safe_iter(parse_name_statuses(log), fail_msg):
-            if name_status['changed_file_id'] in index:
-                numstat = index[name_status['changed_file_id']]
+            if name_status['filemod_id'] in index:
+                numstat = index[name_status['filemod_id']]
 
-                yield ChangedFile(
+                yield FileMod(
                     commit_hash=name_status['commit_hash'],
                     path_a=name_status['path_a'],
                     path_b=name_status['path_b'],
-                    changed_file_id=name_status['changed_file_id'],
+                    filemod_id=name_status['filemod_id'],
                     change_type=name_status['change_type'],
                     similarity=name_status['similarity'],
                     lines_added=numstat['lines_added'],
@@ -106,7 +105,7 @@ def parse_name_statuses(
                 'commit_hash': commit_hash,
                 'path_a': path_a,
                 'path_b': path_b,
-                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
+                'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
                 'change_type': change_type,
                 'similarity': similarity,
             }
@@ -180,7 +179,7 @@ def parse_numstats(
                 path_b = paths[1] if len(paths) > 1 else file_expr
 
             yield {
-                'changed_file_id': fast_hash_64(commit_hash, path_a, path_b),
+                'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
                 'lines_added': lines_added,
                 'lines_deleted': lines_deleted,
             }

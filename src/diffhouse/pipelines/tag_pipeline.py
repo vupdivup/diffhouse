@@ -1,20 +1,22 @@
 import re
+from typing import Iterator
 
-from ..git import GitCLI
+from diffhouse.entities import Tag
+from diffhouse.git import GitCLI
 
 
-def get_tags(path: str) -> list[str]:
+def extract_tags(path: str) -> Iterator[Tag]:
     """Get tags of a local git repository.
 
     Args:
         path: Path to the local git repository.
 
-    Returns:
-        A list of tag names.
+    Yields:
+        Tag objects.
 
     """
     log = log_tags(path)
-    return parse_tags(log)
+    yield from parse_tags(log)
 
 
 def log_tags(path: str) -> str:
@@ -31,14 +33,15 @@ def log_tags(path: str) -> str:
     return git.ls_remote('tags')
 
 
-def parse_tags(log: str) -> list[str]:
+def parse_tags(log: str) -> Iterator[str]:
     """Parse the output of `log_tags`.
 
     Args:
         log: The output string from `git ls-remote --tags`.
 
-    Returns:
-        A list of tag names.
+    Yields:
+        Tag objects.
 
     """
-    return re.findall(r'refs/tags/(.+)\n', log)
+    for tag in re.findall(r'refs/tags/(.+)\n', log):
+        yield Tag(name=tag)

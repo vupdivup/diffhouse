@@ -2,14 +2,14 @@ from dataclasses import asdict, dataclass
 
 
 @dataclass(slots=True, frozen=True)
-class ChangedFile:
-    """Snapshot of a file that was modified in a specific commit."""
+class FileMod:
+    """Metadata of a file change in a specific commit."""
 
     def to_dict(self) -> dict:
         """Convert the object to a dictionary.
 
         Returns:
-            A dictionary representation of the changed file.
+            A dictionary representation of the file modification.
 
         """
         return asdict(self)
@@ -24,7 +24,7 @@ class ChangedFile:
 
     Differs from `path_a` for renames and copies.
     """
-    changed_file_id: str
+    filemod_id: str
     """
     Unique record identifier hashed from `commit_hash`, `path_a`, and `path_b`.
     """
