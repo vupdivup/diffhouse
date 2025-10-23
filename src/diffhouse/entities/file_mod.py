@@ -9,7 +9,7 @@ class FileMod:
         """Convert the object to a dictionary.
 
         Returns:
-            A dictionary representation of the changed file.
+            A dictionary representation of the file modification.
 
         """
         return asdict(self)
@@ -24,7 +24,7 @@ class FileMod:
 
     Differs from `path_a` for renames and copies.
     """
-    changed_file_id: str
+    filemod_id: str
     """
     Unique record identifier hashed from `commit_hash`, `path_a`, and `path_b`.
     """

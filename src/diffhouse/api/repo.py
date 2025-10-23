@@ -9,9 +9,9 @@ from diffhouse.git import TempClone
 from diffhouse.pipelines import (
     extract_branches,
     extract_tags,
-    stream_changed_files,
     stream_commits,
     stream_diffs,
+    stream_file_mods,
 )
 
 
@@ -97,7 +97,10 @@ class Repo:
         """Commit history of the repository."""
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_stream(stream_commits(p))
+            self._clone.path,
+            lambda p: self._safe_stream(
+                stream_commits(p, shortstats=self._blobs)
+            ),
         )
 
     @property
@@ -107,7 +110,7 @@ class Repo:
         self._require_active()
         return Extractor(
             self._clone.path,
-            lambda p: self._safe_stream(stream_changed_files(p)),
+            lambda p: self._safe_stream(stream_file_mods(p)),
         )
 
     @property
