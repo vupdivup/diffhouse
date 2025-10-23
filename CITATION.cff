@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: diffhouse
+type: software
+authors:
+  - family-names: Verseghi-Nagy
+    given-names: Mátyás
+abstract: diffhouse is a repository mining tool for structuring Git metadata at scale.
+license: MIT
+keywords:
+  - python
+  - git
+  - repository mining
+  - software analysis
+  - open source
+repository-code: "https://github.com/vupdivup/diffhouse"
+url: "https://vupdivup.github.io/diffhouse/"
