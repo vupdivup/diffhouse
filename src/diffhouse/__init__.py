@@ -20,10 +20,11 @@
 
 """Repository mining tool for structuring Git metadata at scale."""
 
+from diffhouse.api import Extractor, Repo
+
 from .entities import Commit, Diff, FileMod
-from .repo import Repo
 from .utils.cleanup import remove_residual_resources
 
-__all__ = ['Repo', 'Commit', 'Diff', 'FileMod']
+__all__ = ['Repo', 'Commit', 'Diff', 'FileMod', 'Extractor']
 
 remove_residual_resources()
