@@ -19,6 +19,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     # using raw body as the sanitized subject would remove single newlines
     'message': '%B',
     'parents': '%P',
+    'source': '%S',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -99,6 +100,7 @@ def parse_commits(
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
+    source_prefix_rgx = re.compile(r'^refs\/(?:remotes\/origin|tags|heads)\/')
     files_changed_pat = re.compile(r'(\d+) file')
     insertions_pat = re.compile(r'(\d+) insertion')
     deletions_pat = re.compile(r'(\d+) deletion')
@@ -111,6 +113,8 @@ def parse_commits(
 
         # match all fields with field names except the shortstat section
         fields = dict(zip(FIELDS, values[:-1], strict=True))
+
+        source = source_prefix_rgx.sub('', fields['source'])
 
         if parse_shortstats:
             shortstat = values[-1]
@@ -150,6 +154,7 @@ def parse_commits(
 
         yield Commit(
             commit_hash=fields['commit_hash'],
+            source=source,
             is_merge=is_merge,
             parents=parents,
             author_name=fields['author_name'],

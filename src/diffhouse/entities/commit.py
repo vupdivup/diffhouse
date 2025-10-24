@@ -16,6 +16,8 @@ class Commit:
 
     commit_hash: str
     """Full hash of the commit."""
+    source: str
+    """The original branch that produced the commit."""
     is_merge: bool
     """Whether the commit is a merge commit."""
     parents: list[str]
