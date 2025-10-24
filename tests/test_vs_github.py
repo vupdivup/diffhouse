@@ -69,6 +69,8 @@ def test_commits(
 
         c_local = c_local.row(0, named=True)
 
+        assert c_local['in_main']
+
         comparison_fields = [
             'commit_hash',
             'author_name',

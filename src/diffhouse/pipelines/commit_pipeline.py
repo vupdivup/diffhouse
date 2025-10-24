@@ -1,12 +1,13 @@
-import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
+import regex
+
 from ..entities import Commit
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import safe_iter, split_stream
+from .utils import split_stream
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -19,6 +20,7 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     # using raw body as the sanitized subject would remove single newlines
     'message': '%B',
     'parents': '%P',
+    'source': '%S',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
@@ -35,11 +37,27 @@ def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
         Commit objects.
 
     """
+    # lookup table to check if a commit is in main branch
+    main = dict.fromkeys(iter_hashes_on_main(path))
+
     with log_commits(path, shortstats=shortstats) as log:
-        yield from safe_iter(
-            parse_commits(log, parse_shortstats=shortstats),
-            'Failed to parse commit. Skipping...',
-        )
+        for commit in parse_commits(log, parse_shortstats=shortstats):
+            yield Commit(**commit, in_main=commit['commit_hash'] in main)
+
+
+def iter_hashes_on_main(path: str) -> Iterator[str]:
+    """Iterate over commit hashes from the default branch.
+
+    Args:
+        path: Path to the git repository.
+
+    Yields:
+        Commit hashes.
+
+    """
+    git = GitCLI(path)
+    with git.run('log', '--pretty=format:%H') as log:
+        yield from (line.strip() for line in log)
 
 
 @contextmanager
@@ -66,7 +84,7 @@ def log_commits(
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
     pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
-    args = ['log', f'--pretty=format:{pattern}', '--date=iso']
+    args = ['log', f'--pretty=format:{pattern}', '--date=iso', '--all']
 
     if shortstats:
         args.append('--shortstat')
@@ -99,9 +117,12 @@ def parse_commits(
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
-    files_changed_pat = re.compile(r'(\d+) file')
-    insertions_pat = re.compile(r'(\d+) insertion')
-    deletions_pat = re.compile(r'(\d+) deletion')
+    source_prefix_rgx = regex.compile(
+        r'^refs\/(?:remotes\/origin|tags|heads)\/'
+    )
+    files_changed_pat = regex.compile(r'(\d+) file')
+    insertions_pat = regex.compile(r'(\d+) insertion')
+    deletions_pat = regex.compile(r'(\d+) deletion')
 
     commits = split_stream(log, record_sep, chunk_size=10_000)
     next(commits)  # skip first empty record
@@ -111,6 +132,8 @@ def parse_commits(
 
         # match all fields with field names except the shortstat section
         fields = dict(zip(FIELDS, values[:-1], strict=True))
+
+        source = source_prefix_rgx.sub('', fields['source'])
 
         if parse_shortstats:
             shortstat = values[-1]
@@ -148,19 +171,20 @@ def parse_commits(
             message_parts[1].strip() if len(message_parts) > 1 else ''
         )
 
-        yield Commit(
-            commit_hash=fields['commit_hash'],
-            is_merge=is_merge,
-            parents=parents,
-            author_name=fields['author_name'],
-            author_email=fields['author_email'],
-            author_date=tweak_git_iso_datetime(fields['author_date']),
-            committer_name=fields['committer_name'],
-            committer_email=fields['committer_email'],
-            committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            message_subject=message_subject,
-            message_body=message_body,
-            files_changed=files_changed,
-            lines_added=insertions,
-            lines_deleted=deletions,
-        )
+        yield {
+            'commit_hash': fields['commit_hash'],
+            'source': source,
+            'is_merge': is_merge,
+            'parents': parents,
+            'author_name': fields['author_name'],
+            'author_email': fields['author_email'],
+            'author_date': tweak_git_iso_datetime(fields['author_date']),
+            'committer_name': fields['committer_name'],
+            'committer_email': fields['committer_email'],
+            'committer_date': tweak_git_iso_datetime(fields['committer_date']),
+            'message_subject': message_subject,
+            'message_body': message_body,
+            'files_changed': files_changed,
+            'lines_added': insertions,
+            'lines_deleted': deletions,
+        }

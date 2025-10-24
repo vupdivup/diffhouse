@@ -1,11 +1,11 @@
-from collections.abc import Iterator
 from pathlib import Path
+from typing import Iterator
 
 import validators
 
 from diffhouse.api import Extractor
-from diffhouse.api.exceptions import FilterError, NotClonedError
-from diffhouse.entities import Branch, Commit, Diff, FileMod
+from diffhouse.api.exceptions import FilterError, NotClonedError, ParserError
+from diffhouse.entities import Branch, Commit, Diff, FileMod, Tag
 from diffhouse.git import TempClone
 from diffhouse.pipelines import (
     extract_branches,
@@ -77,15 +77,15 @@ class Repo:
         """Branches of the repository."""
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_stream(extract_branches(p))
+            self._clone.path, lambda p: self._safe_iter(extract_branches(p))
         )
 
     @property
-    def tags(self) -> Extractor[str]:
+    def tags(self) -> Extractor[Tag]:
         """Tag names of the repository."""
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_stream(extract_tags(p))
+            self._clone.path, lambda p: self._safe_iter(extract_tags(p))
         )
 
     @property
@@ -94,7 +94,7 @@ class Repo:
         self._require_active()
         return Extractor(
             self._clone.path,
-            lambda p: self._safe_stream(
+            lambda p: self._safe_iter(
                 extract_commits(p, shortstats=self._blobs)
             ),
         )
@@ -105,8 +105,7 @@ class Repo:
         self._require_blobs()
         self._require_active()
         return Extractor(
-            self._clone.path,
-            lambda p: self._safe_stream(extract_file_mods(p)),
+            self._clone.path, lambda p: self._safe_iter(extract_file_mods(p))
         )
 
     @property
@@ -115,7 +114,7 @@ class Repo:
         self._require_blobs()
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_stream(extract_diffs(p))
+            self._clone.path, lambda p: self._safe_iter(extract_diffs(p))
         )
 
     @property
@@ -152,8 +151,8 @@ class Repo:
             self._clone.__exit__(None, None, None)
             self._active = False
 
-    def _safe_stream(self, iter_: Iterator) -> Iterator:
-        """Wrap a generator to raise an error if not consumed in the `with` block.
+    def _safe_iter(self, iter_: Iterator) -> Iterator:
+        """Wrap a generator for higher-level error handling.
 
         Args:
             iter_: The generator to wrap.
@@ -162,12 +161,9 @@ class Repo:
             Items from the generator.
 
         """
-        while True:
-            try:
-                next_ = next(iter_)
-            except StopIteration:
-                return
-            except FileNotFoundError:
-                raise NotClonedError() from None
-
-            yield next_
+        try:
+            yield from iter_
+        except FileNotFoundError as e:
+            raise NotClonedError() from e
+        except Exception as e:
+            raise ParserError('Failed to parse repository data.') from e
