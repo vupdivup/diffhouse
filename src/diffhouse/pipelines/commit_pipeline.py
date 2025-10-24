@@ -37,11 +37,31 @@ def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
         Commit objects.
 
     """
+    skip_msg = 'Failed to extract commit. Skipping...'
+
+    # lookup table to check if a commit is in main branch
+    main = dict.fromkeys(safe_iter(iter_hashes_on_main(path), skip_msg))
+
     with log_commits(path, shortstats=shortstats) as log:
-        yield from safe_iter(
-            parse_commits(log, parse_shortstats=shortstats),
-            'Failed to parse commit. Skipping...',
-        )
+        for commit in safe_iter(
+            parse_commits(log, parse_shortstats=shortstats), skip_msg
+        ):
+            yield Commit(**commit, in_main=commit['commit_hash'] in main)
+
+
+def iter_hashes_on_main(path: str) -> Iterator[str]:
+    """Iterate over commit hashes from the default branch.
+
+    Args:
+        path: Path to the git repository.
+
+    Yields:
+        Commit hashes.
+
+    """
+    git = GitCLI(path)
+    with git.run('log', '--pretty=format:%H') as log:
+        yield from (line.strip() for line in log)
 
 
 @contextmanager
@@ -155,20 +175,20 @@ def parse_commits(
             message_parts[1].strip() if len(message_parts) > 1 else ''
         )
 
-        yield Commit(
-            commit_hash=fields['commit_hash'],
-            source=source,
-            is_merge=is_merge,
-            parents=parents,
-            author_name=fields['author_name'],
-            author_email=fields['author_email'],
-            author_date=tweak_git_iso_datetime(fields['author_date']),
-            committer_name=fields['committer_name'],
-            committer_email=fields['committer_email'],
-            committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            message_subject=message_subject,
-            message_body=message_body,
-            files_changed=files_changed,
-            lines_added=insertions,
-            lines_deleted=deletions,
-        )
+        yield {
+            'commit_hash': fields['commit_hash'],
+            'source': source,
+            'is_merge': is_merge,
+            'parents': parents,
+            'author_name': fields['author_name'],
+            'author_email': fields['author_email'],
+            'author_date': tweak_git_iso_datetime(fields['author_date']),
+            'committer_name': fields['committer_name'],
+            'committer_email': fields['committer_email'],
+            'committer_date': tweak_git_iso_datetime(fields['committer_date']),
+            'message_subject': message_subject,
+            'message_body': message_body,
+            'files_changed': files_changed,
+            'lines_added': insertions,
+            'lines_deleted': deletions,
+        }

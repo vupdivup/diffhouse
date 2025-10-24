@@ -18,6 +18,8 @@ class Commit:
     """Full hash of the commit."""
     source: str
     """The original branch that produced the commit."""
+    in_main: bool
+    """Whether the commit is in the default branch's history."""
     is_merge: bool
     """Whether the commit is a merge commit."""
     parents: list[str]
