@@ -1,7 +1,8 @@
-import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
+
+import regex
 
 from ..entities import Commit
 from ..git import GitCLI
@@ -100,10 +101,12 @@ def parse_commits(
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
-    source_prefix_rgx = re.compile(r'^refs\/(?:remotes\/origin|tags|heads)\/')
-    files_changed_pat = re.compile(r'(\d+) file')
-    insertions_pat = re.compile(r'(\d+) insertion')
-    deletions_pat = re.compile(r'(\d+) deletion')
+    source_prefix_rgx = regex.compile(
+        r'^refs\/(?:remotes\/origin|tags|heads)\/'
+    )
+    files_changed_pat = regex.compile(r'(\d+) file')
+    insertions_pat = regex.compile(r'(\d+) insertion')
+    deletions_pat = regex.compile(r'(\d+) deletion')
 
     commits = split_stream(log, record_sep, chunk_size=10_000)
     next(commits)  # skip first empty record
