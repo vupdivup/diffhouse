@@ -66,7 +66,7 @@ def log_commits(
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
     pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
-    args = ['log', f'--pretty=format:{pattern}', '--date=iso']
+    args = ['log', f'--pretty=format:{pattern}', '--date=iso', '--all']
 
     if shortstats:
         args.append('--shortstat')

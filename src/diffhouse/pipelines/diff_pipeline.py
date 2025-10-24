@@ -39,7 +39,9 @@ def log_diffs(path: str, sep: str = RECORD_SEPARATOR) -> Iterator[StringIO]:
 
     """
     git = GitCLI(path)
-    with git.run('log', '-p', '-U0', f'--pretty=format:{sep}%H') as log:
+    with git.run(
+        'log', '-p', '-U0', f'--pretty=format:{sep}%H', '--all'
+    ) as log:
         try:
             yield log
         finally:

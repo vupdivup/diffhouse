@@ -60,7 +60,9 @@ def log_name_statuses(
 
     """
     git = GitCLI(path)
-    with git.run('log', f'--pretty=format:{sep}%H', '--name-status') as out:
+    with git.run(
+        'log', f'--pretty=format:{sep}%H', '--name-status', '--all'
+    ) as out:
         try:
             yield out
         finally:
@@ -124,7 +126,9 @@ def log_numstats(path: str, sep: str = RECORD_SEPARATOR) -> Iterator[StringIO]:
 
     """
     git = GitCLI(path)
-    with git.run('log', f'--pretty=format:{sep}%H', '--numstat') as out:
+    with git.run(
+        'log', f'--pretty=format:{sep}%H', '--numstat', '--all'
+    ) as out:
         try:
             yield out
         finally:
