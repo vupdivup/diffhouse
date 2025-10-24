@@ -38,3 +38,9 @@ class GitError(Exception):
         super().__init__(
             f'Git command failed with the following error:\n{stderr}'
         )
+
+
+class ParserError(Exception):
+    """Exception for issues encountered during parsing."""
+
+    pass
