@@ -7,7 +7,7 @@ import regex
 from ..entities import Commit
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import safe_iter, split_stream
+from .utils import split_stream
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -37,15 +37,11 @@ def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
         Commit objects.
 
     """
-    skip_msg = 'Failed to extract commit. Skipping...'
-
     # lookup table to check if a commit is in main branch
-    main = dict.fromkeys(safe_iter(iter_hashes_on_main(path), skip_msg))
+    main = dict.fromkeys(iter_hashes_on_main(path))
 
     with log_commits(path, shortstats=shortstats) as log:
-        for commit in safe_iter(
-            parse_commits(log, parse_shortstats=shortstats), skip_msg
-        ):
+        for commit in parse_commits(log, parse_shortstats=shortstats):
             yield Commit(**commit, in_main=commit['commit_hash'] in main)
 
 

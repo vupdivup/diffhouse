@@ -6,7 +6,7 @@ from io import StringIO
 from ..entities import FileMod
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import fast_hash_64, safe_iter, split_stream
+from .utils import fast_hash_64, split_stream
 
 
 def extract_file_mods(path: str) -> Iterator[FileMod]:
@@ -21,15 +21,11 @@ def extract_file_mods(path: str) -> Iterator[FileMod]:
     """
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
-    fail_msg = 'Failed to parse file mod. Skipping...'
-
     with log_numstats(path) as log:
-        index = {
-            n['filemod_id']: n for n in safe_iter(parse_numstats(log), fail_msg)
-        }
+        index = {n['filemod_id']: n for n in parse_numstats(log)}
 
     with log_name_statuses(path) as log:
-        for name_status in safe_iter(parse_name_statuses(log), fail_msg):
+        for name_status in parse_name_statuses(log):
             if name_status['filemod_id'] in index:
                 numstat = index[name_status['filemod_id']]
 

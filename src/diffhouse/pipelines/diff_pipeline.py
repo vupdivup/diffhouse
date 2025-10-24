@@ -7,7 +7,7 @@ import regex  # runs super fast for the complex diff patterns compared to re
 from ..entities import Diff
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
-from .utils import fast_hash_64, safe_iter, split_stream
+from .utils import fast_hash_64, split_stream
 
 
 def extract_diffs(path: str) -> Iterator[Diff]:
@@ -21,9 +21,7 @@ def extract_diffs(path: str) -> Iterator[Diff]:
 
     """
     with log_diffs(path) as log:
-        yield from safe_iter(
-            parse_diffs(log), 'Failed to parse diff. Skipping...'
-        )
+        yield from parse_diffs(log)
 
 
 @contextmanager
