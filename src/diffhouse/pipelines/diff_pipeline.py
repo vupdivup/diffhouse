@@ -14,6 +14,12 @@ from diffhouse.pipelines.utils import fast_hash_64, split_stream
 
 logger = logging.getLogger(__name__)
 
+FILE_SEP_RGX = regex.compile(r'^diff --git', flags=regex.MULTILINE)
+FILEPATHS_RGX = regex.compile(r'"?a/(.+)"? "?b/(.+)"?')
+HUNK_HEADER_RGX = regex.compile(
+    r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=regex.MULTILINE
+)
+
 
 def extract_diffs(path: str) -> Iterator[Diff]:
     """Stream diffs per commit and file for a local repository.
@@ -68,13 +74,6 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
         Diff objects.
 
     """
-    # regex lib provides significant gains over re
-    file_sep_pat = regex.compile(r'^diff --git', flags=regex.MULTILINE)
-    filepaths_pat = regex.compile(r'"?a/(.+)"? "?b/(.+)"?')
-    hunk_header_pat = regex.compile(
-        r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', flags=regex.MULTILINE
-    )
-
     # note: need big chunk size as diffs can be >1MB
     commits = split_stream(log, sep, chunk_size=10_000_000)
     next(commits)  # skip first empty record
@@ -82,20 +81,19 @@ def parse_diffs(log: StringIO, sep: str = RECORD_SEPARATOR) -> Iterator[Diff]:
     for commit in commits:
         try:
             parts = commit.split('\n', 1)
-
             commit_hash = parts[0]
 
             # ignore empty commits
             if len(parts) == 1:
                 continue
 
-            files = file_sep_pat.split(parts[1])[1:]
+            files = FILE_SEP_RGX.split(parts[1])[1:]
             for file in files:
                 # format: a/path b/path, both quoted if having misc chars
                 header = file.split('\n', 1)[0]
 
-                path_a, path_b = filepaths_pat.search(header).groups()
-                hunks_raw = hunk_header_pat.split(file)[1:]
+                path_a, path_b = FILEPATHS_RGX.search(header).groups()
+                hunks_raw = HUNK_HEADER_RGX.split(file)[1:]
 
                 # zip hunk header data with content
                 hunks_grouped = tuple(

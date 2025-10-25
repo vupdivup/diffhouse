@@ -1,9 +1,10 @@
 import logging
-import re
 import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
+
+import regex
 
 from diffhouse.api.exceptions import ParserWarning
 from diffhouse.entities import FileMod
@@ -12,6 +13,9 @@ from diffhouse.pipelines.constants import RECORD_SEPARATOR
 from diffhouse.pipelines.utils import fast_hash_64, split_stream
 
 logger = logging.getLogger(__name__)
+
+NUMSTAT_PATH_A_RGX = regex.compile(r'\{(.*) => .*\}')
+NUMSTAT_PATH_B_RGX = regex.compile(r'\{.* => (.*)\}')
 
 
 def extract_file_mods(path: str) -> Iterator[FileMod]:
@@ -194,12 +198,12 @@ def parse_numstats(
                 if '{' in file_expr:
                     # ../../{a => b}
                     # ../{ => a}/..
-                    path_a = re.sub(
-                        r'\{(.*) => .*\}', r'\1', file_expr
-                    ).replace('//', '/')
-                    path_b = re.sub(
-                        r'\{.* => (.*)\}', r'\1', file_expr
-                    ).replace('//', '/')
+                    path_a = NUMSTAT_PATH_A_RGX.sub(r'\1', file_expr).replace(
+                        '//', '/'
+                    )
+                    path_b = NUMSTAT_PATH_B_RGX.sub(r'\1', file_expr).replace(
+                        '//', '/'
+                    )
                 else:
                     # ../../a => ../../b
                     # NOTE: technically => can be in a unix filename
