@@ -1,13 +1,19 @@
+import logging
+import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
 import regex
 
+from diffhouse.api.exceptions import ParserWarning
+
 from ..entities import Commit
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
 from .utils import split_stream
+
+logger = logging.getLogger(__name__)
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -128,63 +134,78 @@ def parse_commits(
     next(commits)  # skip first empty record
 
     for commit in commits:
-        values = commit.split(field_sep)
+        try:
+            values = commit.split(field_sep)
 
-        # match all fields with field names except the shortstat section
-        fields = dict(zip(FIELDS, values[:-1], strict=True))
+            # match all fields with field names except the shortstat section
+            fields = dict(zip(FIELDS, values[:-1], strict=True))
 
-        source = source_prefix_rgx.sub('', fields['source'])
+            source = source_prefix_rgx.sub('', fields['source'])
 
-        if parse_shortstats:
-            shortstat = values[-1]
+            if parse_shortstats:
+                shortstat = values[-1]
 
-            files_changed_match = files_changed_pat.search(shortstat)
-            insertions_match = insertions_pat.search(shortstat)
-            deletions_match = deletions_pat.search(shortstat)
+                files_changed_match = files_changed_pat.search(shortstat)
+                insertions_match = insertions_pat.search(shortstat)
+                deletions_match = deletions_pat.search(shortstat)
 
-            files_changed = (
-                int(files_changed_match.group(1)) if files_changed_match else 0
+                files_changed = (
+                    int(files_changed_match.group(1))
+                    if files_changed_match
+                    else 0
+                )
+
+                insertions = (
+                    int(insertions_match.group(1)) if insertions_match else 0
+                )
+                deletions = (
+                    int(deletions_match.group(1)) if deletions_match else 0
+                )
+
+            else:
+                files_changed = None
+                insertions = None
+                deletions = None
+
+            if fields['parents'] == '':
+                # first commit has no parents
+                parents = []
+            else:
+                parents = fields['parents'].split(' ')
+
+            # it's a merge commit if parents field has more than one hash
+            is_merge = len(parents) > 1
+
+            message_parts = fields['message'].split('\n\n', 1)
+            message_subject = message_parts[0].strip()
+            message_body = (
+                message_parts[1].strip() if len(message_parts) > 1 else ''
             )
 
-            insertions = (
-                int(insertions_match.group(1)) if insertions_match else 0
+            yield {
+                'commit_hash': fields['commit_hash'],
+                'source': source,
+                'is_merge': is_merge,
+                'parents': parents,
+                'author_name': fields['author_name'],
+                'author_email': fields['author_email'],
+                'author_date': tweak_git_iso_datetime(fields['author_date']),
+                'committer_name': fields['committer_name'],
+                'committer_email': fields['committer_email'],
+                'committer_date': tweak_git_iso_datetime(
+                    fields['committer_date']
+                ),
+                'message_subject': message_subject,
+                'message_body': message_body,
+                'files_changed': files_changed,
+                'lines_added': insertions,
+                'lines_deleted': deletions,
+            }
+        except (AttributeError, IndexError, ValueError, KeyError):
+            # Handle exceptions related to string operations and field parsing
+            warnings.warn('Skipping malformed commit record', ParserWarning)
+            logger.warning(
+                f'Skipping malformed commit record: {repr(commit)}',
+                exc_info=True,
             )
-            deletions = int(deletions_match.group(1)) if deletions_match else 0
-
-        else:
-            files_changed = None
-            insertions = None
-            deletions = None
-
-        if fields['parents'] == '':
-            # first commit has no parents
-            parents = []
-        else:
-            parents = fields['parents'].split(' ')
-
-        # it's a merge commit if parents field has more than one hash
-        is_merge = len(parents) > 1
-
-        message_parts = fields['message'].split('\n\n', 1)
-        message_subject = message_parts[0].strip()
-        message_body = (
-            message_parts[1].strip() if len(message_parts) > 1 else ''
-        )
-
-        yield {
-            'commit_hash': fields['commit_hash'],
-            'source': source,
-            'is_merge': is_merge,
-            'parents': parents,
-            'author_name': fields['author_name'],
-            'author_email': fields['author_email'],
-            'author_date': tweak_git_iso_datetime(fields['author_date']),
-            'committer_name': fields['committer_name'],
-            'committer_email': fields['committer_email'],
-            'committer_date': tweak_git_iso_datetime(fields['committer_date']),
-            'message_subject': message_subject,
-            'message_body': message_body,
-            'files_changed': files_changed,
-            'lines_added': insertions,
-            'lines_deleted': deletions,
-        }
+            continue
