@@ -31,6 +31,9 @@ logger = logging.getLogger(__name__)
 # this is to prevent last resort logging of warnings to stderr
 logger.addHandler(logging.NullHandler())
 
+# no propagation as Jupyter environments may have root loggers
+logger.propagate = False
+
 __all__ = ['Repo', 'Commit', 'Diff', 'FileMod', 'Extractor']
 
 remove_residual_resources()
