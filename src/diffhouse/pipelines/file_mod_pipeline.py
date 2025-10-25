@@ -18,7 +18,7 @@ NUMSTAT_PATH_A_RGX = regex.compile(r'\{(.*) => .*\}')
 NUMSTAT_PATH_B_RGX = regex.compile(r'\{.* => (.*)\}')
 
 
-def extract_file_mods(path: str) -> Iterator[FileMod]:
+def extract_filemods(path: str) -> Iterator[FileMod]:
     """Get file modifications per commit for a local git repository.
 
     Args:

@@ -11,7 +11,7 @@ from diffhouse.pipelines import (
     extract_branches,
     extract_commits,
     extract_diffs,
-    extract_file_mods,
+    extract_filemods,
     extract_tags,
 )
 
@@ -105,7 +105,7 @@ class Repo:
         self._require_blobs()
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_file_mods(p))
+            self._clone.path, lambda p: self._safe_iter(extract_filemods(p))
         )
 
     @property
