@@ -203,7 +203,9 @@ def parse_commits(
             }
         except (AttributeError, IndexError, ValueError, KeyError):
             # Handle exceptions related to string operations and field parsing
-            warnings.warn('Skipping malformed commit record', ParserWarning)
+            warnings.warn(
+                'Skipping malformed commit record', ParserWarning, stacklevel=2
+            )
             logger.warning(
                 f'Skipping malformed commit record: {repr(commit)}',
                 exc_info=True,
