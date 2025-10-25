@@ -31,6 +31,11 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
+SOURCE_PREFIX_RGX = regex.compile(r'^refs\/(?:remotes\/origin|tags|heads)\/')
+FILES_CHANGED_RGX = regex.compile(r'(\d+) file')
+INSERTIONS_RGX = regex.compile(r'(\d+) insertion')
+DELETIONS_RGX = regex.compile(r'(\d+) deletion')
+
 
 def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
     """Stream main branch commits from a git repository.
@@ -123,13 +128,6 @@ def parse_commits(
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
-    source_prefix_rgx = regex.compile(
-        r'^refs\/(?:remotes\/origin|tags|heads)\/'
-    )
-    files_changed_pat = regex.compile(r'(\d+) file')
-    insertions_pat = regex.compile(r'(\d+) insertion')
-    deletions_pat = regex.compile(r'(\d+) deletion')
-
     commits = split_stream(log, record_sep, chunk_size=10_000)
     next(commits)  # skip first empty record
 
@@ -140,14 +138,14 @@ def parse_commits(
             # match all fields with field names except the shortstat section
             fields = dict(zip(FIELDS, values[:-1], strict=True))
 
-            source = source_prefix_rgx.sub('', fields['source'])
+            source = SOURCE_PREFIX_RGX.sub('', fields['source'])
 
             if parse_shortstats:
                 shortstat = values[-1]
 
-                files_changed_match = files_changed_pat.search(shortstat)
-                insertions_match = insertions_pat.search(shortstat)
-                deletions_match = deletions_pat.search(shortstat)
+                files_changed_match = FILES_CHANGED_RGX.search(shortstat)
+                insertions_match = INSERTIONS_RGX.search(shortstat)
+                deletions_match = DELETIONS_RGX.search(shortstat)
 
                 files_changed = (
                     int(files_changed_match.group(1))
@@ -201,7 +199,7 @@ def parse_commits(
                 'lines_added': insertions,
                 'lines_deleted': deletions,
             }
-        except (AttributeError, IndexError, ValueError, KeyError):
+        except Exception:
             # Handle exceptions related to string operations and field parsing
             warnings.warn(
                 'Skipping malformed commit record', ParserWarning, stacklevel=2
