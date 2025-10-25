@@ -1,8 +1,11 @@
+import logging
 import re
 from typing import Iterator
 
 from diffhouse.entities import Tag
 from diffhouse.git import GitCLI
+
+logger = logging.getLogger(__name__)
 
 
 def extract_tags(path: str) -> Iterator[Tag]:
@@ -15,8 +18,16 @@ def extract_tags(path: str) -> Iterator[Tag]:
         Tag objects.
 
     """
+    logger.info('Extracting tags')
+    logger.debug('Logging tags')
+
     log = log_tags(path)
+
+    logger.debug('Parsing tags')
+
     yield from parse_tags(log)
+
+    logger.debug('Extracted all tags')
 
 
 def log_tags(path: str) -> str:

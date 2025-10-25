@@ -25,8 +25,14 @@ def extract_diffs(path: str) -> Iterator[Diff]:
         Diff objects.
 
     """
+    logger.info('Extracting diffs')
+    logger.debug('Logging diffs')
+
     with log_diffs(path) as log:
+        logger.debug('Parsing diffs')
         yield from parse_diffs(log)
+
+    logger.debug('Extracted all diffs')
 
 
 @contextmanager

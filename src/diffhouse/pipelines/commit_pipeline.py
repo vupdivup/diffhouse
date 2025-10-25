@@ -48,11 +48,18 @@ def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
 
     """
     # lookup table to check if a commit is in main branch
+    logger.info('Extracting commits')
+    logger.debug('Indexing commits on main branch')
+
     main = dict.fromkeys(iter_hashes_on_main(path))
 
+    logger.debug('Logging commits')
     with log_commits(path, shortstats=shortstats) as log:
+        logger.debug('Parsing commits')
         for commit in parse_commits(log, parse_shortstats=shortstats):
             yield Commit(**commit, in_main=commit['commit_hash'] in main)
+
+    logger.debug('Extracted all commits')
 
 
 def iter_hashes_on_main(path: str) -> Iterator[str]:

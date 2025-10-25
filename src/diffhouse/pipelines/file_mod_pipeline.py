@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_file_mods(path: str) -> Iterator[FileMod]:
-    """Get changed files per commit for a local git repository.
+    """Get file modifications per commit for a local git repository.
 
     Args:
         path: Path to the local git repository.
@@ -26,10 +26,20 @@ def extract_file_mods(path: str) -> Iterator[FileMod]:
     """
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
+    logger.info('Extracting file modifications')
+    logger.debug('Logging numstats')
+
     with log_numstats(path) as log:
+        logger.debug('Parsing numstats')
+        # create index for joining with name-statuses
         index = {n['filemod_id']: n for n in parse_numstats(log)}
 
+        logger.debug(f'Parsed {len(index)} numstat records')
+
+    logger.debug('Logging name-statuses')
     with log_name_statuses(path) as log:
+        logger.debug('Joining name-statuses with numstats')
+
         for name_status in parse_name_statuses(log):
             if name_status['filemod_id'] in index:
                 numstat = index[name_status['filemod_id']]
@@ -44,6 +54,8 @@ def extract_file_mods(path: str) -> Iterator[FileMod]:
                     lines_added=numstat['lines_added'],
                     lines_deleted=numstat['lines_deleted'],
                 )
+
+    logger.debug('Extracted all file modifications')
 
 
 @contextmanager
