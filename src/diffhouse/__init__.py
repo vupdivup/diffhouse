@@ -20,10 +20,17 @@
 
 """Repository mining tool for structuring Git metadata at scale."""
 
+import logging
+
 from diffhouse.api import Extractor, Repo
 
 from .entities import Commit, Diff, FileMod
 from .utils.cleanup import remove_residual_resources
+
+logger = logging.getLogger(__name__)
+
+# this is to prevent last resort logging of warnings to stderr
+logger.addHandler(logging.NullHandler())
 
 __all__ = ['Repo', 'Commit', 'Diff', 'FileMod', 'Extractor']
 
