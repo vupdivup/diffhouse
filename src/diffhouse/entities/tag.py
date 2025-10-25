@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 class Tag:
     """A tag in the repository."""
 
-    def asdict(self) -> dict:
+    def to_dict(self) -> dict:
         """Convert the object to a dictionary.
 
         Returns:

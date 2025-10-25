@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 class Branch:
     """A branch in the repository."""
 
-    def asdict(self) -> dict:
+    def to_dict(self) -> dict:
         """Convert the object to a dictionary.
 
         Returns:
