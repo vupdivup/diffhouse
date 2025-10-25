@@ -10,8 +10,7 @@ from typing import Literal
 import packaging.version
 
 from diffhouse.api.exceptions import GitError
-
-from ..constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
+from diffhouse.constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
 
 
 class GitCLI:

@@ -1,22 +1,25 @@
 import logging
-import re
 import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
-from diffhouse.api.exceptions import ParserWarning
+import regex
 
-from ..entities import FileMod
-from ..git import GitCLI
-from .constants import RECORD_SEPARATOR
-from .utils import fast_hash_64, split_stream
+from diffhouse.api.exceptions import ParserWarning
+from diffhouse.entities import FileMod
+from diffhouse.git import GitCLI
+from diffhouse.pipelines.constants import RECORD_SEPARATOR
+from diffhouse.pipelines.utils import fast_hash_64, split_stream
 
 logger = logging.getLogger(__name__)
 
+NUMSTAT_PATH_A_RGX = regex.compile(r'\{(.*) => .*\}')
+NUMSTAT_PATH_B_RGX = regex.compile(r'\{.* => (.*)\}')
+
 
 def extract_file_mods(path: str) -> Iterator[FileMod]:
-    """Get changed files per commit for a local git repository.
+    """Get file modifications per commit for a local git repository.
 
     Args:
         path: Path to the local git repository.
@@ -27,10 +30,20 @@ def extract_file_mods(path: str) -> Iterator[FileMod]:
     """
     # Have to read numstat into memory for join
     # Can experiment with sorting beforehand to see if it's faster
+    logger.info('Extracting file modifications')
+    logger.debug('Logging numstats')
+
     with log_numstats(path) as log:
+        logger.debug('Parsing numstats')
+        # create index for joining with name-statuses
         index = {n['filemod_id']: n for n in parse_numstats(log)}
 
+        logger.debug(f'Parsed {len(index)} numstat records')
+
+    logger.debug('Logging name-statuses')
     with log_name_statuses(path) as log:
+        logger.debug('Joining name-statuses with numstats')
+
         for name_status in parse_name_statuses(log):
             if name_status['filemod_id'] in index:
                 numstat = index[name_status['filemod_id']]
@@ -45,6 +58,8 @@ def extract_file_mods(path: str) -> Iterator[FileMod]:
                     lines_added=numstat['lines_added'],
                     lines_deleted=numstat['lines_deleted'],
                 )
+
+    logger.debug('Extracted all file modifications')
 
 
 @contextmanager
@@ -183,12 +198,12 @@ def parse_numstats(
                 if '{' in file_expr:
                     # ../../{a => b}
                     # ../{ => a}/..
-                    path_a = re.sub(
-                        r'\{(.*) => .*\}', r'\1', file_expr
-                    ).replace('//', '/')
-                    path_b = re.sub(
-                        r'\{.* => (.*)\}', r'\1', file_expr
-                    ).replace('//', '/')
+                    path_a = NUMSTAT_PATH_A_RGX.sub(r'\1', file_expr).replace(
+                        '//', '/'
+                    )
+                    path_b = NUMSTAT_PATH_B_RGX.sub(r'\1', file_expr).replace(
+                        '//', '/'
+                    )
                 else:
                     # ../../a => ../../b
                     # NOTE: technically => can be in a unix filename

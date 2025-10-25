@@ -4,7 +4,7 @@ import tempfile
 import warnings
 from pathlib import Path
 
-from ..constants import PACKAGE_NAME
+from diffhouse.constants import PACKAGE_NAME
 
 
 def remove_residual_resources() -> None:
@@ -20,7 +20,10 @@ def remove_residual_resources() -> None:
                 else:
                     shutil.rmtree(path, onerror=_on_rm_error)
             except Exception:
-                warnings.warn(f'Failed to remove residual resource at {path}')
+                warnings.warn(
+                    f'Failed to remove residual resource at {path}',
+                    stacklevel=2,
+                )
 
 
 def _on_rm_error(func, path, exc_info) -> None:  # noqa: ANN001, ARG001

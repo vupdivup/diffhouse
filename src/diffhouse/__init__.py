@@ -23,14 +23,16 @@
 import logging
 
 from diffhouse.api import Extractor, Repo
-
-from .entities import Commit, Diff, FileMod
-from .utils.cleanup import remove_residual_resources
+from diffhouse.entities import Commit, Diff, FileMod
+from diffhouse.utils.cleanup import remove_residual_resources
 
 logger = logging.getLogger(__name__)
 
 # this is to prevent last resort logging of warnings to stderr
 logger.addHandler(logging.NullHandler())
+
+# no propagation as Jupyter environments may have root loggers
+logger.propagate = False
 
 __all__ = ['Repo', 'Commit', 'Diff', 'FileMod', 'Extractor']
 

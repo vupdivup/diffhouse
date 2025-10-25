@@ -5,13 +5,12 @@ import polars as pl
 import pytest
 
 from diffhouse import Repo
-
-from .constants import (
+from tests.constants import (
     GITHUB_COMMITS_SAMPLE_SIZE,
     GITHUB_SHORTSTATS_SAMPLE_SIZE,
     REPOS,
 )
-from .github import get_github_response, sample_github_endpoint
+from tests.github import get_github_response, sample_github_endpoint
 
 # randomly select 3 repos for testing to keep it relatively short
 SELECTED_REPOS = random.sample(REPOS, 3)

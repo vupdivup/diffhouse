@@ -1,8 +1,11 @@
+import logging
 import re
 from typing import Iterator
 
 from diffhouse.entities import Branch
 from diffhouse.git import GitCLI
+
+logger = logging.getLogger(__name__)
 
 
 def extract_branches(path: str) -> Iterator[Branch]:
@@ -15,8 +18,16 @@ def extract_branches(path: str) -> Iterator[Branch]:
         Branch objects.
 
     """
+    logger.info('Extracting branches')
+    logger.debug('Logging branches')
+
     log = log_branches(path)
+
+    logger.debug('Parsing branches')
+
     yield from parse_branches(log)
+
+    logger.debug('Extracted all branches')
 
 
 def log_branches(path: str) -> str:
