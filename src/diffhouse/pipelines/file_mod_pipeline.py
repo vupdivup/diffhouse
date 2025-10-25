@@ -1,12 +1,18 @@
+import logging
 import re
+import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
+
+from diffhouse.api.exceptions import ParserWarning
 
 from ..entities import FileMod
 from ..git import GitCLI
 from .constants import RECORD_SEPARATOR
 from .utils import fast_hash_64, split_stream
+
+logger = logging.getLogger(__name__)
 
 
 def extract_file_mods(path: str) -> Iterator[FileMod]:
@@ -83,30 +89,41 @@ def parse_name_statuses(
     next(commits)  # skip first empty record
 
     for commit in commits:
-        lines = commit.strip().split('\n')
-        commit_hash = lines[0]
+        try:
+            lines = commit.strip().split('\n')
+            commit_hash = lines[0]
 
-        for line in lines[1:]:
-            items = line.split('\t')
-            change_type = items[0][0]
+            for line in lines[1:]:
+                items = line.split('\t')
+                change_type = items[0][0]
 
-            if change_type in ['R', 'C']:
-                similarity = int(items[0][1:])
-                path_b = items[2]
-                path_a = items[1]
-            else:
-                similarity = 100
-                path_b = items[1]
-                path_a = path_b
+                if change_type in ['R', 'C']:
+                    similarity = int(items[0][1:])
+                    path_b = items[2]
+                    path_a = items[1]
+                else:
+                    similarity = 100
+                    path_b = items[1]
+                    path_a = path_b
 
-            yield {
-                'commit_hash': commit_hash,
-                'path_a': path_a,
-                'path_b': path_b,
-                'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
-                'change_type': change_type,
-                'similarity': similarity,
-            }
+                yield {
+                    'commit_hash': commit_hash,
+                    'path_a': path_a,
+                    'path_b': path_b,
+                    'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
+                    'change_type': change_type,
+                    'similarity': similarity,
+                }
+        except Exception:
+            warnings.warn(
+                'Skipping malformed file modification record.',
+                ParserWarning,
+                stacklevel=2,
+            )
+            logger.warning(
+                f'Skipping malformed name-status record: {repr(commit)}',
+                exc_info=True,
+            )
 
 
 @contextmanager
@@ -149,37 +166,48 @@ def parse_numstats(
     next(commits)  # skip first empty record
 
     for commit in commits:
-        lines = commit.splitlines()
-        commit_hash = lines[0]
+        try:
+            lines = commit.splitlines()
+            commit_hash = lines[0]
 
-        for line in lines[1:]:
-            if line == '':
-                continue
+            for line in lines[1:]:
+                if line == '':
+                    continue
 
-            items = line.split('\t')
-            lines_added = 0 if items[0] == '-' else int(items[0])
-            lines_deleted = 0 if items[1] == '-' else int(items[1])
+                items = line.split('\t')
+                lines_added = 0 if items[0] == '-' else int(items[0])
+                lines_deleted = 0 if items[1] == '-' else int(items[1])
 
-            file_expr = items[2]
+                file_expr = items[2]
 
-            if '{' in file_expr:
-                # ../../{a => b}
-                # ../{ => a}/..
-                path_a = re.sub(r'\{(.*) => .*\}', r'\1', file_expr).replace(
-                    '//', '/'
-                )
-                path_b = re.sub(r'\{.* => (.*)\}', r'\1', file_expr).replace(
-                    '//', '/'
-                )
-            else:
-                # ../../a => ../../b
-                # NOTE: technically => can be in a unix filename
-                paths = file_expr.split(' => ')
-                path_a = paths[0]
-                path_b = paths[1] if len(paths) > 1 else file_expr
+                if '{' in file_expr:
+                    # ../../{a => b}
+                    # ../{ => a}/..
+                    path_a = re.sub(
+                        r'\{(.*) => .*\}', r'\1', file_expr
+                    ).replace('//', '/')
+                    path_b = re.sub(
+                        r'\{.* => (.*)\}', r'\1', file_expr
+                    ).replace('//', '/')
+                else:
+                    # ../../a => ../../b
+                    # NOTE: technically => can be in a unix filename
+                    paths = file_expr.split(' => ')
+                    path_a = paths[0]
+                    path_b = paths[1] if len(paths) > 1 else file_expr
 
-            yield {
-                'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
-                'lines_added': lines_added,
-                'lines_deleted': lines_deleted,
-            }
+                yield {
+                    'filemod_id': fast_hash_64(commit_hash, path_a, path_b),
+                    'lines_added': lines_added,
+                    'lines_deleted': lines_deleted,
+                }
+        except Exception:
+            warnings.warn(
+                'Skipping malformed file modification record.',
+                ParserWarning,
+                stacklevel=2,
+            )
+            logger.warning(
+                f'Skipping malformed numstat record: {repr(commit)}',
+                exc_info=True,
+            )
