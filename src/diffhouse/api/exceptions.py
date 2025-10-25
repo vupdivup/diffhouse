@@ -41,6 +41,12 @@ class GitError(Exception):
 
 
 class ParserError(Exception):
-    """Exception for issues encountered during parsing."""
+    """Exception for unhandled issues encountered during parsing."""
+
+    pass
+
+
+class ParserWarning(UserWarning):
+    """Warning for issues encountered during record parsing."""
 
     pass
