@@ -6,11 +6,10 @@ from contextlib import contextmanager
 from io import StringIO
 
 from diffhouse.api.exceptions import ParserWarning
-
-from ..entities import FileMod
-from ..git import GitCLI
-from .constants import RECORD_SEPARATOR
-from .utils import fast_hash_64, split_stream
+from diffhouse.entities import FileMod
+from diffhouse.git import GitCLI
+from diffhouse.pipelines.constants import RECORD_SEPARATOR
+from diffhouse.pipelines.utils import fast_hash_64, split_stream
 
 logger = logging.getLogger(__name__)
 

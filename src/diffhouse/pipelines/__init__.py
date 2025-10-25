@@ -1,10 +1,10 @@
 """Git metadata extractors."""
 
-from .branch_pipeline import extract_branches
-from .commit_pipeline import extract_commits
-from .diff_pipeline import extract_diffs
-from .file_mod_pipeline import extract_file_mods
-from .tag_pipeline import extract_tags
+from diffhouse.pipelines.branch_pipeline import extract_branches
+from diffhouse.pipelines.commit_pipeline import extract_commits
+from diffhouse.pipelines.diff_pipeline import extract_diffs
+from diffhouse.pipelines.file_mod_pipeline import extract_file_mods
+from diffhouse.pipelines.tag_pipeline import extract_tags
 
 __all__ = [
     'extract_commits',

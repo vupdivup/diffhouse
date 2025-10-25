@@ -1,8 +1,8 @@
 import tempfile
 from pathlib import Path
 
-from ..constants import PACKAGE_NAME
-from ..git import GitCLI
+from diffhouse.constants import PACKAGE_NAME
+from diffhouse.git.cli import GitCLI
 
 
 class TempClone:

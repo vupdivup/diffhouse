@@ -7,11 +7,10 @@ from io import StringIO
 import regex
 
 from diffhouse.api.exceptions import ParserWarning
-
-from ..entities import Commit
-from ..git import GitCLI
-from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import split_stream
+from diffhouse.entities import Commit
+from diffhouse.git import GitCLI
+from diffhouse.pipelines.constants import RECORD_SEPARATOR, UNIT_SEPARATOR
+from diffhouse.pipelines.utils import split_stream
 
 logger = logging.getLogger(__name__)
 

@@ -7,11 +7,10 @@ from io import StringIO
 import regex  # runs super fast for the complex diff patterns compared to re
 
 from diffhouse.api.exceptions import ParserWarning
-
-from ..entities import Diff
-from ..git import GitCLI
-from .constants import RECORD_SEPARATOR
-from .utils import fast_hash_64, split_stream
+from diffhouse.entities import Diff
+from diffhouse.git import GitCLI
+from diffhouse.pipelines.constants import RECORD_SEPARATOR
+from diffhouse.pipelines.utils import fast_hash_64, split_stream
 
 logger = logging.getLogger(__name__)
 

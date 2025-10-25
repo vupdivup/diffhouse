@@ -3,7 +3,7 @@ from io import StringIO
 
 import xxhash
 
-from .constants import UNIT_SEPARATOR
+from diffhouse.pipelines.constants import UNIT_SEPARATOR
 
 
 def fast_hash_64(*args: str) -> str:

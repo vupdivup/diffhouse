@@ -23,9 +23,8 @@
 import logging
 
 from diffhouse.api import Extractor, Repo
-
-from .entities import Commit, Diff, FileMod
-from .utils.cleanup import remove_residual_resources
+from diffhouse.entities import Commit, Diff, FileMod
+from diffhouse.utils.cleanup import remove_residual_resources
 
 logger = logging.getLogger(__name__)
 
