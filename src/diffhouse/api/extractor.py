@@ -39,8 +39,8 @@ class Extractor(Generic[T]):
             extractor_func: Function to extract data from the repository.
 
         """
-        self.path_to_repo = path_to_repo
-        self.extractor_func = extractor_func
+        self._path_to_repo = path_to_repo
+        self._extractor_func = extractor_func
 
     def __iter__(self) -> Iterator[T]:
         """Extract and iterate over Git objects.
@@ -60,9 +60,9 @@ class Extractor(Generic[T]):
             Extracted Git objects.
 
         """
-        return self.extractor_func(self.path_to_repo)
+        return self._extractor_func(self._path_to_repo)
 
-    def pd(self) -> pd.DataFrame:
+    def to_pandas(self) -> pd.DataFrame:
         """Extract data into a pandas DataFrame.
 
         Returns:
@@ -76,13 +76,50 @@ class Extractor(Generic[T]):
             raise ImportError('pandas is not installed.')
         return pd.DataFrame(self._extract())
 
-    def pl(self) -> pl.DataFrame:
-        """Extract data into a polars DataFrame.
+    def pd(self) -> pd.DataFrame:
+        """Shorthand for `to_pandas()`."""
+        return self.to_pandas()
+
+    def to_polars(self) -> pl.DataFrame:
+        """Extract data into a Polars DataFrame.
 
         Returns:
-            A polars DataFrame containing the results.
+            A Polars DataFrame containing the results.
+
+        Raises:
+            ImportError: If Polars is not installed.
 
         """
         if pl is None:
             raise ImportError('Polars is not installed.')
         return pl.DataFrame(self._extract())
+
+    def pl(self) -> pl.DataFrame:
+        """Shorthand for `to_polars()`."""
+        return self.to_polars()
+
+    def to_list(self) -> list[T]:
+        """Extract data into a list.
+
+        Returns:
+            A list containing the extracted Git objects.
+
+        """
+        return list(self._extract())
+
+    def list(self) -> list[T]:
+        """Shorthand for `to_list()`."""
+        return self.to_list()
+
+    def to_dicts(self) -> list[dict]:
+        """Extract data into a list of dictionaries.
+
+        Returns:
+            A list of dictionaries representing the extracted Git objects.
+
+        """
+        return [obj.to_dict() for obj in self._extract()]
+
+    def dicts(self) -> list[dict]:
+        """Shorthand for `to_dicts()`."""
+        return self.to_dicts()
