@@ -11,9 +11,9 @@ large-scale codebase analysis at practical speeds.
 
 Key features are:
 
-- Fast access to commit data, file changes and more
-- Easy integration with **pandas** and **polars**
-- Simple-to-use Python interface
+- 🚀 Fast access to commit data, file changes and more
+- 📊 Easy integration with **pandas** and **polars**
+- 🐍 Simple-to-use Python interface
 
 ## Requirements
 
