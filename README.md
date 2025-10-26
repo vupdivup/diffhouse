@@ -34,90 +34,135 @@ Git also needs to be added to the system PATH.
 
 At its core, diffhouse is a data *extraction* tool and therefore does not calculate software metrics like code churn or cyclomatic complexity; if this is needed, take a look at [PyDriller](https://github.com/ishepard/pydriller) instead.
 
-Also note that revision data is limited to **default branches only**.
-
 <!-- home-end -->
 
 ## User Guide
 
 <!-- user-guide-start -->
 
-This guide aims to cover the basic use cases of diffhouse. For the list of
-available repository objects and fields, check out the
+This guide aims to cover the basic use cases of diffhouse. For a full list of objects, consider reading the
 [API Reference](https://vupdivup.github.io/diffhouse/api-reference).
 
 ### Installation
 
-Install diffhouse through PyPi:
+Install diffhouse from PyPI:
 
 ```sh
 pip install diffhouse
 ```
 
-### Quickstart
+If you plan to combine diffhouse with pandas or Polars, install the package with either the `[pandas]` or `[polars]` extra:
 
-```python
-from diffhouse import Repo
-
-url = 'https://github.com/user/repo'
-
-r = Repo(location = url, blobs = True).load()
-
-for c in r.commits:
-    print(c.commit_hash[:10], c.committer_date, c.author_email)
-
-print(r.branches)
-print(r.diffs[0].to_dict())
+```sh
+pip install diffhouse[pandas]  # or [polars]
 ```
 
-First, construct a `Repo` object and define
-its target repository via the `location` argument; this can be either a
-remote URL or a local path. Pass `blobs = True` to extract file data as well.
+### Quickstart
 
-Calling `Repo.load()` will load all metadata into memory, which can
-then be accessed through the object's properties.
-[See all properties](https://vupdivup.github.io/diffhouse/api-reference/#diffhouse.Repo.branches)
+```py
+from diffhouse import Repo
 
-> `blobs = True` requires a complete clone of the repository and therefore
-> takes longer to execute. Omit this argument whenever possible.
+with Repo('https://github.com/user/repo') as r:
+    for c in r.commits:
+        print(c.commit_hash[:10], c.committer_date, c.author_email)
 
-### Lazy Loading
+    if len(r.branches.to_list()) > 100:
+        print('🎉')
 
-For large repositories, calling
-`load()` can be slow and/or take up gigabytes of memory. It is recommended to
-use the lazy method via `with` instead:
+    df = r.diffs.to_pandas()
+```
 
-```python
-with Repo(location = url, blobs = True) as r:
-    c = list(r.stream_commits())
+To start, create a [`Repo`](https://vupdivup.github.io/diffhouse/api-reference/repo/) instance by passing either a Git-hosting URL or a local path as its `source` argument. Next, use the `Repo` in a `with` statement to clone the source into a local, non-persistent
+location.
 
-    for d in r.stream_diffs():
-        if d.lines_added == 3:
+Inside the `with` block, you can access data through the following properties:
+
+| Property | Description | Record Type
+| --- | --- | --- |
+| `Repo.commits` | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/api-reference/commit/) |
+| `Repo.filemods` | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/api-reference/filemod/) |
+| `Repo.diffs` | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/api-reference/diff/) |
+| `Repo.branches` | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/api-reference/branch/) |
+| `Repo.tags` | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/api-reference/tag/) |
+
+### Querying Results
+
+Data accessors like `Repo.commits` are [Extractor](https://vupdivup.github.io/diffhouse/api-reference/extractor/) objects and can output their results in various formats:
+
+#### Looping Through Objects
+
+You can use extractors in a `for` loop to process objects one by one. Data will be extracted on demand for memory efficiency:
+
+```py
+with Repo('https://github.com/user/repo') as r:
+    for c in r.commits:
+        print(c.commit_hash[:10])
+        print(c.author_name)
+
+        if c.in_main:
             break
 ```
 
-This brings two big benefits:
+`iter_dicts()` is a `for` loop alternative that yields dictionaries instead of diffhouse objects. A good use case for this is writing results into a newline-delimited JSON file:
 
-1. Object streaming functions are lazy generators, allowing for efficient memory use.
-2. No processing power is spent on objects that are not explicitly requested.
+```py
+import json
 
-[See all streaming functions](https://vupdivup.github.io/diffhouse/api-reference/#diffhouse.Repo.stream_commits)
-
-### Tabular Data
-
-`Commit`, `ChangedFile` and `Diff` iterables can be passed directly to
-pandas and polars `DataFrame` constructors. No pre-processing is needed;
-table schemas will be inferred correctly.
-
-```python
-import polars as pl
-
-df = pl.DataFrame(r.changed_files)
-print(df.schema)
+with (
+    Repo('https://github.com/user/repo') as r,
+    open('commits.jsonl', 'w') as f
+):
+    for c in r.commits.iter_dicts():
+        f.write(json.dumps(c) + '\n')
 ```
 
-> diffhouse stores datetime values as ISO 8601 strings to preserve time zone
-> offsets. When converting these to datetime objects in a `DataFrame`, use
-> the parser's UTC option.
+#### Converting to Dataframes
+
+pandas and Polars `DataFrame` APIs are supported out of the box. To convert result sets to dataframes, call the following methods:
+
+- `to_pandas()` or `pd()` for pandas
+- `to_polars()` or `pl()` for Polars
+
+```py
+with Repo('https://github.com/user/repo') as r:
+    df1 = r.filemods.to_pandas()  # pandas
+    df2 = r.diffs.to_polars()  # Polars
+```
+
+Datetime values are stored as ISO 8601 strings to preserve time zone offsets. When converting these to datetime objects in a `DataFrame`, use the parser's UTC option. With pandas, it'd look like this:
+
+```py
+import pandas as pd
+
+with Repo('https://github.com/user/repo') as r:
+    df = r.commits.to_pandas()
+
+df['author_date'] = pd.to_datetime(
+    df['author_date'], utc=True
+)
+```
+
+### Preliminary Filtering
+
+You can filter data along certain dimensions *before* processing takes place to reduce extraction time and/or network load.
+
+> [!NOTE]
+> Filters are a WIP feature. Additional options like date and branch filtering are planned for future releases.
+
+#### Skipping File Downloads
+
+If no blob-level data is needed, pass `blobs=False` when creating the `Repo` to skip file downloads during cloning. Note that this will not populate:
+
+- `files_changed`, `lines_added` and `lines_deleted` fields of `Repo.commits`
+- `Repo.filemods`
+- `Repo.diffs`
+
+```py
+with Repo('https://github.com/user/repo', blobs=False) as r:
+    for b in r.branches:
+        pass  # business as usual
+
+    r.filemods  # throws FilterError
+```
 
 <!-- user-guide-end -->
