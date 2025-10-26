@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 
 @dataclass(slots=True, frozen=True)
 class FileMod:
-    """Metadata of a file change in a specific commit."""
+    """A file modification in a specific commit."""
 
     def to_dict(self) -> dict:
         """Convert the object to a dictionary.

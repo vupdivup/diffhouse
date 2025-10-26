@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 
 @dataclass(slots=True, frozen=True)
 class Commit:
-    """Commit metadata."""
+    """A commit from the repository history."""
 
     def to_dict(self) -> dict:
         """Convert the object to a dictionary.
