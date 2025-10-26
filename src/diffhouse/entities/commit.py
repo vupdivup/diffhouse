@@ -48,16 +48,16 @@ class Commit:
     """
     Number of files changed in the commit.
 
-    Available if `blobs = True`.
+    The value of this attribute equals `None` if `blobs=False`.
     """
     lines_added: int | None
     """
     Number of lines inserted in the commit.
 
-    Available if `blobs = True`.
+    The value of this attribute equals `None` if `blobs=False`.
     """
     lines_deleted: int | None
     """Number of lines deleted in the commit.
 
-    Available if `blobs = True`.
+    The value of this attribute equals `None` if `blobs=False`.
     """
