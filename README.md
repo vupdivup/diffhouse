@@ -41,7 +41,7 @@ At its core, diffhouse is a data *extraction* tool and therefore does not calcul
 <!-- user-guide-start -->
 
 This guide aims to cover the basic use cases of diffhouse. For a full list of objects, consider reading the
-[API Reference](https://vupdivup.github.io/diffhouse/api-reference).
+[API Reference](https://vupdivup.github.io/diffhouse/reference).
 
 ### Installation
 
@@ -72,22 +72,22 @@ with Repo('https://github.com/user/repo') as r:
     df = r.diffs.to_pandas()
 ```
 
-To start, create a [`Repo`](https://vupdivup.github.io/diffhouse/api-reference/repo/) instance by passing either a Git-hosting URL or a local path as its `source` argument. Next, use the `Repo` in a `with` statement to clone the source into a local, non-persistent
+To start, create a [`Repo`](https://vupdivup.github.io/diffhouse/reference/repo/) instance by passing either a Git-hosting URL or a local path as its `source` argument. Next, use the `Repo` in a `with` statement to clone the source into a local, non-persistent
 location.
 
 Inside the `with` block, you can access data through the following properties:
 
 | Property | Description | Record Type
 | --- | --- | --- |
-| [`Repo.commits`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/api-reference/commit/) |
-| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/api-reference/filemod/) |
-| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/api-reference/diff/) |
-| [`Repo.branches`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/api-reference/branch/) |
-| [`Repo.tags`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/api-reference/tag/) |
+| [`Repo.commits`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/reference/commit/) |
+| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/reference/filemod/) |
+| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/reference/diff/) |
+| [`Repo.branches`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/reference/branch/) |
+| [`Repo.tags`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/reference/tag/) |
 
 ### Querying Results
 
-Data accessors like `Repo.commits` are [`Extractor`](https://vupdivup.github.io/diffhouse/api-reference/extractor/) objects and can output their results in various formats:
+Data accessors like `Repo.commits` are [`Extractor`](https://vupdivup.github.io/diffhouse/reference/extractor/) objects and can output their results in various formats:
 
 #### Looping Through Objects
 

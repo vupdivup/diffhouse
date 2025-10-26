@@ -6,14 +6,14 @@ repo_name: vupdivup/diffhouse
 nav:
   - Home: index.md
   - User Guide: user-guide.md
-  - API Reference:
-    - Repo: api-reference/repo.md
-    - Extractor: api-reference/extractor.md
-    - Commit: api-reference/commit.md
-    - FileMod: api-reference/filemod.md
-    - Diff: api-reference/diff.md
-    - Branch: api-reference/branch.md
-    - Tag: api-reference/tag.md
+  - Reference:
+    - Repo: reference/repo.md
+    - Extractor: reference/extractor.md
+    - Commit: reference/commit.md
+    - FileMod: reference/filemod.md
+    - Diff: reference/diff.md
+    - Branch: reference/branch.md
+    - Tag: reference/tag.md
 
 theme:
   name: material
