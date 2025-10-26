@@ -19,18 +19,30 @@ from diffhouse.pipelines import (
 class Repo:
     """Wrapper around a Git repository.
 
-    `Repo` is the main entry point for mining repositories with diffhouse.
+    This class is the main entry point for mining repositories with diffhouse.
+    When used in a `with` statement, it creates a non-persistent clone of the
+    target repository from which data can be extracted.
+
+    Examples:
+        ```python
+        with Repo('https://github.com/user/repo') as r:
+            for c in r.commits:
+                print(c.commit_hash[:10], c.committer_date, c.author_email)
+
+            if len(r.branches.to_list()) > 100:
+                print('🎉')
+
+            df = r.diffs.to_pandas()
+        ```
+
     """
 
     def __init__(self, source: str, blobs: bool = True):
         """Initialize the repository.
 
-        When sourcing from a local path, the `blobs = False` filter
-            may not be available.
-
         Args:
             source: URL or local path pointing to a Git repository.
-            blobs: Whether to load file content. If this is `False`, only
+            blobs: Whether to download file contents.
 
         """
         # Convert source to file URI if not a URL
@@ -73,6 +85,46 @@ class Repo:
             raise FilterError('blobs')
 
     @property
+    def commits(self) -> Extractor[Commit]:
+        """Commit history of the repository.
+
+        Holds one record per commit.
+        """
+        self._require_active()
+        return Extractor(
+            self._clone.path,
+            lambda p: self._safe_iter(
+                extract_commits(p, shortstats=self._blobs)
+            ),
+        )
+
+    @property
+    def filemods(self) -> Extractor[FileMod]:
+        """File modifications across the commit history.
+
+        Holds one record per modified file per commit. Note that this property
+        is unavailable if `blobs=False`.
+        """
+        self._require_blobs()
+        self._require_active()
+        return Extractor(
+            self._clone.path, lambda p: self._safe_iter(extract_filemods(p))
+        )
+
+    @property
+    def diffs(self) -> Extractor[Diff]:
+        """Source code changes across the commit history.
+
+        Holds one record per code chunk per file per commit. Note that this
+        property is unavailable if `blobs=False`.
+        """
+        self._require_blobs()
+        self._require_active()
+        return Extractor(
+            self._clone.path, lambda p: self._safe_iter(extract_diffs(p))
+        )
+
+    @property
     def branches(self) -> Extractor[Branch]:
         """Branches of the repository."""
         self._require_active()
@@ -89,35 +141,6 @@ class Repo:
         )
 
     @property
-    def commits(self) -> Extractor[Commit]:
-        """Commit history of the repository."""
-        self._require_active()
-        return Extractor(
-            self._clone.path,
-            lambda p: self._safe_iter(
-                extract_commits(p, shortstats=self._blobs)
-            ),
-        )
-
-    @property
-    def filemods(self) -> Extractor[FileMod]:
-        """File change metadata for all commits."""
-        self._require_blobs()
-        self._require_active()
-        return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_filemods(p))
-        )
-
-    @property
-    def diffs(self) -> Extractor[Diff]:
-        """Source code changes for all commits."""
-        self._require_blobs()
-        self._require_active()
-        return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_diffs(p))
-        )
-
-    @property
     def source(self) -> str:
         """Location where the repository was cloned from.
 
@@ -129,7 +152,7 @@ class Repo:
     def clone(self) -> 'Repo':
         """Set up a temporary clone of the repository.
 
-        This method is an alternative to `with` statements. Call `clean()` to
+        This method is an alternative to `with` statements. Call `dispose()` to
         free up resources when done.
 
         Returns:
