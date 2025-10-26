@@ -42,6 +42,7 @@ plugins:
               - "__init__"
 
 markdown_extensions:
+  - github-callouts
   - pymdownx.highlight:
       line_spans: __span
       pygments_lang_class: true
