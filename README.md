@@ -51,11 +51,18 @@ Install diffhouse from PyPI:
 pip install diffhouse
 ```
 
-If you plan to combine diffhouse with pandas or Polars, install the package with either the `[pandas]` or `[polars]` extra:
+If you plan to combine diffhouse with pandas or Polars, install the package with their respective extras:
 
-```sh
-pip install diffhouse[pandas]  # or [polars]
-```
+<table>
+    <tr>
+        <td>pandas</td>
+        <td><code>pip install diffhouse[pandas]</code></td>
+    </tr>
+    <tr>
+        <td>Polars</td>
+        <td><code>pip install diffhouse[polars]</code></td>
+    </tr>
+</table>
 
 ### Quickstart
 
