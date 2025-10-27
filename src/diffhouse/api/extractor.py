@@ -23,10 +23,10 @@ T = TypeVar('T', Branch, Tag, Commit, FileMod, Diff)
 
 
 class Extractor(Generic[T]):
-    """Extraction interface for mining a specific type of Git object.
+    """Extraction interface for mining a set of Git objects.
 
-    Acts as an iterable and provides helpers to integrate with data
-    analysis libraries.
+    Supports data streaming and converting results into various formats,
+    including native Python representations and data analysis interfaces.
     """
 
     def __init__(
@@ -45,13 +45,25 @@ class Extractor(Generic[T]):
     def __iter__(self) -> Iterator[T]:
         """Extract and iterate over Git objects.
 
-        Data is loaded lazily for memory-efficient processing.
+        Items are processed on demand for memory efficiency.
 
         Yields:
             Extracted Git objects.
 
         """
         return self._extract()
+
+    def iter_dicts(self) -> Iterator[dict]:
+        """Extract and iterate over Git objects as dictionaries.
+
+        Items are processed on demand for memory efficiency.
+
+        Yields:
+            Dictionary representations of Git objects.
+
+        """
+        for obj in self._extract():
+            yield obj.to_dict()
 
     def _extract(self) -> Iterator[T]:
         """Extract data using the provided extractor function.
@@ -107,10 +119,6 @@ class Extractor(Generic[T]):
         """
         return list(self._extract())
 
-    def list(self) -> list[T]:
-        """Shorthand for `to_list()`."""
-        return self.to_list()
-
     def to_dicts(self) -> list[dict]:
         """Extract data into a list of dictionaries.
 
@@ -119,7 +127,3 @@ class Extractor(Generic[T]):
 
         """
         return [obj.to_dict() for obj in self._extract()]
-
-    def dicts(self) -> list[dict]:
-        """Shorthand for `to_dicts()`."""
-        return self.to_dicts()
