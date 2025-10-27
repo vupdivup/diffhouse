@@ -7,6 +7,7 @@ nav:
   - Home: index.md
   - User Guide: user-guide.md
   - Reference:
+    - reference/index.md
     - Repo: reference/repo.md
     - Extractor: reference/extractor.md
     - Commit: reference/commit.md
@@ -21,7 +22,8 @@ theme:
     scheme: slate
     primary: black
   features:
-    - navigation.expand
+    - navigation.sections
+    - navigation.indexes
 
 plugins:
   - search
