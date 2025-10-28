@@ -51,6 +51,8 @@ Install diffhouse from PyPI:
 pip install diffhouse
 ```
 
+#### Optional Dependencies
+
 If you plan to combine diffhouse with pandas or Polars, install the package with their respective extras:
 
 <table>
@@ -134,19 +136,6 @@ pandas and Polars `DataFrame` APIs are supported out of the box. To convert resu
 with Repo('https://github.com/user/repo') as r:
     df1 = r.filemods.to_pandas()  # pandas
     df2 = r.diffs.to_polars()  # Polars
-```
-
-Datetime values are stored as ISO 8601 strings to preserve time zone offsets. When converting these to datetime objects in a `DataFrame`, use the parser's UTC option. With pandas, it'd look like this:
-
-```py
-import pandas as pd
-
-with Repo('https://github.com/user/repo') as r:
-    df = r.commits.to_pandas()
-
-df['author_date'] = pd.to_datetime(
-    df['author_date'], utc=True
-)
 ```
 
 ### Preliminary Filtering
