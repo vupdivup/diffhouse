@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Iterator
+from typing import TYPE_CHECKING, Callable, Generic, Iterator, TypeVar
 
 from diffhouse.entities import GitObject
+
+T = TypeVar('T', bound=GitObject)
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore
@@ -19,14 +21,14 @@ else:
         pl = None
 
 
-class Extractor:
+class Extractor(Generic[T]):
     """Extraction interface for mining a set of Git objects.
 
     Supports data streaming and converting results into various formats,
     including native Python representations and data analysis interfaces.
     """
 
-    def __init__(self, iter_fn: Callable[[], Iterator[GitObject]]) -> None:
+    def __init__(self, iter_fn: Callable[[], Iterator[T]]) -> None:
         """Initialize the extractor.
 
         Args:
@@ -35,7 +37,7 @@ class Extractor:
         """
         self._extract = iter_fn
 
-    def __iter__(self) -> Iterator[GitObject]:
+    def __iter__(self) -> Iterator[T]:
         """Extract and iterate over Git objects.
 
         Items are processed on demand for memory efficiency.
@@ -94,7 +96,7 @@ class Extractor:
         """Shorthand for `to_polars()`."""
         return self.to_polars()
 
-    def to_list(self) -> list[GitObject]:
+    def to_list(self) -> list[T]:
         """Extract data into a list.
 
         Returns:
