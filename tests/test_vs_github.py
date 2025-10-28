@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime as dt
-from datetime import timezone as tz
 
 import polars as pl
 import pytest
@@ -84,12 +83,10 @@ def test_commits(
         )
 
         # convert and compare datetimes in UTC
-        for field in ['author_date', 'committer_date']:
-            assert dt.fromisoformat(c_local[field]).astimezone(
-                tz.utc
-            ) == dt.fromisoformat(c_gh[field].replace('Z', '+00:00')), c_gh[
-                'commit_hash'
-            ]
+        for field in ['author_date', 'date']:
+            assert c_local[field] == dt.fromisoformat(
+                c_gh[field].replace('Z', '+00:00')
+            ).replace(tzinfo=None), c_gh['commit_hash']
 
         # compare commit message with fuzzy matching
         assert (
