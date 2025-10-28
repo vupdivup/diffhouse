@@ -92,9 +92,8 @@ class Repo:
         """
         self._require_active()
         return Extractor(
-            self._clone.path,
-            lambda p: self._safe_iter(
-                extract_commits(p, shortstats=self._blobs)
+            lambda: self._safe_iter(
+                extract_commits(self._clone.path, shortstats=self._blobs)
             ),
         )
 
@@ -108,7 +107,7 @@ class Repo:
         self._require_blobs()
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_filemods(p))
+            lambda: self._safe_iter(extract_filemods(self._clone.path))
         )
 
     @property
@@ -121,7 +120,7 @@ class Repo:
         self._require_blobs()
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_diffs(p))
+            lambda: self._safe_iter(extract_diffs(self._clone.path))
         )
 
     @property
@@ -129,7 +128,7 @@ class Repo:
         """Branches of the repository."""
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_branches(p))
+            lambda: self._safe_iter(extract_branches(self._clone.path))
         )
 
     @property
@@ -137,7 +136,7 @@ class Repo:
         """Tag names of the repository."""
         self._require_active()
         return Extractor(
-            self._clone.path, lambda p: self._safe_iter(extract_tags(p))
+            lambda: self._safe_iter(extract_tags(self._clone.path))
         )
 
     @property
