@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, Iterator, TypeVar
+from typing import TYPE_CHECKING, Callable, Iterator
 
-from diffhouse.entities import Branch, Commit, Diff, FileMod, Tag
+from diffhouse.entities import GitObject
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore
@@ -18,17 +18,15 @@ else:
     except ImportError:
         pl = None
 
-T = TypeVar('T', Branch, Tag, Commit, FileMod, Diff)
 
-
-class Extractor(Generic[T]):
+class Extractor:
     """Extraction interface for mining a set of Git objects.
 
     Supports data streaming and converting results into various formats,
     including native Python representations and data analysis interfaces.
     """
 
-    def __init__(self, iter_fn: Callable[[], Iterator[T]]) -> None:
+    def __init__(self, iter_fn: Callable[[], Iterator[GitObject]]) -> None:
         """Initialize the extractor.
 
         Args:
@@ -37,7 +35,7 @@ class Extractor(Generic[T]):
         """
         self._extract = iter_fn
 
-    def __iter__(self) -> Iterator[T]:
+    def __iter__(self) -> Iterator[GitObject]:
         """Extract and iterate over Git objects.
 
         Items are processed on demand for memory efficiency.
@@ -96,7 +94,7 @@ class Extractor(Generic[T]):
         """Shorthand for `to_polars()`."""
         return self.to_polars()
 
-    def to_list(self) -> list[T]:
+    def to_list(self) -> list[GitObject]:
         """Extract data into a list.
 
         Returns:

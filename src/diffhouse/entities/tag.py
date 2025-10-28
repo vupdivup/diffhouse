@@ -1,18 +1,11 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+
+from diffhouse.entities.git_object import GitObject
 
 
 @dataclass(slots=True, frozen=True)
-class Tag:
+class Tag(GitObject):
     """A tag in the repository."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the tag.
-
-        """
-        return asdict(self)
 
     name: str
     """Name of the tag."""
