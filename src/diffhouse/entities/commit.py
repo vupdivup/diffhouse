@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from datetime import datetime
 
 
 @dataclass(slots=True, frozen=True)
@@ -24,22 +25,22 @@ class Commit:
     """Whether the commit is a merge commit."""
     parents: list[str]
     """List of parent commit hashes."""
+    date: datetime
+    """Date and time when the commit was applied, in UTC."""
+    date_local: datetime
+    """Date and time when the commit was applied, in local time."""
     author_name: str
     """Author name."""
     author_email: str
     """Author email."""
-    author_date: str
-    """Original commit date and time.
-
-    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
+    author_date: datetime
+    """Date and time when the commit was authored, in UTC."""
+    author_date_local: datetime
+    """Date and time when the commit was authored, in local time."""
     committer_name: str
     """Committer name."""
     committer_email: str
     """Committer email."""
-    committer_date: str
-    """Actual commit date and time.
-
-    Formatted as an ISO 8601 datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*)."""
     message_subject: str
     """Commit message subject."""
     message_body: str

@@ -10,7 +10,7 @@ from diffhouse.api.exceptions import ParserWarning
 from diffhouse.entities import Commit
 from diffhouse.git import GitCLI
 from diffhouse.pipelines.constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from diffhouse.pipelines.utils import split_stream
+from diffhouse.pipelines.utils import parse_git_timestamp, split_stream
 
 logger = logging.getLogger(__name__)
 
@@ -114,19 +114,6 @@ def log_commits(
             log.close()
 
 
-def tweak_git_iso_datetime(dt: str) -> str:
-    """Convert git ISO datetime to precise ISO 8601 format.
-
-    Args:
-        dt: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
-
-    Returns:
-        ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
-
-    """
-    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
-
-
 def parse_commits(
     log: StringIO,
     field_sep: str = UNIT_SEPARATOR,
@@ -145,6 +132,11 @@ def parse_commits(
             fields = dict(zip(FIELDS, values[:-1], strict=True))
 
             source = SOURCE_PREFIX_RGX.sub('', fields['source'])
+
+            date, date_local = parse_git_timestamp(fields['committer_date'])
+            author_date, author_date_local = parse_git_timestamp(
+                fields['author_date']
+            )
 
             if parse_shortstats:
                 shortstat = values[-1]
@@ -191,14 +183,14 @@ def parse_commits(
                 'source': source,
                 'is_merge': is_merge,
                 'parents': parents,
+                'date': date,
+                'date_local': date_local,
                 'author_name': fields['author_name'],
                 'author_email': fields['author_email'],
-                'author_date': tweak_git_iso_datetime(fields['author_date']),
+                'author_date': author_date,
+                'author_date_local': author_date_local,
                 'committer_name': fields['committer_name'],
                 'committer_email': fields['committer_email'],
-                'committer_date': tweak_git_iso_datetime(
-                    fields['committer_date']
-                ),
                 'message_subject': message_subject,
                 'message_body': message_body,
                 'files_changed': files_changed,
