@@ -1,5 +1,7 @@
 """Tests to validate data of extracted entities internally."""
 
+from datetime import datetime
+
 from diffhouse import Repo
 from tests.fixtures import repo  # noqa: F401
 
@@ -28,6 +30,15 @@ def test_validity__commits(repo: Repo) -> None:  # noqa: F811
 
         for p in c.parents:
             assert len(p) == 40
+
+        for dt in (
+            c.date,
+            c.date_local,
+            c.author_date,
+            c.author_date_local,
+        ):
+            assert isinstance(dt, datetime)
+            assert dt.tzinfo is None  # all datetimes are naive
 
         # note: not testing names or emails as they can be arbitrary strings
 

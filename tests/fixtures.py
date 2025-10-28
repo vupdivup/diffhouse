@@ -53,7 +53,7 @@ def commits__github(repo: Repo) -> list[dict]:
             'author_date': c['commit']['author']['date'],
             'committer_name': c['commit']['committer']['name'],
             'committer_email': c['commit']['committer']['email'],
-            'committer_date': c['commit']['committer']['date'],
+            'date': c['commit']['committer']['date'],
             'message': c['commit']['message'],
         }
         for c in sample_github_endpoint(
