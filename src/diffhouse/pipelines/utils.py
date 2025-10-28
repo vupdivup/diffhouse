@@ -77,7 +77,7 @@ def parse_git_timestamp(dtstr: str) -> tuple[datetime, datetime]:
 
     offset_sign = 1 if dtstr[20] == '+' else -1
     offset_hours = int(dtstr[21:23])
-    offset_minutes = int(dtstr[24:26])
+    offset_minutes = int(dtstr[23:25])
     offset = timedelta(
         hours=offset_sign * offset_hours, minutes=offset_sign * offset_minutes
     )
