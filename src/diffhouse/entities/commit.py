@@ -17,18 +17,14 @@ class Commit:
 
     commit_hash: str
     """Full hash of the commit."""
-    source: str
-    """The original branch that produced the commit."""
-    in_main: bool
-    """Whether the commit is in the default branch's history."""
-    is_merge: bool
-    """Whether the commit is a merge commit."""
-    parents: list[str]
-    """List of parent commit hashes."""
     date: datetime
     """Date and time when the commit was applied, in UTC."""
     date_local: datetime
     """Date and time when the commit was applied, in local time."""
+    message_subject: str
+    """Commit message subject."""
+    message_body: str
+    """Commit message body."""
     author_name: str
     """Author name."""
     author_email: str
@@ -41,10 +37,6 @@ class Commit:
     """Committer name."""
     committer_email: str
     """Committer email."""
-    message_subject: str
-    """Commit message subject."""
-    message_body: str
-    """Commit message body."""
     files_changed: int | None
     """
     Number of files changed in the commit.
@@ -62,3 +54,11 @@ class Commit:
 
     The value of this attribute equals `None` if `blobs=False`.
     """
+    source: str
+    """The original branch that produced the commit."""
+    in_main: bool
+    """Whether the commit is in the default branch's history."""
+    is_merge: bool
+    """Whether the commit is a merge commit."""
+    parents: list[str]
+    """List of parent commit hashes."""
