@@ -42,4 +42,8 @@ jobs:
             --all-extras
 
       - name: Run tests
-        run: uv run pytest -vv
+        run: |
+          uv run \
+            --no-default-groups \
+            --resolution lowest-direct \
+            pytest -vv
