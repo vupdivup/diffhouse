@@ -35,12 +35,13 @@ jobs:
 
       - name: Install dependencies
         run: >
-          uv sync no-default-groups
-            --group test
-            --all-extras
+          uv sync
+          --no-default-groups
+          --group test
+          --all-extras
 
       - name: Run tests
         run: >
           uv run
-            --no-default-groups
-            pytest -vv
+          --no-default-groups
+          pytest -vv
