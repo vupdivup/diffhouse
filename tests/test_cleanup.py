@@ -7,12 +7,15 @@ import psutil
 import pytest
 
 
-def test_cleanup():
+def test_cleanup() -> None:
     """Test that temporary files are cleaned up properly after an interrupted run."""
     DUMMY_PATH = 'tests.dummy'
     root = Path('.').resolve()
 
-    p = subprocess.Popen(['uv', 'run', 'python', '-m', DUMMY_PATH], cwd=root)
+    p = subprocess.Popen(
+        ['uv', 'run', '--no-default-groups', 'python', '-m', DUMMY_PATH],
+        cwd=root,
+    )
 
     # abruptly kill the process
     time.sleep(3)
@@ -28,13 +31,21 @@ def test_cleanup():
     assert not is_cleanup_complete()
 
     subprocess.Popen(
-        ['uv', 'run', 'python', '-c', 'import diffhouse'], cwd=root
+        [
+            'uv',
+            'run',
+            '--no-default-groups',
+            'python',
+            '-c',
+            'import diffhouse',
+        ],
+        cwd=root,
     ).wait()
 
     assert is_cleanup_complete()
 
 
-def is_cleanup_complete():
+def is_cleanup_complete() -> bool:
     """Check if any temp directories created by diffhouse still exist."""
     temp_dir = Path(tempfile.gettempdir())
     for item in temp_dir.iterdir():
