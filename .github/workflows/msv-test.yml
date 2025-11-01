@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --group test
+          uv sync --no-default-groups --group test --all-extras
 
       - name: Run tests
         run: uv run pytest -vv
