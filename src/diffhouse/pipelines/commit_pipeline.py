@@ -1,12 +1,18 @@
-import re
+import logging
+import warnings
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import StringIO
 
-from ..entities import Commit
-from ..git import GitCLI
-from .constants import RECORD_SEPARATOR, UNIT_SEPARATOR
-from .utils import safe_iter, split_stream
+import regex
+
+from diffhouse.api.exceptions import ParserWarning
+from diffhouse.entities import Commit
+from diffhouse.git import GitCLI
+from diffhouse.pipelines.constants import RECORD_SEPARATOR, UNIT_SEPARATOR
+from diffhouse.pipelines.utils import parse_git_timestamp, split_stream
+
+logger = logging.getLogger(__name__)
 
 PRETTY_LOG_FORMAT_SPECIFIERS = {
     'commit_hash': '%H',
@@ -19,12 +25,18 @@ PRETTY_LOG_FORMAT_SPECIFIERS = {
     # using raw body as the sanitized subject would remove single newlines
     'message': '%B',
     'parents': '%P',
+    'source': '%S',
 }
 
 FIELDS = list(PRETTY_LOG_FORMAT_SPECIFIERS.keys())
 
+SOURCE_PREFIX_RGX = regex.compile(r'^refs\/(?:remotes\/origin|tags|heads)\/')
+FILES_CHANGED_RGX = regex.compile(r'(\d+) file')
+INSERTIONS_RGX = regex.compile(r'(\d+) insertion')
+DELETIONS_RGX = regex.compile(r'(\d+) deletion')
 
-def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
+
+def extract_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
     """Stream main branch commits from a git repository.
 
     Args:
@@ -35,11 +47,34 @@ def stream_commits(path: str, shortstats: bool = False) -> Iterator[Commit]:
         Commit objects.
 
     """
+    # lookup table to check if a commit is in main branch
+    logger.info('Extracting commits')
+    logger.debug('Indexing commits on main branch')
+
+    main = dict.fromkeys(iter_hashes_on_main(path))
+
+    logger.debug('Logging commits')
     with log_commits(path, shortstats=shortstats) as log:
-        yield from safe_iter(
-            parse_commits(log, parse_shortstats=shortstats),
-            'Failed to parse commit. Skipping...',
-        )
+        logger.debug('Parsing commits')
+        for commit in parse_commits(log, parse_shortstats=shortstats):
+            yield Commit(**commit, in_main=commit['commit_hash'] in main)
+
+    logger.debug('Extracted all commits')
+
+
+def iter_hashes_on_main(path: str) -> Iterator[str]:
+    """Iterate over commit hashes from the default branch.
+
+    Args:
+        path: Path to the git repository.
+
+    Yields:
+        Commit hashes.
+
+    """
+    git = GitCLI(path)
+    with git.run('log', '--pretty=format:%H') as log:
+        yield from (line.strip() for line in log)
 
 
 @contextmanager
@@ -66,7 +101,7 @@ def log_commits(
     specifiers = field_sep.join(PRETTY_LOG_FORMAT_SPECIFIERS.values())
 
     pattern = f'{record_sep}{specifiers}{UNIT_SEPARATOR}'
-    args = ['log', f'--pretty=format:{pattern}', '--date=iso']
+    args = ['log', f'--pretty=format:{pattern}', '--date=iso', '--all']
 
     if shortstats:
         args.append('--shortstat')
@@ -79,19 +114,6 @@ def log_commits(
             log.close()
 
 
-def tweak_git_iso_datetime(dt: str) -> str:
-    """Convert git ISO datetime to precise ISO 8601 format.
-
-    Args:
-        dt: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
-
-    Returns:
-        ISO 8601 formatted datetime string (*YYYY-MM-DDTHH:MM:SS±HH:MM*).
-
-    """
-    return dt[:10] + 'T' + dt[11:19] + dt[20:23] + ':' + dt[23:25]
-
-
 def parse_commits(
     log: StringIO,
     field_sep: str = UNIT_SEPARATOR,
@@ -99,68 +121,89 @@ def parse_commits(
     parse_shortstats: bool = False,
 ) -> Iterator[Commit]:
     """Parse the output of `log_commits`."""
-    files_changed_pat = re.compile(r'(\d+) file')
-    insertions_pat = re.compile(r'(\d+) insertion')
-    deletions_pat = re.compile(r'(\d+) deletion')
-
     commits = split_stream(log, record_sep, chunk_size=10_000)
     next(commits)  # skip first empty record
 
     for commit in commits:
-        values = commit.split(field_sep)
+        try:
+            values = commit.split(field_sep)
 
-        # match all fields with field names except the shortstat section
-        fields = dict(zip(FIELDS, values[:-1], strict=True))
+            # match all fields with field names except the shortstat section
+            fields = dict(zip(FIELDS, values[:-1], strict=True))
 
-        if parse_shortstats:
-            shortstat = values[-1]
+            source = SOURCE_PREFIX_RGX.sub('', fields['source'])
 
-            files_changed_match = files_changed_pat.search(shortstat)
-            insertions_match = insertions_pat.search(shortstat)
-            deletions_match = deletions_pat.search(shortstat)
-
-            files_changed = (
-                int(files_changed_match.group(1)) if files_changed_match else 0
+            date, date_local = parse_git_timestamp(fields['committer_date'])
+            author_date, author_date_local = parse_git_timestamp(
+                fields['author_date']
             )
 
-            insertions = (
-                int(insertions_match.group(1)) if insertions_match else 0
+            if parse_shortstats:
+                shortstat = values[-1]
+
+                files_changed_match = FILES_CHANGED_RGX.search(shortstat)
+                insertions_match = INSERTIONS_RGX.search(shortstat)
+                deletions_match = DELETIONS_RGX.search(shortstat)
+
+                files_changed = (
+                    int(files_changed_match.group(1))
+                    if files_changed_match
+                    else 0
+                )
+
+                insertions = (
+                    int(insertions_match.group(1)) if insertions_match else 0
+                )
+                deletions = (
+                    int(deletions_match.group(1)) if deletions_match else 0
+                )
+
+            else:
+                files_changed = None
+                insertions = None
+                deletions = None
+
+            if fields['parents'] == '':
+                # first commit has no parents
+                parents = []
+            else:
+                parents = fields['parents'].split(' ')
+
+            # it's a merge commit if parents field has more than one hash
+            is_merge = len(parents) > 1
+
+            message_parts = fields['message'].split('\n\n', 1)
+            message_subject = message_parts[0].strip()
+            message_body = (
+                message_parts[1].strip() if len(message_parts) > 1 else ''
             )
-            deletions = int(deletions_match.group(1)) if deletions_match else 0
 
-        else:
-            files_changed = None
-            insertions = None
-            deletions = None
-
-        if fields['parents'] == '':
-            # first commit has no parents
-            parents = []
-        else:
-            parents = fields['parents'].split(' ')
-
-        # it's a merge commit if parents field has more than one hash
-        is_merge = len(parents) > 1
-
-        message_parts = fields['message'].split('\n\n', 1)
-        message_subject = message_parts[0].strip()
-        message_body = (
-            message_parts[1].strip() if len(message_parts) > 1 else ''
-        )
-
-        yield Commit(
-            commit_hash=fields['commit_hash'],
-            is_merge=is_merge,
-            parents=parents,
-            author_name=fields['author_name'],
-            author_email=fields['author_email'],
-            author_date=tweak_git_iso_datetime(fields['author_date']),
-            committer_name=fields['committer_name'],
-            committer_email=fields['committer_email'],
-            committer_date=tweak_git_iso_datetime(fields['committer_date']),
-            message_subject=message_subject,
-            message_body=message_body,
-            files_changed=files_changed,
-            lines_added=insertions,
-            lines_deleted=deletions,
-        )
+            yield {
+                'commit_hash': fields['commit_hash'],
+                'source': source,
+                'is_merge': is_merge,
+                'parents': parents,
+                'date': date,
+                'date_local': date_local,
+                'author_name': fields['author_name'],
+                'author_email': fields['author_email'],
+                'author_date': author_date,
+                'author_date_local': author_date_local,
+                'committer_name': fields['committer_name'],
+                'committer_email': fields['committer_email'],
+                'message_subject': message_subject,
+                'message_body': message_body,
+                'files_changed': files_changed,
+                'lines_added': insertions,
+                'lines_deleted': deletions,
+            }
+        except Exception:
+            # Handle exceptions related to string operations and field parsing
+            warnings.warn(
+                'Skipping malformed commit record', ParserWarning, stacklevel=2
+            )
+            logger.warning(
+                f'Skipping malformed commit record: {repr(commit)}',
+                exc_info=True,
+            )
+            continue

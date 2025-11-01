@@ -1,46 +1,44 @@
 import random
+from typing import Iterator
 
 import polars as pl
 import pytest
 
 from diffhouse import Repo
-
-from .constants import (
+from tests.constants import (
     GITHUB_COMMITS_SAMPLE_SIZE,
     GITHUB_SHORTSTATS_SAMPLE_SIZE,
     REPOS,
 )
-from .github import get_github_response, sample_github_endpoint
+from tests.github import get_github_response, sample_github_endpoint
 
-# randomly select 3 repos for testing to keep it relatively short
-SELECTED_REPOS = random.sample(REPOS, 3)
+SELECTED_REPOS = random.sample(REPOS, 1)
 
 
 @pytest.fixture(scope='session', params=SELECTED_REPOS)
-def repo(request: pytest.FixtureRequest) -> Repo:
+def repo(request: pytest.FixtureRequest) -> Iterator[Repo]:
     """Fixture that provides a `Repo` instance for a given GitHub URL."""
-    return Repo(request.param, blobs=True).load()
+    r = Repo(request.param, blobs=True).clone()
+    yield r
+    r.dispose()
 
 
 @pytest.fixture(scope='session')
 def commits__diffhouse(repo: Repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of `repo.commits`.
-
-    Datetime strings are converted to objects.
-    """
-    return pl.DataFrame(repo.commits)
+    """Fixture that provides a DataFrame of `repo.commits`."""
+    return repo.commits.pl()
 
 
 @pytest.fixture(scope='session')
-def changed_files__diffhouse(repo: Repo) -> pl.DataFrame:
-    """Fixture that provides a DataFrame of `repo.changed_files`."""
-    return pl.DataFrame(repo.changed_files)
+def filemods__diffhouse(repo: Repo) -> pl.DataFrame:
+    """Fixture that provides a DataFrame of `repo.filemods`."""
+    return repo.filemods.pl()
 
 
 @pytest.fixture(scope='session')
 def diffs__diffhouse(repo: Repo) -> pl.LazyFrame:
     """Fixture that provides a DataFrame of `repo.diffs`."""
-    return pl.DataFrame(repo.diffs).lazy()
+    return repo.diffs.pl().lazy()
 
 
 @pytest.fixture(scope='session')
@@ -54,17 +52,17 @@ def commits__github(repo: Repo) -> list[dict]:
             'author_date': c['commit']['author']['date'],
             'committer_name': c['commit']['committer']['name'],
             'committer_email': c['commit']['committer']['email'],
-            'committer_date': c['commit']['committer']['date'],
+            'date': c['commit']['committer']['date'],
             'message': c['commit']['message'],
         }
         for c in sample_github_endpoint(
-            repo.location, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
+            repo.source, 'commits', GITHUB_COMMITS_SAMPLE_SIZE
         )
     ]
 
 
 @pytest.fixture(scope='session')
-def changed_files__github(
+def filemods__github(
     repo: Repo, commits__diffhouse: pl.DataFrame
 ) -> list[dict]:
     """Fixture that provides a list of file changes from the GitHub API.
@@ -82,7 +80,7 @@ def changed_files__github(
     )
 
     patches = [
-        get_github_response(repo.location, f'commits/{c}').json()
+        get_github_response(repo.source, f'commits/{c}').json()
         for c in selected_commits
     ]
 

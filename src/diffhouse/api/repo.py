@@ -1,0 +1,191 @@
+from pathlib import Path
+from typing import Iterator
+
+import validators
+
+from diffhouse.api import Extractor
+from diffhouse.api.exceptions import FilterError, NotClonedError, ParserError
+from diffhouse.entities import Branch, Commit, Diff, FileMod, Tag
+from diffhouse.git import TempClone
+from diffhouse.pipelines import (
+    extract_branches,
+    extract_commits,
+    extract_diffs,
+    extract_filemods,
+    extract_tags,
+)
+
+
+class Repo:
+    """Wrapper around a Git repository.
+
+    This class is the main entry point for mining repositories with diffhouse.
+    When used in a `with` statement, it creates a non-persistent clone of the
+    target repository from which data can be extracted.
+
+    Examples:
+        ```python
+        with Repo('https://github.com/user/repo') as r:
+            for c in r.commits:
+                print(c.commit_hash[:10], c.committer_date, c.author_email)
+
+            if len(r.branches.to_list()) > 100:
+                print('🎉')
+
+            df = r.diffs.to_pandas()
+        ```
+
+    """
+
+    def __init__(self, source: str, blobs: bool = True):
+        """Initialize the repository.
+
+        Args:
+            source: URL or local path pointing to a Git repository.
+            blobs: Whether to download file contents.
+
+        """
+        # Convert source to file URI if not a URL
+        self._source = (
+            source.strip()
+            if validators.url(source)
+            else Path(source).resolve().as_uri()
+        )
+
+        self._blobs = blobs
+        self._active = False
+
+        self._tags = None
+
+    def __enter__(self) -> 'Repo':
+        """Set up a temporary clone of the repository.
+
+        Returns:
+            self
+
+        """
+        return self.clone()
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # noqa: ANN001
+        """Clean up the temporary clone."""
+        self.dispose()
+
+    def __del__(self) -> None:
+        """Clean up the temporary clone on deletion."""
+        self.dispose()
+
+    def _require_active(self) -> None:
+        """Raise an error if the Repo context manager is not active."""
+        if not self._active:
+            raise NotClonedError()
+
+    def _require_blobs(self) -> None:
+        """Raise an error if the Repo was not initialized with `blobs = True`."""
+        if not self._blobs:
+            raise FilterError('blobs')
+
+    @property
+    def commits(self) -> Extractor[Commit]:
+        """Commit history of the repository.
+
+        Holds one record per commit.
+        """
+        self._require_active()
+        return Extractor(
+            lambda: self._safe_iter(
+                extract_commits(self._clone.path, shortstats=self._blobs)
+            ),
+        )
+
+    @property
+    def filemods(self) -> Extractor[FileMod]:
+        """File modifications across the commit history.
+
+        Holds one record per modified file per commit. Note that this property
+        is unavailable if `blobs=False`.
+        """
+        self._require_blobs()
+        self._require_active()
+        return Extractor(
+            lambda: self._safe_iter(extract_filemods(self._clone.path))
+        )
+
+    @property
+    def diffs(self) -> Extractor[Diff]:
+        """Source code changes across the commit history.
+
+        Holds one record per code chunk per file per commit. Note that this
+        property is unavailable if `blobs=False`.
+        """
+        self._require_blobs()
+        self._require_active()
+        return Extractor(
+            lambda: self._safe_iter(extract_diffs(self._clone.path))
+        )
+
+    @property
+    def branches(self) -> Extractor[Branch]:
+        """Branches of the repository."""
+        self._require_active()
+        return Extractor(
+            lambda: self._safe_iter(extract_branches(self._clone.path))
+        )
+
+    @property
+    def tags(self) -> Extractor[Tag]:
+        """Tag names of the repository."""
+        self._require_active()
+        return Extractor(
+            lambda: self._safe_iter(extract_tags(self._clone.path))
+        )
+
+    @property
+    def source(self) -> str:
+        """Location where the repository was cloned from.
+
+        Can either be a remote URL or a local file URI based on the
+        original input.
+        """
+        return self._source
+
+    def clone(self) -> 'Repo':
+        """Set up a temporary clone of the repository.
+
+        This method is an alternative to `with` statements. Call `dispose()` to
+        free up resources when done.
+
+        Returns:
+            self
+
+        """
+        self._clone = TempClone(self._source, shallow=not self._blobs)
+        self._clone.__enter__()
+
+        self._active = True
+        return self
+
+    def dispose(self) -> None:
+        """Free up resources associated with the object.
+
+        Only needed when `clone()` is used directly.
+        """
+        if self._active:
+            self._clone.__exit__(None, None, None)
+            self._active = False
+
+    def _safe_iter(self, iter_: Iterator) -> Iterator:
+        """Wrap a generator for higher-level error handling.
+
+        Args:
+            iter_: The generator to wrap.
+
+        Yields:
+            Items from the generator.
+
+        """
+        try:
+            yield from iter_
+        except FileNotFoundError as e:
+            raise NotClonedError() from e
+        except Exception as e:
+            raise ParserError('Failed to parse repository data.') from e

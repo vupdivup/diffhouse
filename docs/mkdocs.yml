@@ -6,13 +6,25 @@ repo_name: vupdivup/diffhouse
 nav:
   - Home: index.md
   - User Guide: user-guide.md
-  - API Reference: api-reference.md
+  - Reference:
+    - reference/index.md
+    - Repo: reference/repo.md
+    - Extractor: reference/extractor.md
+    - Commit: reference/commit.md
+    - FileMod: reference/filemod.md
+    - Diff: reference/diff.md
+    - Branch: reference/branch.md
+    - Tag: reference/tag.md
+    - GitObject: reference/git-object.md
 
 theme:
   name: material
   palette:
     scheme: slate
-    primary: teal
+    primary: black
+  features:
+    - navigation.sections
+    - navigation.indexes
 
 plugins:
   - search
@@ -28,7 +40,6 @@ plugins:
             separate_signature: true
             signature_crossrefs: true
             members_order: source
-            show_root_heading: true
             group_by_category: false
             filters:
               - "!^_"
@@ -36,6 +47,7 @@ plugins:
               - "__init__"
 
 markdown_extensions:
+  - github-callouts
   - pymdownx.highlight:
       line_spans: __span
       pygments_lang_class: true

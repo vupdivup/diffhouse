@@ -1,10 +1,10 @@
-import warnings
 from collections.abc import Iterator
+from datetime import datetime, timedelta
 from io import StringIO
 
 import xxhash
 
-from .constants import UNIT_SEPARATOR
+from diffhouse.pipelines.constants import UNIT_SEPARATOR
 
 
 def fast_hash_64(*args: str) -> str:
@@ -57,26 +57,32 @@ def split_stream(
         buffer = parts[-1]
 
 
-def safe_iter(iter_: Iterator, warning: str) -> Iterator:
-    """Wrap a generator to raise a warning instead of an error if an item fails.
-
-    Failed items are skipped.
+def parse_git_timestamp(dtstr: str) -> tuple[datetime, datetime]:
+    """Convert a git ISO datetime string to naive datetimes.
 
     Args:
-        iter_: The generator to wrap.
-        warning: Warning message to display if an item fails.
+        dtstr: Git ISO datetime string (*YYYY-MM-DD HH:MM:SS ±HHMM*).
 
-    Yields:
-        Items from the generator.
+    Returns:
+        The datetime in UTC and local time, both naive.
 
     """
-    while True:
-        try:
-            next_ = next(iter_)
-        except StopIteration:
-            return
-        except Exception:
-            warnings.warn(warning)
-            continue
+    # indexed slicing is faster than strptime
+    yr = int(dtstr[0:4])
+    mo = int(dtstr[5:7])
+    da = int(dtstr[8:10])
+    hr = int(dtstr[11:13])
+    mi = int(dtstr[14:16])
+    se = int(dtstr[17:19])
 
-        yield next_
+    offset_sign = 1 if dtstr[20] == '+' else -1
+    offset_hours = int(dtstr[21:23])
+    offset_minutes = int(dtstr[23:25])
+    offset = timedelta(
+        hours=offset_sign * offset_hours, minutes=offset_sign * offset_minutes
+    )
+
+    return (
+        datetime(yr, mo, da, hr, mi, se) - offset,  # UTC
+        datetime(yr, mo, da, hr, mi, se),  # local time
+    )

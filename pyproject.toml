@@ -1,6 +1,6 @@
 [project]
 name = "diffhouse"
-version = "1.1.2"
+version = "2.0.0"
 dependencies = [
   "packaging>=25.0",
   "regex>=2025.9.18",
@@ -21,6 +21,14 @@ license-files = ["LICEN[CS]E*", "THIRD_PARTY_LICENSES*"]
 Documentation = "https://vupdivup.github.io/diffhouse/"
 Repository = "https://github.com/vupdivup/diffhouse"
 
+[project.optional-dependencies]
+pandas = [
+    "pandas>=2.0.0",
+]
+polars = [
+    "polars>=1.0.0",
+]
+
 [build-system]
 requires = ["uv_build>=0.8.23"]
 build-backend = "uv_build"
@@ -39,7 +47,7 @@ line-length = 80
 
 [tool.ruff.lint]
 select = ["A", "ANN", "ARG", "B", "C4", "E", "F", "D", "I", "SIM"]
-ignore = ["ANN204", "B028", "D100", "D203", "D213", "E501"]
+ignore = ["ANN204", "D100", "D203", "D213", "E501"]
 
 [tool.ruff.format]
 quote-style = "single"
@@ -52,6 +60,7 @@ dev = [
     "ruff>=0.13.2",
 ]
 docs = [
+    "markdown-callouts>=0.4.0",
     "mkdocs>=1.6.1",
     "mkdocs-include-markdown-plugin>=7.2.0",
     "mkdocs-material>=9.6.21",

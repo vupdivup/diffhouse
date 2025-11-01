@@ -1,18 +1,11 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+
+from diffhouse.entities.git_object import GitObject
 
 
 @dataclass(slots=True, frozen=True)
-class Diff:
+class Diff(GitObject):
     """Changes made to a hunk of code in a specific commit."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the diff.
-
-        """
-        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""
@@ -24,11 +17,11 @@ class Diff:
 
     Differs from `path_a` for renames and copies.
     """
-    changed_file_id: str
+    filemod_id: str
     """
     Hash of `commit_hash`, `path_a`, and `path_b`.
 
-    Use it to match with a `ChangedFile`.
+    Use it to match with a `FileMod`.
     """
     start_a: int
     """Line number that starts the hunk in file version A."""

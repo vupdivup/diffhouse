@@ -3,22 +3,22 @@ import logging
 import polars as pl
 import pytest
 
-from .fixtures import (  # noqa: F401
-    changed_files__diffhouse,
+from tests.fixtures import (  # noqa: F401
     commits__diffhouse,
     diffs__diffhouse,
+    filemods__diffhouse,
     repo,
 )
 
 logger = logging.getLogger()
 
 
-def test_commits_vs_changed_files(
+def test_commits_vs_filemods(
     commits__diffhouse: pl.DataFrame,  # noqa: F811
-    changed_files__diffhouse: pl.DataFrame,  # noqa: F811
+    filemods__diffhouse: pl.DataFrame,  # noqa: F811
 ) -> None:
-    """Test that overlapping data of `repo.commits` and `repo.changed_files` matches."""
-    files_grouped = changed_files__diffhouse.group_by('commit_hash').agg(
+    """Test overlaps of `repo.commits` and `repo.filemods`."""
+    files_grouped = filemods__diffhouse.group_by('commit_hash').agg(
         pl.len().alias('files_changed'),
         pl.col('lines_added').sum().alias('lines_added'),
         pl.col('lines_deleted').sum().alias('lines_deleted'),
@@ -38,29 +38,29 @@ def test_commits_vs_changed_files(
     )
 
     # for huge commits, shortstat's 'files changed' may differ from actual count
-    # of changed files, so allow a bit of wiggle room
+    # of file mods, so allow a bit of wiggle room
     assert len(errors) / len(joined) < 0.01, (
-        'Commits and changed files do not match: ' + repr(errors.to_dicts())
+        'Commits and file mods do not match: ' + repr(errors.to_dicts())
     )
 
 
-def test_changed_files_vs_diffs(
-    changed_files__diffhouse: pl.DataFrame,  # noqa: F811
+def test_filemods_vs_diffs(
+    filemods__diffhouse: pl.DataFrame,  # noqa: F811
     diffs__diffhouse: pl.LazyFrame,  # noqa: F811
 ) -> None:
-    """Test that overlapping data of `repo.changed_files` and `repo.diffs` matches."""
+    """Test overlaps of `repo.filemods` and `repo.diffs`."""
     # using lazy loading as this is an expensive operation
-    diffs_grouped = diffs__diffhouse.group_by(
-        'commit_hash', 'changed_file_id'
-    ).agg(pl.sum('lines_added'), pl.sum('lines_deleted'))
+    diffs_grouped = diffs__diffhouse.group_by('commit_hash', 'filemod_id').agg(
+        pl.sum('lines_added'), pl.sum('lines_deleted')
+    )
 
-    joined = changed_files__diffhouse.lazy().join(
-        diffs_grouped, on=['commit_hash', 'changed_file_id'], how='left'
+    joined = filemods__diffhouse.lazy().join(
+        diffs_grouped, on=['commit_hash', 'filemod_id'], how='left'
     )
 
     joined_len = joined.select(pl.len()).collect().item()
 
-    logger.info(f'Comparing {joined_len} changed files locally')
+    logger.info(f'Comparing {joined_len} file mods locally')
 
     errors = joined.filter(
         (pl.col('lines_added') != pl.col('lines_added_right'))
@@ -70,7 +70,7 @@ def test_changed_files_vs_diffs(
     # allow a bit of wiggle room as line change counts can be different for
     # `git log shortstat` and `git log -p`
     assert len(errors) / joined_len < 0.01, (
-        'Changed files and diffs do not match: ' + repr(errors.to_dicts())
+        'File mods and diffs do not match: ' + repr(errors.to_dicts())
     )
 
 

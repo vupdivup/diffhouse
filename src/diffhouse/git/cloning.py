@@ -1,8 +1,11 @@
+import logging
 import tempfile
 from pathlib import Path
 
-from ..constants import PACKAGE_NAME
-from ..git import GitCLI
+from diffhouse.constants import PACKAGE_NAME
+from diffhouse.git.cli import GitCLI
+
+logger = logging.getLogger(__name__)
 
 
 class TempClone:
@@ -28,6 +31,8 @@ class TempClone:
 
     def __enter__(self):
         """Set up the temporary directory and clone the repository into it."""
+        logger.info(f'Cloning from {self._url}')
+
         self._temp_dir = tempfile.TemporaryDirectory(prefix=f'{PACKAGE_NAME}_')
         self._path = Path(self._temp_dir.name)
 
@@ -45,8 +50,12 @@ class TempClone:
         with git.run(*args):
             pass
 
+        logger.debug(f'Cloned {self._url} to {self._path}')
+
         return self
 
     def __exit__(self, exc_type, exc_val, traceback):  # noqa: ANN001
         """Clean up the temporary directory."""
+        logger.debug(f'Cleaning up temporary clone at {self._path}')
+
         self._temp_dir.cleanup()

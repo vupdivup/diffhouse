@@ -1,11 +1,10 @@
-import logging
 import os
 import shutil
 import tempfile
+import warnings
 from pathlib import Path
 
-from ..constants import PACKAGE_NAME
-from .logger import log_to_stdout, package_logger
+from diffhouse.constants import PACKAGE_NAME
 
 
 def remove_residual_resources() -> None:
@@ -14,17 +13,17 @@ def remove_residual_resources() -> None:
 
     for path in temp_dir.iterdir():
         if path.name.startswith(f'{PACKAGE_NAME}_'):
-            with log_to_stdout(package_logger, logging.INFO):
-                try:
-                    package_logger.info(f'Removing residual resource at {path}')
-                    if path.is_file():
-                        path.unlink()
-                    else:
-                        shutil.rmtree(path, onerror=_on_rm_error)
-                except Exception:
-                    package_logger.warning(
-                        f'Failed to remove residual resource at {path}'
-                    )
+            try:
+                print(f'Removing residual resource at {path}')
+                if path.is_file():
+                    path.unlink()
+                else:
+                    shutil.rmtree(path, onerror=_on_rm_error)
+            except Exception:
+                warnings.warn(
+                    f'Failed to remove residual resource at {path}',
+                    stacklevel=2,
+                )
 
 
 def _on_rm_error(func, path, exc_info) -> None:  # noqa: ANN001, ARG001

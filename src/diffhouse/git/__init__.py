@@ -1,6 +1,6 @@
 """Wrappers for git commands."""
 
-from .cli import GitCLI
-from .cloning import TempClone
+from diffhouse.git.cli import GitCLI
+from diffhouse.git.cloning import TempClone
 
 __all__ = ['GitCLI', 'TempClone']

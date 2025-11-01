@@ -9,7 +9,8 @@ from typing import Literal
 
 import packaging.version
 
-from ..constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
+from diffhouse.api.exceptions import GitError
+from diffhouse.constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
 
 
 class GitCLI:
@@ -118,17 +119,3 @@ class GitCLI:
 
         with self.run('ls-remote', f'--{what}', '--refs') as out:
             return out.read()
-
-
-class GitError(Exception):
-    """Custom exception for git-related errors."""
-
-    def __init__(self, stderr: str):
-        """Initialize the exception.
-
-        Args:
-            stderr: Standard error output from the git command.
-
-        """
-        self.message = f'Git command failed with the following error:\n{stderr}'
-        super().__init__(self.message)

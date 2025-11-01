@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from diffhouse import Branch, Commit, Diff, FileMod, Tag
+
 # 1-10k commits
 # can't do larger since ubuntu runners have trouble computing dataframe results
 REPOS = [
@@ -46,3 +50,73 @@ INVALID_URL = 'yh8sxKcLRFS14zEa6PvNNPaGMzZA3l'
 
 GITHUB_COMMITS_SAMPLE_SIZE = 1000
 GITHUB_SHORTSTATS_SAMPLE_SIZE = 10
+
+TYPED_SCHEMAS_BY_OBJECT_TYPE = {
+    Commit: {
+        'commit_hash': str,
+        'date': datetime,
+        'date_local': datetime,
+        'message_subject': str,
+        'message_body': str,
+        'author_name': str,
+        'author_email': str,
+        'author_date': datetime,
+        'author_date_local': datetime,
+        'committer_name': str,
+        'committer_email': str,
+        'files_changed': lambda x: isinstance(x, int) or x is None,
+        'lines_added': lambda x: isinstance(x, int) or x is None,
+        'lines_deleted': lambda x: isinstance(x, int) or x is None,
+        'source': str,
+        'in_main': bool,
+        'is_merge': bool,
+        'parents': lambda x: isinstance(x, list)
+        and all(isinstance(i, str) for i in x),
+    },
+    Branch: {
+        'name': str,
+    },
+    FileMod: {
+        'commit_hash': str,
+        'path_a': str,
+        'path_b': str,
+        'filemod_id': str,
+        'change_type': str,
+        'similarity': int,
+        'lines_added': int,
+        'lines_deleted': int,
+    },
+    Diff: {
+        'commit_hash': str,
+        'path_a': str,
+        'path_b': str,
+        'filemod_id': str,
+        'start_a': int,
+        'length_a': int,
+        'start_b': int,
+        'length_b': int,
+        'lines_added': int,
+        'lines_deleted': int,
+        'additions': lambda x: isinstance(x, list)
+        and all(isinstance(i, str) for i in x),
+        'deletions': lambda x: isinstance(x, list)
+        and all(isinstance(i, str) for i in x),
+    },
+    Tag: {
+        'name': str,
+    },
+}
+
+SCHEMAS_BY_OBJECT_TYPE = {
+    k: set(v.keys()) for k, v in TYPED_SCHEMAS_BY_OBJECT_TYPE.items()
+}
+
+OBJECT_TYPES_BY_REPO_ATTR = {
+    'commits': Commit,
+    'branches': Branch,
+    'filemods': FileMod,
+    'diffs': Diff,
+    'tags': Tag,
+}
+
+REPO_ATTRS = list(OBJECT_TYPES_BY_REPO_ATTR.keys())
