@@ -15,6 +15,7 @@ nav:
     - Diff: reference/diff.md
     - Branch: reference/branch.md
     - Tag: reference/tag.md
+    - GitObject: reference/git-object.md
 
 theme:
   name: material

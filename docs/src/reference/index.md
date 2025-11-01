@@ -10,3 +10,4 @@ public API. The following objects are described:
 - [`Diff`](diff.md)
 - [`Branch`](branch.md)
 - [`Tag`](tag.md)
+- [`GitObject`](git-object.md)
