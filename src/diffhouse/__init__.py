@@ -23,7 +23,7 @@
 import logging
 
 from diffhouse.api import Extractor, Repo
-from diffhouse.entities import Branch, Commit, Diff, FileMod, Tag
+from diffhouse.entities import Branch, Commit, Diff, FileMod, GitObject, Tag
 from diffhouse.utils.cleanup import remove_residual_resources
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,15 @@ logger.addHandler(logging.NullHandler())
 # no propagation as Jupyter environments may have root loggers
 logger.propagate = False
 
-__all__ = ['Repo', 'Commit', 'Diff', 'FileMod', 'Branch', 'Tag', 'Extractor']
+__all__ = [
+    'Repo',
+    'Commit',
+    'Diff',
+    'FileMod',
+    'Branch',
+    'Tag',
+    'Extractor',
+    'GitObject',
+]
 
 remove_residual_resources()

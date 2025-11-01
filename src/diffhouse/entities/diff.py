@@ -1,18 +1,11 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+
+from diffhouse.entities.git_object import GitObject
 
 
 @dataclass(slots=True, frozen=True)
-class Diff:
+class Diff(GitObject):
     """Changes made to a hunk of code in a specific commit."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the diff.
-
-        """
-        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""

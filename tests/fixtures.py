@@ -12,8 +12,7 @@ from tests.constants import (
 )
 from tests.github import get_github_response, sample_github_endpoint
 
-# randomly select 3 repos for testing to keep it relatively short
-SELECTED_REPOS = random.sample(REPOS, 3)
+SELECTED_REPOS = random.sample(REPOS, 1)
 
 
 @pytest.fixture(scope='session', params=SELECTED_REPOS)

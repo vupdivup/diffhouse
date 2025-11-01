@@ -1,19 +1,12 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime
+
+from diffhouse.entities.git_object import GitObject
 
 
 @dataclass(slots=True, frozen=True)
-class Commit:
+class Commit(GitObject):
     """A commit from the repository history."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the commit.
-
-        """
-        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""

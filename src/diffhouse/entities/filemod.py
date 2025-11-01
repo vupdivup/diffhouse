@@ -1,18 +1,11 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+
+from diffhouse.entities.git_object import GitObject
 
 
 @dataclass(slots=True, frozen=True)
-class FileMod:
+class FileMod(GitObject):
     """A file modification in a specific commit."""
-
-    def to_dict(self) -> dict:
-        """Convert the object to a dictionary.
-
-        Returns:
-            A dictionary representation of the file modification.
-
-        """
-        return asdict(self)
 
     commit_hash: str
     """Full hash of the commit."""
