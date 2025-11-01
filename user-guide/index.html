@@ -12,7 +12,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../api-reference/">
+        <link rel="next" href="../reference/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -63,7 +63,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -302,6 +302,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -314,20 +329,59 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lazy-loading" class="md-nav__link">
+  <a href="#querying-results" class="md-nav__link">
     <span class="md-ellipsis">
-      Lazy Loading
+      Querying Results
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#looping-through-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Looping Through Objects
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#tabular-data" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#converting-to-dataframes" class="md-nav__link">
     <span class="md-ellipsis">
-      Tabular Data
+      Converting to Dataframes
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preliminary-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preliminary Filtering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preliminary Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skipping-file-downloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skipping File Downloads
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -345,18 +399,261 @@
   
   
   
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../api-reference/" class="md-nav__link">
+      <a href="../reference/repo/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    API Reference
+    Repo
     
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/extractor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Extractor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/commit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Commit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/filemod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FileMod
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/diff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Diff
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/branch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Branch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tag
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/git-object/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GitObject
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -392,6 +689,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -404,20 +716,59 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lazy-loading" class="md-nav__link">
+  <a href="#querying-results" class="md-nav__link">
     <span class="md-ellipsis">
-      Lazy Loading
+      Querying Results
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#looping-through-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Looping Through Objects
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#tabular-data" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#converting-to-dataframes" class="md-nav__link">
     <span class="md-ellipsis">
-      Tabular Data
+      Converting to Dataframes
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preliminary-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preliminary Filtering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preliminary Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#skipping-file-downloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skipping File Downloads
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -442,67 +793,127 @@
 
   <h1>User Guide</h1>
 
-<p>This guide aims to cover the basic use cases of diffhouse. For the list of
-available repository objects and fields, check out the
-<a href="https://vupdivup.github.io/diffhouse/api-reference">API Reference</a>.</p>
+<p>This guide aims to cover the basic use cases of diffhouse. For a full list of objects, consider reading the
+<a href="https://vupdivup.github.io/diffhouse/reference">API Reference</a>.</p>
 <h3 id="installation">Installation</h3>
-<p>Install diffhouse through PyPi:</p>
+<p>Install diffhouse from PyPI:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1">pip<span class="w"> </span>install<span class="w"> </span>diffhouse
 </span></code></pre></div>
+<h4 id="optional-dependencies">Optional Dependencies</h4>
+<p>If you plan to combine diffhouse with pandas or Polars, install the package with their respective extras:</p>
+<table>
+    <tr>
+        <td>pandas</td>
+        <td><code>pip install diffhouse[pandas]</code></td>
+    </tr>
+    <tr>
+        <td>Polars</td>
+        <td><code>pip install diffhouse[polars]</code></td>
+    </tr>
+</table>
+
 <h3 id="quickstart">Quickstart</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><span class="kn">from</span><span class="w"> </span><span class="nn">diffhouse</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repo</span>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-1-1"><span class="kn">from</span><span class="w"> </span><span class="nn">diffhouse</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repo</span>
 </span><span id="__span-1-2">
-</span><span id="__span-1-3"><span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/user/repo&#39;</span>
-</span><span id="__span-1-4">
-</span><span id="__span-1-5"><span class="n">r</span> <span class="o">=</span> <span class="n">Repo</span><span class="p">(</span><span class="n">location</span> <span class="o">=</span> <span class="n">url</span><span class="p">,</span> <span class="n">blobs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-1-3"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+</span><span id="__span-1-4">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
+</span><span id="__span-1-5">        <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">c</span><span class="o">.</span><span class="n">committer_date</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">author_email</span><span class="p">)</span>
 </span><span id="__span-1-6">
-</span><span id="__span-1-7"><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
-</span><span id="__span-1-8">    <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">c</span><span class="o">.</span><span class="n">committer_date</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">author_email</span><span class="p">)</span>
+</span><span id="__span-1-7">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+</span><span id="__span-1-8">        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;🎉&#39;</span><span class="p">)</span>
 </span><span id="__span-1-9">
-</span><span id="__span-1-10"><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="p">)</span>
-</span><span id="__span-1-11"><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">diffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+</span><span id="__span-1-10">    <span class="n">df</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">diffs</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
 </span></code></pre></div>
-<p>First, construct a <code>Repo</code> object and define
-its target repository via the <code>location</code> argument; this can be either a
-remote URL or a local path. Pass <code>blobs = True</code> to extract file data as well.</p>
-<p>Calling <code>Repo.load()</code> will load all metadata into memory, which can
-then be accessed through the object's properties.
-<a href="https://vupdivup.github.io/diffhouse/api-reference/#diffhouse.Repo.branches">See all properties</a></p>
-<blockquote>
-<p><code>blobs = True</code> requires a complete clone of the repository and therefore
-takes longer to execute. Omit this argument whenever possible.</p>
-</blockquote>
-<h3 id="lazy-loading">Lazy Loading</h3>
-<p>For large repositories, calling
-<code>load()</code> can be slow and/or take up gigabytes of memory. It is recommended to
-use the lazy method via <code>with</code> instead:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="n">location</span> <span class="o">=</span> <span class="n">url</span><span class="p">,</span> <span class="n">blobs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
-</span><span id="__span-2-2">    <span class="n">c</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">stream_commits</span><span class="p">())</span>
-</span><span id="__span-2-3">
-</span><span id="__span-2-4">    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">stream_diffs</span><span class="p">():</span>
-</span><span id="__span-2-5">        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">lines_added</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-</span><span id="__span-2-6">            <span class="k">break</span>
+<p>To start, create a <a href="https://vupdivup.github.io/diffhouse/reference/repo/"><code>Repo</code></a> instance by passing either a Git-hosting URL or a local path as its <code>source</code> argument. Next, use the <code>Repo</code> in a <code>with</code> statement to clone the source into a local, non-persistent
+location.</p>
+<p>Inside the <code>with</code> block, you can access data through the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+<th>Record Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.commits"><code>Repo.commits</code></a></td>
+<td>Commit history of the repository.</td>
+<td><a href="https://vupdivup.github.io/diffhouse/reference/commit/"><code>Commit</code></a></td>
+</tr>
+<tr>
+<td><a href="https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.filemods"><code>Repo.filemods</code></a></td>
+<td>File modifications across the commit history.</td>
+<td><a href="https://vupdivup.github.io/diffhouse/reference/filemod/"><code>FileMod</code></a></td>
+</tr>
+<tr>
+<td><a href="https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.diffs"><code>Repo.diffs</code></a></td>
+<td>Source code changes across the commit history.</td>
+<td><a href="https://vupdivup.github.io/diffhouse/reference/diff/"><code>Diff</code></a></td>
+</tr>
+<tr>
+<td><a href="https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.branches"><code>Repo.branches</code></a></td>
+<td>Branches of the repository.</td>
+<td><a href="https://vupdivup.github.io/diffhouse/reference/branch/"><code>Branch</code></a></td>
+</tr>
+<tr>
+<td><a href="https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.tags"><code>Repo.tags</code></a></td>
+<td>Tags of the repository.</td>
+<td><a href="https://vupdivup.github.io/diffhouse/reference/tag/"><code>Tag</code></a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="querying-results">Querying Results</h3>
+<p>Data accessors like <code>Repo.commits</code> are <a href="https://vupdivup.github.io/diffhouse/reference/extractor/"><code>Extractor</code></a> objects and can output their results in various formats:</p>
+<h4 id="looping-through-objects">Looping Through Objects</h4>
+<p>You can use extractors in a <code>for</code> loop to process objects one by one. Data will be extracted on demand for memory efficiency:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+</span><span id="__span-2-2">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
+</span><span id="__span-2-3">        <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+</span><span id="__span-2-4">        <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">author_name</span><span class="p">)</span>
+</span><span id="__span-2-5">
+</span><span id="__span-2-6">        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">in_main</span><span class="p">:</span>
+</span><span id="__span-2-7">            <span class="k">break</span>
 </span></code></pre></div>
-<p>This brings two big benefits:</p>
-<ol>
-<li>Object streaming functions are lazy generators, allowing for efficient memory use.</li>
-<li>No processing power is spent on objects that are not explicitly requested.</li>
-</ol>
-<p><a href="https://vupdivup.github.io/diffhouse/api-reference/#diffhouse.Repo.stream_commits">See all streaming functions</a></p>
-<h3 id="tabular-data">Tabular Data</h3>
-<p><code>Commit</code>, <code>ChangedFile</code> and <code>Diff</code> iterables can be passed directly to
-pandas and polars <code>DataFrame</code> constructors. No pre-processing is needed;
-table schemas will be inferred correctly.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<p><code>iter_dicts()</code> is a <code>for</code> loop alternative that yields dictionaries instead of diffhouse objects. A good use case for this is writing results into a newline-delimited JSON file:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-3-1"><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 </span><span id="__span-3-2">
-</span><span id="__span-3-3"><span class="n">df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">changed_files</span><span class="p">)</span>
-</span><span id="__span-3-4"><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+</span><span id="__span-3-3"><span class="k">with</span> <span class="p">(</span>
+</span><span id="__span-3-4">    <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">,</span>
+</span><span id="__span-3-5">    <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;commits.jsonl&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span>
+</span><span id="__span-3-6"><span class="p">):</span>
+</span><span id="__span-3-7">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">commits</span><span class="o">.</span><span class="n">iter_dicts</span><span class="p">():</span>
+</span><span id="__span-3-8">        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<blockquote>
-<p>diffhouse stores datetime values as ISO 8601 strings to preserve time zone
-offsets. When converting these to datetime objects in a <code>DataFrame</code>, use
-the parser's UTC option.</p>
-</blockquote>
+<h4 id="converting-to-dataframes">Converting to Dataframes</h4>
+<p>pandas and Polars <code>DataFrame</code> APIs are supported out of the box. To convert result sets to dataframes, call the following methods:</p>
+<ul>
+<li><code>to_pandas()</code> or <code>pd()</code> for pandas</li>
+<li><code>to_polars()</code> or <code>pl()</code> for Polars</li>
+</ul>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+</span><span id="__span-4-2">    <span class="n">df1</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">filemods</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>  <span class="c1"># pandas</span>
+</span><span id="__span-4-3">    <span class="n">df2</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">diffs</span><span class="o">.</span><span class="n">to_polars</span><span class="p">()</span>  <span class="c1"># Polars</span>
+</span></code></pre></div>
+<h3 id="preliminary-filtering">Preliminary Filtering</h3>
+<p>You can filter data along certain dimensions <em>before</em> processing takes place to reduce extraction time and/or network load.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Filters are a WIP feature. Additional options like date and branch filtering are planned for future releases.</p>
+</div>
+<h4 id="skipping-file-downloads">Skipping File Downloads</h4>
+<p>If no blob-level data is needed, pass <code>blobs=False</code> when creating the <code>Repo</code> to skip file downloads during cloning. Note that this will not populate:</p>
+<ul>
+<li><code>files_changed</code>, <code>lines_added</code> and <code>lines_deleted</code> fields of <code>Repo.commits</code></li>
+<li><code>Repo.filemods</code></li>
+<li><code>Repo.diffs</code></li>
+</ul>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-5-1"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">,</span> <span class="n">blobs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+</span><span id="__span-5-2">    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="p">:</span>
+</span><span id="__span-5-3">        <span class="k">pass</span>  <span class="c1"># business as usual</span>
+</span><span id="__span-5-4">
+</span><span id="__span-5-5">    <span class="n">r</span><span class="o">.</span><span class="n">filemods</span>  <span class="c1"># throws FilterError</span>
+</span></code></pre></div>
 
 
 
@@ -551,7 +962,7 @@ the parser's UTC option.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.indexes"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
