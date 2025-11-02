@@ -73,7 +73,7 @@ from diffhouse import Repo
 
 with Repo('https://github.com/user/repo') as r:
     for c in r.commits:
-        print(c.commit_hash[:10], c.committer_date, c.author_email)
+        print(c.commit_hash[:10], c.date, c.author_email)
 
     if len(r.branches.to_list()) > 100:
         print('🎉')
