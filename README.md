@@ -88,11 +88,11 @@ Inside the `with` block, you can access data through the following properties:
 
 | Property | Description | Record Type
 | --- | --- | --- |
-| [`Repo.commits`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/reference/commit/) |
-| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/reference/filemod/) |
-| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/reference/diff/) |
-| [`Repo.branches`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/reference/branch/) |
-| [`Repo.tags`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/reference/tag/) |
+| [`Repo.commits`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/reference/commit/) |
+| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/reference/filemod/) |
+| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/reference/diff/) |
+| [`Repo.branches`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/reference/branch/) |
+| [`Repo.tags`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/reference/tag/) |
 
 ### Querying Results
 
