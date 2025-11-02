@@ -10,6 +10,7 @@ on:
 
 jobs:
   benchmark:
+    runs-on: ubuntu-latest
     steps:
       # Use latest Python 3 version
       - name: Setup Python
