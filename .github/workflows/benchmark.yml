@@ -28,11 +28,14 @@ jobs:
         with:
           python-version: ${{ steps.setup-python.outputs.python-version }}
 
+      - name: Install dependencies
+        run: |
+          uv sync --no-default-groups --group benchmark
+
       - name: Run benchmarks
         run: >
           uv run
           --no-default-groups
-          --group benchmark
           py benchmarks/bench.py
           --url ${{ github.event.inputs.url }}
           --fast
