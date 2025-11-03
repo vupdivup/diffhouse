@@ -6,6 +6,7 @@ repo_name: vupdivup/diffhouse
 nav:
   - Home: index.md
   - User Guide: user-guide.md
+  - Benchmarks: benchmarks.md
   - Reference:
     - reference/index.md
     - Repo: reference/repo.md
@@ -47,6 +48,7 @@ plugins:
               - "__init__"
 
 markdown_extensions:
+  - footnotes
   - github-callouts
   - pymdownx.highlight:
       line_spans: __span
