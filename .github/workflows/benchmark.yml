@@ -1,0 +1,41 @@
+name: Run benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Repository URL to benchmark'
+        required: true
+        default: 'https://github.com/'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      # Use latest Python 3 version
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ steps.setup-python.outputs.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --no-default-groups --group benchmark
+
+      - name: Run benchmarks
+        run: >
+          uv run
+          --no-default-groups
+          scripts/bench.py
+          --url "${{ github.event.inputs.url }}"
+          --fast
+          --quiet

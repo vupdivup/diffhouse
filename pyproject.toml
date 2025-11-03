@@ -53,6 +53,10 @@ ignore = ["ANN204", "D100", "D203", "D213", "E501"]
 quote-style = "single"
 
 [dependency-groups]
+benchmark = [
+    "pydriller>=2.9",
+    "pyperf>=2.9.0",
+]
 dev = [
     "jupyter>=1.1.1",
     "polars[timezone]>=1.33.1",

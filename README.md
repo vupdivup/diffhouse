@@ -15,6 +15,16 @@ Key features are:
 - 📊 Easy integration with pandas and Polars
 - 🐍 Simple-to-use Python interface
 
+## Performance
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
+  <br/>
+  <em>Processing times for <a href="https://github.com/tweenjs/tween.js">tween.js</a></em>
+</p>
+
+For more details, see [benchmarks](https://vupdivup.github.io/diffhouse/benchmarks/).
+
 ## Requirements
 
 <table>
