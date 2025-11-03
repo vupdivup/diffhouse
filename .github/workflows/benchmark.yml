@@ -7,7 +7,6 @@ on:
         description: 'Repository URL to benchmark'
         required: true
         default: 'https://github.com/'
-  push:
 
 jobs:
   benchmark:
