@@ -13,45 +13,41 @@ In all charts, **lower is better**.
 
 We used the 1,000-commit tween.js repo as a representative case. diffhouse was **2x+ faster** overall; commit extraction took about **75% less time** than PyDriller.
 
-<figure>
-    <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
-    <figcaption>
-        <a href="https://github.com/tweenjs/tween.js">tweenjs/tween.js</a>
-    </figcaption>
-</figure>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/tweenjs/tween.js">tweenjs/tween.js</a></em>
+</p>
 
 ## Large Codebases[^2]
 
 For the repo with ~10k commits, PyDriller slowed down significantly, while diffhouse kept a good pace, leading to **major runtime improvements**.
 
-<figure>
-    <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_scrapy.png" alt="scrapy/scrapy benchmark results" width="480px">
-    <figcaption>
-    <a href="https://github.com/scrapy/scrapy">scrapy/scrapy</a>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_scrapy.png" alt="scrapy/scrapy benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/scrapy/scrapy">scrapy/scrapy</a></em>
 </p>
-</figure>
 
 ## Binary Stores[^3]
 
 For repositories with lots of binary content, the gap narrowed; the speedup gained via diffhouse was **less than 2x**.
 
-<figure>
-    <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_sqlflow_public.png" alt="sqlparser/sqlflow_public benchmark results" width="480px">
-    <figcaption>
-        <a href="https://github.com/tweenjs/tween.js">sqlparser/sqlflow_public</a>
-    </figcaption>
-</figure>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_sqlflow_public.png" alt="sqlparser/sqlflow_public benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/sqlparser/sqlflow_public">sqlparser/sqlflow_public</a></em>
+</p>
 
 ## Tiny Projects[^4]
 
 Small repos finish in a few seconds with either tool; PyDriller is still slower, but only slightly.
 
-<figure>
-    <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_detours.png" alt="microsoft/Detours benchmark results" width="480px">
-    <figcaption>
-        <a href="https://github.com/microsoft/Detours">microsoft/Detours</a>
-    </figcaption>
-</figure>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_detours.png" alt="microsoft/Detours benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/microsoft/Detours">microsoft/Detours</a></em>
+</p>
 
 [^1]: [tweenjs/tween.js benchmark run](https://github.com/vupdivup/diffhouse/actions/runs/19018335542/job/54309480583)
 [^2]: [scrapy/scrapy benchmark run](https://github.com/vupdivup/diffhouse/actions/runs/19018542074)
