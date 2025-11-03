@@ -35,7 +35,7 @@ jobs:
         run: >
           uv run
           --no-default-groups
-          benchmarks/bench.py
+          scripts/bench.py
           --url "${{ github.event.inputs.url }}"
           --fast
           --quiet
