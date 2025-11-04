@@ -44,9 +44,8 @@ def split_stream(
                 yield buffer
             break
 
-        buffer += chunk
-
-        parts = buffer.split(sep)
+        parts = chunk.split(sep)
+        parts[0] = buffer + parts[0]
 
         if len(parts) == 1:
             continue
