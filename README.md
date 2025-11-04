@@ -12,8 +12,18 @@ large-scale codebase analysis at practical speeds.
 Key features are:
 
 - 🚀 Fast access to commit data, file changes and more
-- 📊 Easy integration with **pandas** and **polars**
+- 📊 Easy integration with pandas and Polars
 - 🐍 Simple-to-use Python interface
+
+## Performance
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
+  <br/>
+  <em>Processing times for <a href="https://github.com/tweenjs/tween.js">tween.js</a>. Lower is better.</em>
+</p>
+
+For more details, see [benchmarks](https://vupdivup.github.io/diffhouse/benchmarks/).
 
 ## Requirements
 
@@ -73,7 +83,7 @@ from diffhouse import Repo
 
 with Repo('https://github.com/user/repo') as r:
     for c in r.commits:
-        print(c.commit_hash[:10], c.committer_date, c.author_email)
+        print(c.commit_hash[:10], c.date, c.author_email)
 
     if len(r.branches.to_list()) > 100:
         print('🎉')
@@ -88,11 +98,11 @@ Inside the `with` block, you can access data through the following properties:
 
 | Property | Description | Record Type
 | --- | --- | --- |
-| [`Repo.commits`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/reference/commit/) |
-| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/reference/filemod/) |
-| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/reference/diff/) |
-| [`Repo.branches`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/reference/branch/) |
-| [`Repo.tags`](https://vupdivup.github.io/diffhouse/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/reference/tag/) |
+| [`Repo.commits`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.commits) | Commit history of the repository. | [`Commit`](https://vupdivup.github.io/diffhouse/reference/commit/) |
+| [`Repo.filemods`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.filemods) | File modifications across the commit history. | [`FileMod`](https://vupdivup.github.io/diffhouse/reference/filemod/) |
+| [`Repo.diffs`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.diffs) | Source code changes across the commit history. | [`Diff`](https://vupdivup.github.io/diffhouse/reference/diff/) |
+| [`Repo.branches`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.branches) | Branches of the repository. | [`Branch`](https://vupdivup.github.io/diffhouse/reference/branch/) |
+| [`Repo.tags`](https://vupdivup.github.io/diffhouse/reference/repo/#diffhouse.Repo.tags) | Tags of the repository. | [`Tag`](https://vupdivup.github.io/diffhouse/reference/tag/) |
 
 ### Querying Results
 

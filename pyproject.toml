@@ -1,6 +1,6 @@
 [project]
 name = "diffhouse"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
   "packaging>=25.0",
   "regex>=2025.9.18",
@@ -53,6 +53,10 @@ ignore = ["ANN204", "D100", "D203", "D213", "E501"]
 quote-style = "single"
 
 [dependency-groups]
+benchmark = [
+    "pydriller>=2.9",
+    "pyperf>=2.9.0",
+]
 dev = [
     "jupyter>=1.1.1",
     "polars[timezone]>=1.33.1",

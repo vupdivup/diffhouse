@@ -26,13 +26,25 @@ from diffhouse.api import Extractor, Repo
 from diffhouse.entities import Branch, Commit, Diff, FileMod, GitObject, Tag
 from diffhouse.utils.cleanup import remove_residual_resources
 
+
+def config(propagate_logs: bool = False) -> None:
+    """Configure the diffhouse package.
+
+    Args:
+        propagate_logs (bool): Whether to propagate logs to the root logger. Use
+            for debugging.
+
+    """
+    # no propagation by default, as Jupyter environments may have root loggers
+    logger.propagate = propagate_logs
+
+
 logger = logging.getLogger(__name__)
 
 # this is to prevent last resort logging of warnings to stderr
 logger.addHandler(logging.NullHandler())
 
-# no propagation as Jupyter environments may have root loggers
-logger.propagate = False
+remove_residual_resources()
 
 __all__ = [
     'Repo',
@@ -44,5 +56,3 @@ __all__ = [
     'Extractor',
     'GitObject',
 ]
-
-remove_residual_resources()
