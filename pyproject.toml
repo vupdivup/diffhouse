@@ -1,6 +1,6 @@
 [project]
 name = "diffhouse"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
   "packaging>=25.0",
   "regex>=2025.9.18",
