@@ -9,23 +9,25 @@
       
       
       
-        <link rel="prev" href="../tag/">
+        <link rel="prev" href="../user-guide/">
       
       
+        <link rel="next" href="../reference/">
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
-        <title>GitObject - diffhouse</title>
+        <title>Benchmarks - diffhouse</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,9 +46,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#diffhouse.GitObject" class="md-skip">
+        <a href="#benchmarks" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +88,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="diffhouse" class="md-header__button md-logo" aria-label="diffhouse" data-md-component="logo">
+    <a href=".." title="diffhouse" class="md-header__button md-logo" aria-label="diffhouse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GitObject
+              Benchmarks
             
           </span>
         </div>
@@ -196,7 +198,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="diffhouse" class="md-nav__button md-logo" aria-label="diffhouse" data-md-component="logo">
+    <a href=".." title="diffhouse" class="md-nav__button md-logo" aria-label="diffhouse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -226,7 +228,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -248,7 +250,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/" class="md-nav__link">
+      <a href="../user-guide/" class="md-nav__link">
         
   
   
@@ -267,10 +269,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Benchmarks
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -281,6 +305,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mid-sized-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mid-Sized Repositories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#large-codebases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Large Codebases
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-stores" class="md-nav__link">
+    <span class="md-ellipsis">
+      Binary Stores
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tiny-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tiny Projects
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -289,8 +369,6 @@
       
   
   
-    
-  
   
   
     
@@ -325,15 +403,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../reference/" class="md-nav__link ">
               
   
   
@@ -352,7 +430,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Reference
@@ -368,7 +446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../repo/" class="md-nav__link">
+      <a href="../reference/repo/" class="md-nav__link">
         
   
   
@@ -391,7 +469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../extractor/" class="md-nav__link">
+      <a href="../reference/extractor/" class="md-nav__link">
         
   
   
@@ -414,7 +492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../commit/" class="md-nav__link">
+      <a href="../reference/commit/" class="md-nav__link">
         
   
   
@@ -437,7 +515,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../filemod/" class="md-nav__link">
+      <a href="../reference/filemod/" class="md-nav__link">
         
   
   
@@ -460,7 +538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../diff/" class="md-nav__link">
+      <a href="../reference/diff/" class="md-nav__link">
         
   
   
@@ -483,7 +561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../branch/" class="md-nav__link">
+      <a href="../reference/branch/" class="md-nav__link">
         
   
   
@@ -506,7 +584,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tag/" class="md-nav__link">
+      <a href="../reference/tag/" class="md-nav__link">
         
   
   
@@ -526,30 +604,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    GitObject
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../reference/git-object/" class="md-nav__link">
         
   
   
@@ -560,42 +618,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#diffhouse.GitObject" class="md-nav__link">
-    <span class="md-ellipsis">
-      GitObject
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#diffhouse.GitObject.to_dict" class="md-nav__link">
-    <span class="md-ellipsis">
-      to_dict
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -625,6 +647,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -633,18 +657,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#diffhouse.GitObject" class="md-nav__link">
+  <a href="#mid-sized-repositories" class="md-nav__link">
     <span class="md-ellipsis">
-      GitObject
+      Mid-Sized Repositories
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#diffhouse.GitObject.to_dict" class="md-nav__link">
+  <a href="#large-codebases" class="md-nav__link">
     <span class="md-ellipsis">
-      to_dict
+      Large Codebases
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-stores" class="md-nav__link">
+    <span class="md-ellipsis">
+      Binary Stores
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tiny-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tiny Projects
     </span>
   </a>
   
@@ -669,86 +711,62 @@
   
 
 
-  <h1>GitObject</h1>
+<h1 id="benchmarks">Benchmarks</h1>
+<p>This document benchmarks diffhouse against <a href="https://github.com/ishepard/pydriller">PyDriller</a>, a popular Python-based repository mining tool. Benchmarks were run with <a href="https://pyperf.readthedocs.io/en/latest/">pyperf</a> on GitHub Actions runners running Ubuntu 24.04.</p>
+<p>Please note the following caveats:</p>
+<ul>
+<li>Repositories vary greatly in content and structure, so these benchmarks are intended as general performance indicators rather than definitive results.</li>
+<li>Each run executes <code>git clone</code>, so runtimes may fluctuate due to network speed and can introduce additional sampling noise.</li>
+</ul>
+<p>In all charts, <strong>lower is better</strong>.</p>
+<h2 id="mid-sized-repositories">Mid-Sized Repositories<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></h2>
+<p>We used the 1,000-commit tween.js repo as a representative case. diffhouse was <strong>2x+ faster</strong> overall; commit extraction took about <strong>75% less time</strong> than PyDriller.</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/tweenjs/tween.js">tweenjs/tween.js</a></em>
+</p>
 
-<div class="doc doc-object doc-class">
+<h2 id="large-codebases">Large Codebases<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></h2>
+<p>For the repo with ~10k commits, PyDriller slowed down significantly, while diffhouse kept a good pace, leading to <strong>major runtime improvements</strong>.</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_scrapy.png" alt="scrapy/scrapy benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/scrapy/scrapy">scrapy/scrapy</a></em>
+</p>
 
+<h2 id="binary-stores">Binary Stores<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup></h2>
+<p>For repositories with lots of binary content, the gap narrowed; the speedup gained via diffhouse was <strong>less than 2x</strong>.</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_sqlflow_public.png" alt="sqlparser/sqlflow_public benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/sqlparser/sqlflow_public">sqlparser/sqlflow_public</a></em>
+</p>
 
+<h2 id="tiny-projects">Tiny Projects<sup id="fnref:4"><a class="footnote-ref" href="#fn:4">4</a></sup></h2>
+<p>Small repos finish in a few seconds with either tool; PyDriller is still slower, but only slightly.</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_detours.png" alt="microsoft/Detours benchmark results" width="480px">
+  <br/>
+  <em><a href="https://github.com/microsoft/Detours">microsoft/Detours</a></em>
+</p>
 
-<a id="diffhouse.GitObject"></a>
-    <div class="doc doc-contents first">
-
-
-        <p>Base class for Git entities.</p>
-
-
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="diffhouse.GitObject.to_dict" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">to_dict</span>
-
-
-</h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">to_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="dict">dict</span></span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Convert the object to a dictionary.</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="dict">dict</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A dictionary representation of the Git object.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><a href="https://github.com/vupdivup/diffhouse/actions/runs/19018335542/job/54309480583">tweenjs/tween.js benchmark run</a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://github.com/vupdivup/diffhouse/actions/runs/19018542074">scrapy/scrapy benchmark run</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="https://github.com/vupdivup/diffhouse/actions/runs/19026625465/job/54331411177">sqlparser/sqlflow_public benchmark run</a>&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="https://github.com/vupdivup/diffhouse/actions/runs/19026510189/job/54331102684">microsoft/Detours benchmark run</a>&#160;<a class="footnote-backref" href="#fnref:4" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+</ol>
 </div>
 
 
@@ -798,10 +816,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.indexes"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
     
   </body>

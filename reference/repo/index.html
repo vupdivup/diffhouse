@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
@@ -269,6 +269,28 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benchmarks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -309,7 +331,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -326,14 +348,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Reference
           </label>
@@ -812,7 +834,7 @@ target repository from which data can be extracted.</p>
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><span class="k">with</span> <span class="n">Repo</span><span class="p">(</span><span class="s1">&#39;https://github.com/user/repo&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
 </span><span id="__span-0-2">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
-</span><span id="__span-0-3">        <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">c</span><span class="o">.</span><span class="n">committer_date</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">author_email</span><span class="p">)</span>
+</span><span id="__span-0-3">        <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">c</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">author_email</span><span class="p">)</span>
 </span><span id="__span-0-4">
 </span><span id="__span-0-5">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
 </span><span id="__span-0-6">        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;🎉&#39;</span><span class="p">)</span>
