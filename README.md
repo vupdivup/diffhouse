@@ -20,7 +20,7 @@ Key features are:
 <p align="center">
   <img src="https://raw.githubusercontent.com/vupdivup/diffhouse/assets/benchmarks/benchmark_tweenjs.png" alt="tweenjs/tween.js benchmark results" width="480px">
   <br/>
-  <em>Processing times for <a href="https://github.com/tweenjs/tween.js">tween.js</a></em>
+  <em>Processing times for <a href="https://github.com/tweenjs/tween.js">tween.js</a>. Lower is better.</em>
 </p>
 
 For more details, see [benchmarks](https://vupdivup.github.io/diffhouse/benchmarks/).
