@@ -1,3 +1,4 @@
+import logging
 import re
 import subprocess
 from collections.abc import Iterator
@@ -11,6 +12,8 @@ import packaging.version
 
 from diffhouse.api.exceptions import GitError
 from diffhouse.constants import MINIMUM_GIT_VERSION, PACKAGE_NAME
+
+logger = logging.getLogger(__name__)
 
 
 class GitCLI:
@@ -60,6 +63,10 @@ class GitCLI:
         with TemporaryFile(
             'w+', encoding='utf-8', errors='replace', prefix=f'{PACKAGE_NAME}_'
         ) as f:
+            logger.debug(
+                f"Piping '{' '.join(['git', *args])}' command to {f.name}"
+            )
+
             try:
                 subprocess.run(
                     ['git', *args],
