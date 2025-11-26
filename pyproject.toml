@@ -15,7 +15,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 license = "MIT"
-license-files = ["LICEN[CS]E*", "THIRD_PARTY_LICENSES*"]
+license-files = ["LICEN[CS]E*"]
 
 [project.urls]
 Documentation = "https://vupdivup.github.io/diffhouse/"
@@ -44,6 +44,7 @@ explicit = true
 
 [tool.ruff]
 line-length = 80
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["A", "ANN", "ARG", "B", "C4", "E", "F", "D", "I", "SIM"]
