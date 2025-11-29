@@ -1,6 +1,6 @@
 [project]
 name = "diffhouse"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
   "packaging>=25.0",
   "regex>=2025.9.18",
@@ -60,6 +60,7 @@ benchmark = [
 ]
 dev = [
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.7",
     "polars[timezone]>=1.33.1",
     "pre-commit>=4.3.0",
     "ruff>=0.13.2",
